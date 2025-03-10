@@ -3,7 +3,7 @@
 #include <QDebug>
 #include <QQmlEngine>
 
-
+const uint8_t ConfigManager::msg_control = 5;
 ConfigManager::ConfigManager(QObject *parent)
     : QObject{parent}
 {
@@ -93,7 +93,12 @@ void ConfigManager::readSensorTypes()
                     qDebug()<<dataTypeName;
                     sg.append(si);
                     // readElementText at last to prevent breaking loop
-                    reader.readElementText();
+                    if(dataTypeName == QString("array")){
+                        readArray();
+
+                    }else{
+                        reader.readElementText();
+                    }
                 }
             }
             _sensorGropList.append(sg);
@@ -116,9 +121,13 @@ void ConfigManager::readMessageTypes()
             uint8_t messageType = reader.attributes().value("value").toInt();
             QString name = reader.attributes().value("name").toString();
             _messageTypeMap[name] = messageType;
+
             qDebug()<<messageType<<","<<name;
             // readElementText at last to prevent breaking loop
+
+
             reader.readElementText();
+
         }
     }
 
@@ -165,7 +174,7 @@ void ConfigManager::readControlTypes()
                     DNValue value(0, DNMetaData::stringToType(type));
                     value.setName(fieldName);
                     fields.append(value);
-                    qDebug()<<fieldName<<type;
+                    qDebug()<<value.name()<<type;
                     // readElementText at last to prevent breaking loop
 
                     reader.readElementText();
@@ -178,4 +187,25 @@ void ConfigManager::readControlTypes()
         }
     }
 
+}
+
+void ConfigManager::readArray()
+{
+    while(reader.readNextStartElement()){
+
+        if(reader.name().toString() == "entry"){
+            qDebug()<<reader.attributes().value("name");
+            int sensorType = reader.attributes().value("value").toInt();
+            QString name = reader.attributes().value("name").toString();
+            QString dataTypeName = reader.attributes().value("type").toString();
+            DNMetaData::ValueType_t dataType = DNMetaData::stringToType(dataTypeName);
+            DNValue value(0, dataType);
+            SensorItem* si = new SensorItem(this, name, sensorType, value);
+
+            //_messageTypeMap[name] = messageType;
+            qDebug()<<name<<","<<dataType;
+            // readElementText at last to prevent breaking loop
+            reader.readElementText();
+        }
+    }
 }

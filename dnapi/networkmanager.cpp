@@ -17,8 +17,6 @@ NetworkManager::NetworkManager(QObject *parent, DNCore *core)
 
 void NetworkManager::init()
 {
-
-
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
     connect(clientSocket,&QUdpSocket::readyRead,this, &NetworkManager::onUDPMsg);
 }
@@ -36,6 +34,7 @@ void NetworkManager::sendMsgbyID(int boatID, uint8_t topic, QByteArray command)
 {
     BoatItem* boat = _core->boatManager()->getBoatbyID(boatID);
     if(boat != 0){
+        qDebug()<<"sd";
         sendMsg(QHostAddress(boat->currentIP()), topic, command);
     }else{
         qDebug()<<"\u001b[38;5;203m"<<"**Fatal error: NetworkManager::sendMsgbyID boatID outof range"<<"\033[0m";
@@ -80,21 +79,20 @@ void NetworkManager::onUDPMsg()
         }else if(msgType == ConfigManager::msg_format()){
             int ID = int(data[0]);
             data.remove(0,1);
-
-
-
             emit setFormat(ID, data);
-
-
         }else if(msgType == ConfigManager::msg_sensor()){
             //qDebug()<<"NetworkManager:: on sensor msg";
             int ID = int(data[0]);
             data.remove(0,1);
             emit sensorMsg(ID, data);
+        }else if(topic == 5){
+            int ID = int(data[0]);
+            data.remove(0,1);
+            emit controlMsg(ID,data);
         }
         const QString content = QLatin1String(" Received Topic: ")
                     + QChar(topic)
-                                + QLatin1String(" Message: ") + data;
+                                + QLatin1String(" Message: ") + QString::number(data.size());
         //qDebug() << content;
     }
 }

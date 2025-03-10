@@ -27,7 +27,7 @@ public:
     static const QString msg_command() { return "COMMAND";}
     static const QString msg_quit() { return "QUIT";}
     static const QString msg_sensor() { return "SENSOR"; }
-    static const QString msg_control() { return "CONTROL";}
+    static const uint8_t msg_control;
 
 
 signals:
@@ -36,6 +36,7 @@ protected:
     void readMessageTypes();
     void readVideoFormatTypes();
     void readControlTypes();
+    void readArray();
 private:
     QXmlStreamReader reader;
     QStandardItemModel* s;

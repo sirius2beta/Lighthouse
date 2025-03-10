@@ -24,6 +24,7 @@ public:
 
     DNValue(QVariant _rawValue, DNMetaData::ValueType_t type, QObject *parent = nullptr);
     DNValue(const DNValue& other, QObject *parent = nullptr);
+    DNValue(const DNValue* other, QObject *parent = nullptr);
     const DNValue& operator = (const DNValue& other);
     QVariant data() { return _rawValue; }
     QByteArray bytesData();

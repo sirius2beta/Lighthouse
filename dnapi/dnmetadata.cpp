@@ -33,6 +33,8 @@ DNMetaData::ValueType_t DNMetaData::intToType(int i)
         dataType = DNMetaData::valueTypeFloat;
     }else if(i == 10){
         dataType = DNMetaData::valueTypeBool;
+    }else if(i == 11){
+        dataType = DNMetaData::valueTypeArray;
     }
     return dataType;
 }
@@ -62,6 +64,8 @@ DNMetaData::ValueType_t DNMetaData::stringToType(QString s)
         dataType = DNMetaData::valueTypeFloat;
     }else if(s == "bool"){
         dataType = DNMetaData::valueTypeBool;
+    }else if(s == "array"){
+        dataType = DNMetaData::valueTypeArray;
     }
     return dataType;
 }

@@ -19,6 +19,7 @@ public:
         valueTypeFloat,
         valueTypeDouble,
         valueTypeBool,
+        valueTypeArray
     } ValueType_t;
     explicit DNMetaData(QObject *parent = nullptr);
     static ValueType_t intToType(int i);

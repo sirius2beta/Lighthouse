@@ -24,16 +24,18 @@ public:
     int controlType() { return _controlType;}
     int boatID() {  return _boatID;}
     void setBoatID(int boatID) { _boatID = boatID;}
+    void setControlType(int type) {_controlType = type;}
+    virtual void processMsg(QByteArray command){}
 
 
 signals:
     void sendMsgbyID(int boatID, uint8_t topic, QByteArray command);
-
 private:
     QString _name;
-    int _controlType;
+
     QVector<DNValue*> _fields;
     int _boatID;
+    int _controlType;
 
 };
 

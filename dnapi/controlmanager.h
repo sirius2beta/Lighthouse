@@ -23,10 +23,11 @@ public:
     DNQmlObjectListModel* controls() { return &_controls;}
 
     Q_INVOKABLE ControlItem* getDevice(int index);
+    void onControlMsg(int boatID, QByteArray command);
 signals:
     void sendMsg(int boatID, char topic, QByteArray command);
-protected slots:
-    void onMsg(QByteArray command);
+
+
 private:
     DNCore* _core;
     int _boatID;

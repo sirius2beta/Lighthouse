@@ -17,6 +17,7 @@
         <file alias="DeNovoViewer/Display/CenterVideoView.qml">ui/CenterVideoView.qml</file>
         <file alias="DeNovoViewer/Display/DNFlyView.qml">ui/DNFlyView.qml</file>
         <file alias="DeNovoViewer/Display/WinchControl.qml">ui/WinchControl.qml</file>
+        <file alias="DeNovoViewer/Display/QuickTab.qml">ui/QuickTab.qml</file>
     </qresource>
     <qresource prefix="/res">
         <file alias="boatManager.png">res/boatManager.png</file>
