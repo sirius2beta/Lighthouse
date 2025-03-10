@@ -48,8 +48,8 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: _title.bottom
-            height:150
-            anchors.margins: 10
+            anchors.bottom: buttonRow.top
+            anchors.margins: 2
             model: DeNovoViewer.boatManager.boatListModel
             spacing: 3
             delegate: Component{
@@ -152,7 +152,12 @@ Item {
             focus: true
         }
         Row{
+            id: buttonRow
+
             anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+
             Button{
 
                 height:40
@@ -176,6 +181,7 @@ Item {
             }
         }
     }
+
 }
 
 

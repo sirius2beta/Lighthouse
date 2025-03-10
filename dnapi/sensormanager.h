@@ -22,7 +22,8 @@ public:
     Q_PROPERTY(DNQmlObjectListModel* battery0Model READ battery0Model CONSTANT)
     Q_PROPERTY(DNQmlObjectListModel* mav0Model READ mav0Model CONSTANT)
     Q_PROPERTY(DNQmlObjectListModel* mav1Model READ mav1Model CONSTANT)
-    Q_PROPERTY(DNQmlObjectListModel* detection READ detection CONSTANT)
+    Q_PROPERTY(DNQmlObjectListModel* kbestModel READ kbestModel CONSTANT)
+    Q_PROPERTY(DNQmlObjectListModel* ardusimpleModel READ ardusimpleModel CONSTANT)
     explicit SensorManager(QObject *parent = nullptr, DNCore *core = nullptr);
     void init();
     int count() { return _sensorGroupListModel.size(); }
@@ -31,8 +32,8 @@ public:
     DNQmlObjectListModel* battery0Model(void){return _sensorGroupListModel[2]; }
     DNQmlObjectListModel* mav0Model(void){return _sensorGroupListModel[3]; }
     DNQmlObjectListModel* mav1Model(void){return _sensorGroupListModel[4];}
-    DNQmlObjectListModel* detection(void){return _sensorGroupListModel[5];}
-
+    DNQmlObjectListModel* kbestModel(void){return _sensorGroupListModel[5];}
+    DNQmlObjectListModel* ardusimpleModel(void){return _sensorGroupListModel[6];}
     Q_INVOKABLE DNQmlObjectListModel* getSensorModel(int index);
 
     enum dataType{ int_type = 0, float_type = 1};

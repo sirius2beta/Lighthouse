@@ -82,7 +82,7 @@ Item {
             }
         }
 
-
+/*
         Repeater{
             model:10
             Rectangle{
@@ -169,8 +169,11 @@ Item {
                     text: Math.round(parseInt(DeNovoViewer.sensorManager.detection.get(index*6+5).displayValue/100))/10+" m"
                     font.pixelSize: 16
                 }
+
             }
+
         }
+        */
 
 
         Rectangle{

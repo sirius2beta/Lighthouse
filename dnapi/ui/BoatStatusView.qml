@@ -155,22 +155,24 @@ Item {
 
                 font.family: "Segoe UI"
                 font.pixelSize: 20
-                text:" BoatStatus"
+                text:" SensorValue"
 
                 color:"white"
             }
         }
-        RowLayout{
+        ScrollView{
             anchors.top: _title.bottom
-            anchors.left: parent.left
             anchors.right: parent.right
+            anchors.left: parent.left
             anchors.bottom: parent.bottom
-            anchors.margins: 15
+            contentHeight: 1000
             clip: true
 
+
+
             Item {
-                Layout.preferredWidth: 150
-                Layout.preferredHeight: parent.height
+                anchors.fill: parent
+
                 ColumnLayout{
                     anchors.fill: parent
                     Text {
@@ -213,12 +215,64 @@ Item {
                     ListView{
                         spacing: 2
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 60
+                        Layout.preferredHeight: 90
                         id: _battery0ListView
                         clip: true
                         model: DeNovoViewer.sensorManager.battery0Model
                         delegate: sensorDelegate2
 
+                    }
+                    Text {
+                        topPadding: 0
+                        text: "KBest"
+
+                        Layout.preferredHeight: 10
+                        font.family: "Segoe UI"
+                        font.pixelSize: 16
+                        color:"#eeeeee"
+                    }
+                    ToolSeparator {
+                        orientation: Qt.Horizontal
+                        Layout.fillWidth: true
+                        bottomPadding: 0
+                    }
+                    ListView{
+                        spacing: 2
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 90
+                        id: _KbestView
+                        clip: true
+                        model: DeNovoViewer.sensorManager.kbestModel
+                        delegate: sensorDelegate2
+
+                    }
+                    Text {
+                        topPadding: 0
+                        text: "ARDUSIMPLE"
+
+                        Layout.preferredHeight: 10
+                        font.family: "Segoe UI"
+                        font.pixelSize: 16
+                        color:"#eeeeee"
+                    }
+                    ToolSeparator {
+                        orientation: Qt.Horizontal
+                        Layout.fillWidth: true
+                        bottomPadding: 0
+                    }
+                    ListView{
+                        spacing: 2
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 110
+                        id: _gpsModelView
+                        clip: true
+                        model: DeNovoViewer.sensorManager.ardusimpleModel
+                        delegate: sensorDelegate2
+
+                    }
+                    Item{
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
                     }
                 }
 
@@ -228,11 +282,8 @@ Item {
 
 
 
-            Item{
-                Layout.fillWidth: true
-            }
-        }
 
+        }
 
 
     }
