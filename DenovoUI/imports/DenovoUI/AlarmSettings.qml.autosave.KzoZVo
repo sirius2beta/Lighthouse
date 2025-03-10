@@ -1,0 +1,63 @@
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+
+Item {
+    width: 200
+    height: 300
+
+    TextEdit {
+        id: textEdit
+        x: 19
+        y: 60
+        width: 80
+        height: 20
+        text: qsTr("Text Edit")
+        font.pixelSize: 12
+    }
+
+    Button {
+        id: button
+        x: 109
+        y: 244
+        text: qsTr("Button")
+        font.family: Constants.font
+    }
+
+
+
+    Column {
+        id: column
+        anchors.fill: parent
+        anchors.margins: 15
+        Row {
+            id: row
+            width:parent.width
+            height: 50
+            Text{
+                color: "#ffffff"
+                text: "Lower Limit"
+                font.family: Constants.font
+                font.pixelSize: 18
+            }
+            Rectangle{
+                width: 60
+                height: 30
+                color: "#000000"
+                TextInput {
+                    id: textInput
+                    anchors.fill: parent
+                    color: "#ffffff"
+                    text: qsTr("16")
+                    font.family: Constants.font
+                    font.pixelSize: 16
+                    horizontalAlignment: Text.AlignRight
+
+                }
+            }
+
+
+        }
+    }
+
+
+}

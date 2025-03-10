@@ -1,0 +1,39 @@
+﻿<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>main2.qml</file>
+    </qresource>
+    <qresource prefix="/qml">
+        <file alias="DeNovoViewer/Display/qmldir">ui/DeNovoViewer/Display/qmldir</file>
+        <file alias="DeNovoViewer/Display/DNVideoView.qml">ui/DNVideoView.qml</file>
+        <file alias="DeNovoViewer/Display/SubVideoView.qml">ui/SubVideoView.qml</file>
+        <file alias="DeNovoViewer/Display/BoatManagerUI.qml">ui/BoatManagerUI.qml</file>
+        <file alias="DeNovoViewer/Display/AquaUI.qml">ui/AquaUI.qml</file>
+        <file alias="DeNovoViewer/Display/BoatStatusView.qml">ui/BoatStatusView.qml</file>
+        <file alias="DeNovoViewer/Display/DNPopup.qml">ui/DNPopup.qml</file>
+        <file alias="DeNovoViewer/Display/EditBoatDialog.qml">ui/EditBoatDialog.qml</file>
+        <file alias="DeNovoViewer/Display/PipView.qml">ui/PipView.qml</file>
+        <file alias="DeNovoViewer/Display/PipState.qml">ui/PipState.qml</file>
+        <file alias="DeNovoViewer/Display/CenterVideoView.qml">ui/CenterVideoView.qml</file>
+        <file alias="DeNovoViewer/Display/DNFlyView.qml">ui/DNFlyView.qml</file>
+        <file alias="DeNovoViewer/Display/WinchControl.qml">ui/WinchControl.qml</file>
+    </qresource>
+    <qresource prefix="/res">
+        <file alias="boatManager.png">res/boatManager.png</file>
+        <file alias="controlManager.png">res/controlManager.png</file>
+        <file alias="sensorManager.png">res/sensorManager.png</file>
+        <file alias="ecov4.png">res/ecov4.png</file>
+        <file alias="topview.png">res/topview.png</file>
+        <file alias="videoMiddleIndicater.png">res/videoMiddleIndicater.png</file>
+        <file alias="SensorType.xml">res/SensorType.xml</file>
+        <file alias="headingBox.png">res/headingBox.png</file>
+        <file alias="home_pin.png">res/home_pin.png</file>
+        <file alias="navigation.png">res/navigation.png</file>
+    </qresource>
+    <qresource prefix="/qmlimages">
+        <file alias="pipResize.svg">res/pipResize.svg</file>
+        <file alias="pipHide.svg">res/pipHide.svg</file>
+        <file alias="PiP.svg">res/PiP.svg</file>
+        <file alias="buttonRight.svg">res/buttonRight.svg</file>
+    </qresource>
+</RCC>
