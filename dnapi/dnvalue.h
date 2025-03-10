@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QVariant>
+#include <QDebug>
 #include "dnmetadata.h"
 
 class DNValue : public QObject
@@ -29,11 +30,11 @@ public:
     QVariant data() { return _rawValue; }
     QByteArray bytesData();
     DNMetaData::ValueType_t dataType() { return _type; }
-    QString name(){ return QString("e"); }
+    QString name(){ return _name; }
     ~DNValue();
     static QVariant parseString(QString s, DNMetaData::ValueType_t type);
     void setValue(QVariant value) { _rawValue = value; }
-    void setValue(QString s) { _rawValue = parseString(s, _type);}
+    void setValue(QString s) {  _rawValue = parseString(s, _type);}
     void setName(QString s) { _name=s; }
 
 private:

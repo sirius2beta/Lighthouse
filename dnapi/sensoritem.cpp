@@ -17,6 +17,11 @@ SensorItem::SensorItem(const SensorItem& other, QObject *parent)
     *this = other;
 }
 
+SensorItem::SensorItem(const SensorItem* other, QObject *parent)
+{
+    *this = *other;
+}
+
 QString SensorItem::displayValue()
 {
     if(_value.dataType() == DNMetaData::valueTypeUint32){

@@ -10,16 +10,15 @@ WinchControl::WinchControl(QObject *parent, QString name, int controlType, QVect
 
 }
 
-void WinchControl::run(QString steps)
+void WinchControl::run(int steps)
 {
     QByteArray bt;
-    uint8_t commandType = 1;
-    uint8_t m_controlType = controlType();
-    int32_t m_steps = steps.toInt();
+    uint8_t commandType = 6;
+
     bt.append(boatID());
-    bt.append(m_controlType);
+    bt.append(controlType());
     bt.append(commandType);
-    bt.append((const char*)&m_steps, sizeof(int32_t));
+    bt.append(DNValue(steps).bytesData());
 
     // message type use raw
     emit sendMsgbyID(boatID(), 5, bt);
@@ -29,16 +28,14 @@ void WinchControl::run(QString steps)
 void WinchControl::stop()
 {
     QByteArray bt;
-    uint8_t commandType = 2;
-    uint8_t m_controlType = controlType();
+    uint8_t commandType = 7;
+
     bt.append(boatID());
-    bt.append(m_controlType);
+    bt.append(controlType());
     bt.append(commandType);
 
     // message type use raw
     emit sendMsgbyID(boatID(), 5, bt);
-    //qDebug()<<"ControlItem::stop winch";
-    //qDebug()<<bt;
 
 }
 
@@ -51,17 +48,43 @@ void WinchControl::init(ControlItem* controlItem)
 void WinchControl::setMaxSpeed(int s)
 {
     _maxSpeed = s;
+    setField(0,QString::number(s));
     emit maxSpeedChanged(s);
 }
 
 void WinchControl::setAcceleration(int a)
 {
     _acceleration = a;
+    setField(1,QString::number(a));
     emit accelerationChanged(a);
 }
 
 void WinchControl::setSteps(int s)
 {
     _steps = s;
+    //setField(2,QString::number(s));
+    //run(s);
     emit stepsChanged(s);
+}
+
+void WinchControl::setStatus(uint8_t s)
+{
+    _status = s;
+    emit statusChanged(s);
+}
+
+void WinchControl::processMsg(QByteArray command)
+{
+    qDebug()<<"WinchControl::processMsg"<<command.size();
+    uint8_t action;
+    int32_t step;
+    int32_t tension;
+    uint8_t status;
+    memcpy(&action, command.data(), sizeof(uint8_t));
+    memcpy(&step, command.data()+1, sizeof(int32_t));
+    memcpy(&tension, command.data()+5, sizeof(int32_t));
+    memcpy(&status, command.data()+9, sizeof(uint8_t));
+    setSteps(step);
+    setStatus(status);
+    qDebug()<<"step:"<<step<<"tension"<<tension<<"status"<<status;
 }
