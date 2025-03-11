@@ -35,6 +35,7 @@ void NetworkManager::sendMsgbyID(int boatID, uint8_t topic, QByteArray command)
     BoatItem* boat = _core->boatManager()->getBoatbyID(boatID);
     if(boat != 0){
         qDebug()<<"sd";
+        command.prepend(boatID);
         sendMsg(QHostAddress(boat->currentIP()), topic, command);
     }else{
         qDebug()<<"\u001b[38;5;203m"<<"**Fatal error: NetworkManager::sendMsgbyID boatID outof range"<<"\033[0m";

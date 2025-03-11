@@ -7,7 +7,6 @@ WinchControl::WinchControl(QObject *parent, QString name, int controlType, QVect
   _acceleration(1000),
   _steps(0)
 {
-
 }
 
 void WinchControl::run(int steps)
@@ -15,7 +14,7 @@ void WinchControl::run(int steps)
     QByteArray bt;
     uint8_t commandType = 6;
 
-    bt.append(boatID());
+    //bt.append(boatID());
     bt.append(controlType());
     bt.append(commandType);
     bt.append(DNValue(steps).bytesData());
@@ -30,13 +29,25 @@ void WinchControl::stop()
     QByteArray bt;
     uint8_t commandType = 7;
 
-    bt.append(boatID());
+    //bt.append(boatID());
     bt.append(controlType());
     bt.append(commandType);
 
     // message type use raw
     emit sendMsgbyID(boatID(), 5, bt);
 
+}
+
+void WinchControl::reset()
+{
+    QByteArray bt;
+    uint8_t commandType = 9;
+    //bt.append(boatID());
+    bt.append(controlType());
+    bt.append(commandType);
+
+    // message type use raw
+    emit sendMsgbyID(boatID(), 5, bt);
 }
 
 void WinchControl::init(ControlItem* controlItem)

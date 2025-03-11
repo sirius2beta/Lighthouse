@@ -17,6 +17,7 @@ public:
     void init(ControlItem* controlItem);
     Q_INVOKABLE void run(int steps);
     Q_INVOKABLE void stop();
+    Q_INVOKABLE void reset();
     int maxSpeed() { return _maxSpeed;}
     int acceleration() { return _acceleration;}
     int steps() { return _steps;}

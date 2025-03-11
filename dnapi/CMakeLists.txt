@@ -38,6 +38,8 @@ qt_add_library(dnapi STATIC
     sensoritem.h
     sensormanager.cpp
     sensormanager.h
+    sonarcontrol.cpp
+    sonarcontrol.h
     videoitem.cpp
     videoitem.h
     winchcontrol.cpp

@@ -1,7 +1,7 @@
 ﻿#include <QQmlEngine>
 #include "controlmanager.h"
 #include "dncore.h"
-#include "dncontrol.h"
+#include "sonarcontrol.h"
 #include "winchcontrol.h"
 #include "qdebug.h"
 #include "dncore.h"
@@ -27,6 +27,9 @@ void ControlManager::init()
             winchControl->setBoatID(0);
             connect(winchControl, &ControlItem::sendMsgbyID, _core->networkManager(), &NetworkManager::sendMsgbyID);
             _controls.append(winchControl);
+        }else if(controls[i].controlType() == 2){
+            SonarControl* sonarControl = new SonarControl(this);
+            _controls.append(sonarControl);
         }
     }
     qDebug()<<" ... done";

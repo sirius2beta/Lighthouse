@@ -37,8 +37,6 @@ void ControlItem::run()
 // 請求networkmanager傳送訊息
 void ControlItem::setField(int index, QString value)
 {
-
-    float a = 10;
     if(index >= _fields.size()){
         qDebug()<<"\u001b[38;5;203m"<<"**Fatal error: ControlItem::setField index outof range"<<"\033[0m";
     }else{
@@ -49,17 +47,19 @@ void ControlItem::setField(int index, QString value)
     }
     uint8_t boatID = _boatID;
     uint8_t controlType = _controlType;
-    uint8_t position = 255;
-    uint8_t m_index = index;
+    uint8_t commandType = 3;
+
     QByteArray bt;
-    bt.append(boatID);
+    //bt.append(boatID);
     bt.append(controlType);
-    bt.append(position);
-    bt.append(m_index);
+    bt.append(commandType);
+    bt.append(index);
     bt.append(_fields[index]->bytesData());
     // message type use raw
     qDebug()<< bt;
     emit sendMsgbyID(_boatID, 5, bt);
+
+
 }
 
 DNValue* ControlItem::getField(int index)
