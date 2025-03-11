@@ -1,0 +1,119 @@
+{
+    "classes": [
+        {
+            "className": "DNQmlGlobal",
+            "lineNumber": 13,
+            "methods": [
+                {
+                    "access": "public",
+                    "index": 0,
+                    "name": "programName",
+                    "returnType": "QString"
+                }
+            ],
+            "object": true,
+            "properties": [
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 0,
+                    "name": "programName",
+                    "read": "programName",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "QString",
+                    "user": false
+                },
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 1,
+                    "name": "networkManager",
+                    "read": "networkManager",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "NetworkManager*",
+                    "user": false
+                },
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 2,
+                    "name": "boatManager",
+                    "read": "boatManager",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "BoatManager*",
+                    "user": false
+                },
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 3,
+                    "name": "videoManager",
+                    "read": "videoManager",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "DNVideoManager*",
+                    "user": false
+                },
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 4,
+                    "name": "sensorManager",
+                    "read": "sensorManager",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "SensorManager*",
+                    "user": false
+                },
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 5,
+                    "name": "controlManager",
+                    "read": "controlManager",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "ControlManager*",
+                    "user": false
+                },
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 6,
+                    "name": "boatListmodel",
+                    "read": "boatListmodel",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "int",
+                    "user": false
+                }
+            ],
+            "qualifiedClassName": "DNQmlGlobal",
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QObject"
+                }
+            ]
+        }
+    ],
+    "inputFile": "dnqmlglobal.h",
+    "outputRevision": 68
+}

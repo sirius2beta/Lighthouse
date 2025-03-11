@@ -1,0 +1,297 @@
+{
+	"AUTOGEN_COMMAND_LINE_LENGTH_MAX" : 32000,
+	"BUILD_DIR" : "C:/Project/New_repo/Lighthouse/build/Desktop_Qt_6_8_2_MSVC2022_64bit-Debug/dnapi/dnapi_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Project/New_repo/Lighthouse/build/Desktop_Qt_6_8_2_MSVC2022_64bit-Debug",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Project/New_repo/Lighthouse/build/Desktop_Qt_6_8_2_MSVC2022_64bit-Debug/dnapi",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Project/New_repo/Lighthouse/dnapi",
+	"CMAKE_EXECUTABLE" : "C:/Qt/Tools/CMake_64/bin/cmake.exe",
+	"CMAKE_LIST_FILES" : 
+	[
+		"C:/Project/New_repo/Lighthouse/dnapi/CMakeLists.txt",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/Qt6ConfigVersion.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/Qt6ConfigVersionImpl.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/Qt6Config.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/Qt6ConfigExtras.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicCMakeVersionHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicCMakeHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtInstallPaths.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/Qt6Targets.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/Qt6VersionlessAliasTargets.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtFeature.cmake",
+		"C:/Qt/Tools/CMake_64/share/cmake-3.29/Modules/CheckCXXCompilerFlag.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtFeatureCommon.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicAppleHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicCMakeHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicCMakeVersionHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicDependencyHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicExternalProjectHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicFinalizerHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicFindPackageHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicGitHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicPluginHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicSbomAttributionHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicSbomCpeHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicSbomDepHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicSbomFileHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicSbomGenerationHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicSbomHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicSbomLicenseHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicSbomOpsHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicSbomPurlHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicSbomPythonHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicSbomSystemDepHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicTargetHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicTestHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicToolHelpers.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/QtPublicWalkLibsHelpers.cmake",
+		"C:/Qt/Tools/CMake_64/share/cmake-3.29/Modules/CMakeFindDependencyMacro.cmake",
+		"C:/Qt/6.8.2/msvc2022_64/lib/cmake/Qt6/Qt6Dependencies.cmake"
+	],
+	"CMAKE_SOURCE_DIR" : "C:/Project/New_repo/Lighthouse",
+	"CROSS_CONFIG" : false,
+	"DEP_FILE" : "C:/Project/New_repo/Lighthouse/build/Desktop_Qt_6_8_2_MSVC2022_64bit-Debug/dnapi/dnapi_autogen/deps",
+	"DEP_FILE_RULE_NAME" : "dnapi_autogen/timestamp",
+	"HEADERS" : 
+	[
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/boatitem.h",
+			"MU",
+			"EWIEGA46WW/moc_boatitem.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/boatmanager.h",
+			"MU",
+			"EWIEGA46WW/moc_boatmanager.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/configmanager.h",
+			"MU",
+			"EWIEGA46WW/moc_configmanager.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/controlitem.h",
+			"MU",
+			"EWIEGA46WW/moc_controlitem.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/controlmanager.h",
+			"MU",
+			"EWIEGA46WW/moc_controlmanager.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/device.h",
+			"MU",
+			"EWIEGA46WW/moc_device.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/dncontrol.h",
+			"MU",
+			"EWIEGA46WW/moc_dncontrol.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/dncore.h",
+			"MU",
+			"EWIEGA46WW/moc_dncore.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/dnmetadata.h",
+			"MU",
+			"EWIEGA46WW/moc_dnmetadata.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/dnqmlglobal.h",
+			"MU",
+			"EWIEGA46WW/moc_dnqmlglobal.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/dnqmlobjectlistmodel.h",
+			"MU",
+			"EWIEGA46WW/moc_dnqmlobjectlistmodel.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/dnvalue.h",
+			"MU",
+			"EWIEGA46WW/moc_dnvalue.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/dnvideomanager.h",
+			"MU",
+			"EWIEGA46WW/moc_dnvideomanager.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/heartbeat.h",
+			"MU",
+			"EWIEGA46WW/moc_heartbeat.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/networkmanager.h",
+			"MU",
+			"EWIEGA46WW/moc_networkmanager.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/sensorgroup.h",
+			"MU",
+			"EWIEGA46WW/moc_sensorgroup.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/sensoritem.h",
+			"MU",
+			"EWIEGA46WW/moc_sensoritem.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/sensormanager.h",
+			"MU",
+			"EWIEGA46WW/moc_sensormanager.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/sonarcontrol.h",
+			"MU",
+			"EWIEGA46WW/moc_sonarcontrol.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/videoitem.h",
+			"MU",
+			"EWIEGA46WW/moc_videoitem.cpp",
+			null
+		],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/winchcontrol.h",
+			"MU",
+			"EWIEGA46WW/moc_winchcontrol.cpp",
+			null
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "C:/Project/New_repo/Lighthouse/build/Desktop_Qt_6_8_2_MSVC2022_64bit-Debug/dnapi/dnapi_autogen/include",
+	"MOC_COMPILATION_FILE" : "C:/Project/New_repo/Lighthouse/build/Desktop_Qt_6_8_2_MSVC2022_64bit-Debug/dnapi/dnapi_autogen/mocs_compilation.cpp",
+	"MOC_DEFINITIONS" : 
+	[
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_NETWORK_LIB",
+		"QT_OPENGL_LIB",
+		"QT_QMLINTEGRATION_LIB",
+		"QT_QMLMETA_LIB",
+		"QT_QMLMODELS_LIB",
+		"QT_QMLWORKERSCRIPT_LIB",
+		"QT_QML_LIB",
+		"QT_QUICK_LIB",
+		"QT_WIDGETS_LIB",
+		"UNICODE",
+		"WIN32",
+		"WIN64",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_UNICODE",
+		"_WIN64"
+	],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"C:/Project/New_repo/Lighthouse/dnapi",
+		"C:/Project/New_repo/Lighthouse",
+		"C:/Project/New_repo/Lighthouse/build/Desktop_Qt_6_8_2_MSVC2022_64bit-Debug/_deps/gstreamer_good_plugins-src/ext/qt6",
+		"C:/Qt/6.8.2/msvc2022_64/include/QtQml",
+		"C:/Qt/6.8.2/msvc2022_64/include",
+		"C:/Qt/6.8.2/msvc2022_64/include/QtCore",
+		"C:/Qt/6.8.2/msvc2022_64/mkspecs/win32-msvc",
+		"C:/Qt/6.8.2/msvc2022_64/include/QtQmlIntegration",
+		"C:/Qt/6.8.2/msvc2022_64/include/QtNetwork",
+		"C:/Qt/6.8.2/msvc2022_64/include/QtWidgets",
+		"C:/Qt/6.8.2/msvc2022_64/include/QtGui",
+		"C:/Qt/6.8.2/msvc2022_64/include/QtQuick",
+		"C:/Qt/6.8.2/msvc2022_64/include/QtQmlMeta",
+		"C:/Qt/6.8.2/msvc2022_64/include/QtQmlModels",
+		"C:/Qt/6.8.2/msvc2022_64/include/QtQmlWorkerScript",
+		"C:/Qt/6.8.2/msvc2022_64/include/QtOpenGL",
+		"C:/gstreamer/1.0/msvc_x86_64/include/gstreamer-1.0",
+		"C:/gstreamer/1.0/msvc_x86_64/include",
+		"C:/gstreamer/1.0/msvc_x86_64/include/glib-2.0",
+		"C:/gstreamer/1.0/msvc_x86_64/lib/glib-2.0/include",
+		"C:/gstreamer/1.0/msvc_x86_64/include/orc-0.4",
+		"C:/gstreamer/1.0/msvc_x86_64/lib/gstreamer-1.0/include",
+		"C:/gstreamer/1.0/msvc_x86_64/include/graphene-1.0",
+		"C:/gstreamer/1.0/msvc_x86_64/lib/graphene-1.0/include"
+	],
+	"MOC_MACRO_NAMES" : 
+	[
+		"Q_OBJECT",
+		"Q_GADGET",
+		"Q_NAMESPACE",
+		"Q_NAMESPACE_EXPORT",
+		"Q_GADGET_EXPORT",
+		"Q_ENUM_NS"
+	],
+	"MOC_OPTIONS" : [ "--output-json" ],
+	"MOC_PATH_PREFIX" : false,
+	"MOC_PREDEFS_CMD" : [],
+	"MOC_PREDEFS_FILE" : "",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : [],
+	"MULTI_CONFIG" : false,
+	"PARALLEL" : 10,
+	"PARSE_CACHE_FILE" : "C:/Project/New_repo/Lighthouse/build/Desktop_Qt_6_8_2_MSVC2022_64bit-Debug/dnapi/CMakeFiles/dnapi_autogen.dir/ParseCache.txt",
+	"QT_MOC_EXECUTABLE" : "C:/Qt/6.8.2/msvc2022_64/bin/moc.exe",
+	"QT_UIC_EXECUTABLE" : "C:/Qt/6.8.2/msvc2022_64/bin/uic.exe",
+	"QT_VERSION_MAJOR" : 6,
+	"QT_VERSION_MINOR" : 8,
+	"SETTINGS_FILE" : "C:/Project/New_repo/Lighthouse/build/Desktop_Qt_6_8_2_MSVC2022_64bit-Debug/dnapi/CMakeFiles/dnapi_autogen.dir/AutogenUsed.txt",
+	"SOURCES" : 
+	[
+		[ "C:/Project/New_repo/Lighthouse/dnapi/boatitem.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/boatmanager.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/configmanager.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/controlitem.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/controlmanager.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/device.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/dncontrol.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/dncore.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/dnmetadata.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/dnqmlglobal.cpp", "MU", null ],
+		[
+			"C:/Project/New_repo/Lighthouse/dnapi/dnqmlobjectlistmodel.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/dnvalue.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/dnvideomanager.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/heartbeat.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/networkmanager.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/sensorgroup.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/sensoritem.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/sensormanager.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/sonarcontrol.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/videoitem.cpp", "MU", null ],
+		[ "C:/Project/New_repo/Lighthouse/dnapi/winchcontrol.cpp", "MU", null ]
+	],
+	"UIC_OPTIONS" : [],
+	"UIC_SEARCH_PATHS" : [],
+	"UIC_SKIP" : [],
+	"UIC_UI_FILES" : [],
+	"USE_BETTER_GRAPH" : true,
+	"VERBOSITY" : 0
+}

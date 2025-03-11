@@ -169,12 +169,10 @@ Item {
                     text: Math.round(parseInt(DeNovoViewer.sensorManager.detection.get(index*6+5).displayValue/100))/10+" m"
                     font.pixelSize: 16
                 }
-
             }
-
         }
-        */
 
+*/
 
         Rectangle{
             id: _toggle
@@ -185,7 +183,7 @@ Item {
             width:100
             radius:8
             color: "#333333"
-            visible: isFull
+            visible: false
             Rectangle{
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
@@ -217,7 +215,7 @@ Item {
             anchors.right: parent.right
             height:0
             color: "#333333"
-            visible: isFull
+            visible: false
             clip: true
             Button{
                 id: _playButton

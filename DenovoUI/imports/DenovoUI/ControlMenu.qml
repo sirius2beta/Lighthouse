@@ -7,7 +7,7 @@ import QtMultimedia 5.7
 Item {
     id: root
     width: 300
-    height: 350
+    height: 400
     /*
     Audio {
               id: playSound
@@ -42,16 +42,15 @@ Item {
                         onClicked: {
 
                             swipeView.currentIndex = 1
-                            playSound.play()
+                            loader.source = "WinchControl.qml"
                         }
                     }
                     MenuButton{
                         imgsrc: "images/videocam.png"
                         text: "Video"
                         onClicked: {
-
-                            swipeView.currentIndex = 2
                             playSound.play()
+                            loader.source = "VideoControl.qml"
                         }
                     }
                 }
@@ -62,7 +61,7 @@ Item {
                         text: "Pump"
                         onClicked: {
                             playSound.play()
-                            swipeView.currentIndex = 3
+                            loader.source = "PumpControl.qml"
                         }
 
                     }
@@ -71,29 +70,34 @@ Item {
                         text: "Check"
                         onClicked: {
                             playSound.play()
-                            swipeView.currentIndex = 4
+                            loader.source = "CheckList.qml"
                         }
 
                     }
+                }
+                Row{
+                    spacing: 20
+                    MenuButton{
+                        imgsrc: "images/tune.png"
+                        text: "Device"
+                        onClicked: {
+                            playSound.play()
+                            loader.source = "DeviceControl.qml"
+                        }
+
+                    }
+
                 }
 
             }
 
         }
-        WinchControl{
-            onHomePage: swipeView.currentIndex = 0
-        }
-        VideoControl{
-            onHomePage: swipeView.currentIndex = 0
-        }
-        PumpControl{
-            onHomePage: swipeView.currentIndex = 0
-        }
-        CheckList{
-            onHomePage: swipeView.currentIndex = 0
-        }
 
 
+    }
+    Loader{
+        id: loader
+        anchors.fill: parent
     }
 
     Component.onCompleted: {

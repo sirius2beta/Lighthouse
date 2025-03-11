@@ -1,0 +1,161 @@
+{
+    "classes": [
+        {
+            "className": "SensorManager",
+            "lineNumber": 15,
+            "methods": [
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "index",
+                            "type": "int"
+                        }
+                    ],
+                    "index": 2,
+                    "name": "getSensorModel",
+                    "returnType": "DNQmlObjectListModel*"
+                }
+            ],
+            "object": true,
+            "properties": [
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 0,
+                    "name": "aquaModel",
+                    "read": "aquaModel",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "DNQmlObjectListModel*",
+                    "user": false
+                },
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 1,
+                    "name": "cabinModel",
+                    "read": "cabinModel",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "DNQmlObjectListModel*",
+                    "user": false
+                },
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 2,
+                    "name": "battery0Model",
+                    "read": "battery0Model",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "DNQmlObjectListModel*",
+                    "user": false
+                },
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 3,
+                    "name": "mav0Model",
+                    "read": "mav0Model",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "DNQmlObjectListModel*",
+                    "user": false
+                },
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 4,
+                    "name": "mav1Model",
+                    "read": "mav1Model",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "DNQmlObjectListModel*",
+                    "user": false
+                },
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 5,
+                    "name": "kbestModel",
+                    "read": "kbestModel",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "DNQmlObjectListModel*",
+                    "user": false
+                },
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 6,
+                    "name": "ardusimpleModel",
+                    "read": "ardusimpleModel",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "DNQmlObjectListModel*",
+                    "user": false
+                }
+            ],
+            "qualifiedClassName": "SensorManager",
+            "signals": [
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "ID",
+                            "type": "int"
+                        },
+                        {
+                            "name": "value",
+                            "type": "DNValue&"
+                        }
+                    ],
+                    "index": 0,
+                    "name": "sensorDataChanged",
+                    "returnType": "void"
+                }
+            ],
+            "slots": [
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "ID",
+                            "type": "int"
+                        },
+                        {
+                            "name": "data",
+                            "type": "QByteArray"
+                        }
+                    ],
+                    "index": 1,
+                    "name": "onSensorMsg",
+                    "returnType": "void"
+                }
+            ],
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QObject"
+                }
+            ]
+        }
+    ],
+    "inputFile": "sensormanager.h",
+    "outputRevision": 68
+}

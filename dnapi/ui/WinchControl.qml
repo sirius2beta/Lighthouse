@@ -9,49 +9,7 @@ import DeNovoViewer.Boat 1.0
 Item {
     property ControlItem control: DeNovoViewer.controlManager.controls.get(0)
     property int length: 0
-    ListModel {  //not used
-        id: demoModel
-        ListElement {
-            name: "Temperature"
-            number: "26.45"
-            unit: "℃"
-        }
-        ListElement {
-            name: "Pressure"
-            number: "1.1"
-            unit: "psi"
-        }
-        ListElement {
-            name: "Density of water"
-            number: "1.05"
-            unit: "d"
-        }
-        ListElement {
-            name: "Specific conductivity"
-            number: "521.21"
-            unit: "%"
-        }
-        ListElement {
-            name: "Barometric pressure"
-            number: "101.22"
-            unit: "psi"
-        }
-        ListElement {
-            name: "Dissolved oxgen saturation"
-            number: "13.22"
-            unit: "%"
-        }
-        ListElement {
-            name: "Dissolved oxgen saturation"
-            number: "13.22"
-            unit: "%"
-        }
-        ListElement {
-            name: "Resistivity"
-            number: "45.23"
-            unit: "%"
-        }
-    }
+
 
     Layout.fillWidth: true
     Layout.fillHeight: true

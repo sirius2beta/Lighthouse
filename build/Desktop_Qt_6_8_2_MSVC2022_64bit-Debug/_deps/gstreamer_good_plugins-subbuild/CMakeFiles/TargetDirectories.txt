@@ -1,0 +1,3 @@
+C:/Project/New_repo/Lighthouse/build/Desktop_Qt_6_8_2_MSVC2022_64bit-Debug/_deps/gstreamer_good_plugins-subbuild/CMakeFiles/gstreamer_good_plugins-populate.dir
+C:/Project/New_repo/Lighthouse/build/Desktop_Qt_6_8_2_MSVC2022_64bit-Debug/_deps/gstreamer_good_plugins-subbuild/CMakeFiles/edit_cache.dir
+C:/Project/New_repo/Lighthouse/build/Desktop_Qt_6_8_2_MSVC2022_64bit-Debug/_deps/gstreamer_good_plugins-subbuild/CMakeFiles/rebuild_cache.dir

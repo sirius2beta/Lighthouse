@@ -15,6 +15,8 @@ Item {
         }
     }
     id: _root
+    height:300
+    width:300
     Layout.preferredWidth: 300
     Layout.fillHeight: true
     Layout.alignment: Qt.AlignLeft
@@ -25,6 +27,9 @@ Item {
         anchors.bottom: parent.bottom
         radius:5
         color: "#444444"
+        border.width:1
+        border.color:"#999999"
+        opacity: 100
         Rectangle{
             id: _title
             anchors.left: parent.left
@@ -33,6 +38,8 @@ Item {
             radius: 5
             height:35
             color: "#222222"
+            border.width:1
+            border.color:"#999999"
             Text{
 
                 font.family: "Segoe UI"

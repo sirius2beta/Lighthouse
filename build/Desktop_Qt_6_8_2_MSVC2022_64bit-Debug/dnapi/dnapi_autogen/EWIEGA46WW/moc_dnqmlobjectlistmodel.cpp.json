@@ -1,0 +1,103 @@
+{
+    "classes": [
+        {
+            "className": "DNQmlObjectListModel",
+            "lineNumber": 8,
+            "methods": [
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "index",
+                            "type": "int"
+                        }
+                    ],
+                    "index": 3,
+                    "name": "get",
+                    "returnType": "QObject*"
+                }
+            ],
+            "object": true,
+            "properties": [
+                {
+                    "constant": false,
+                    "designable": true,
+                    "final": false,
+                    "index": 0,
+                    "name": "count",
+                    "notify": "countChanged",
+                    "read": "count",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "int",
+                    "user": false
+                },
+                {
+                    "constant": false,
+                    "designable": true,
+                    "final": false,
+                    "index": 1,
+                    "name": "dirty",
+                    "notify": "dirtyChanged",
+                    "read": "dirty",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "bool",
+                    "user": false,
+                    "write": "setDirty"
+                }
+            ],
+            "qualifiedClassName": "DNQmlObjectListModel",
+            "signals": [
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "count",
+                            "type": "int"
+                        }
+                    ],
+                    "index": 0,
+                    "name": "countChanged",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "dirtyChanged",
+                            "type": "bool"
+                        }
+                    ],
+                    "index": 1,
+                    "name": "dirtyChanged",
+                    "returnType": "void"
+                }
+            ],
+            "slots": [
+                {
+                    "access": "private",
+                    "arguments": [
+                        {
+                            "name": "dirty",
+                            "type": "bool"
+                        }
+                    ],
+                    "index": 2,
+                    "name": "_childDirtyChanged",
+                    "returnType": "void"
+                }
+            ],
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QAbstractListModel"
+                }
+            ]
+        }
+    ],
+    "inputFile": "dnqmlobjectlistmodel.h",
+    "outputRevision": 68
+}

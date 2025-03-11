@@ -1,0 +1,33 @@
+{
+    "classes": [
+        {
+            "className": "DNValue",
+            "lineNumber": 9,
+            "object": true,
+            "properties": [
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 0,
+                    "name": "name",
+                    "read": "name",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "QString",
+                    "user": false
+                }
+            ],
+            "qualifiedClassName": "DNValue",
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QObject"
+                }
+            ]
+        }
+    ],
+    "inputFile": "dnvalue.h",
+    "outputRevision": 68
+}

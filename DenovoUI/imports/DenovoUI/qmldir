@@ -9,4 +9,6 @@ CentralView 1.0 CentralView.qml
 ControlView 1.0 ControlView.qml
 VideoView 1.0 VideoView.qml
 HUD 1.0 HUD.qml
+DNButton 1.0 DNButton.qml
+DNValueEdit 1.0 DNValueEdit.qml
 

@@ -1,0 +1,2 @@
+C:/Project/New_repo/Lighthouse/build/Desktop_Qt_6_8_2_MSVC2022_64bit-Debug/gstqml6gl/gstqml6gl_autogen/include/../2ZXRJ4PMCC/moc_gstqsg6glnode.cpp.json
+C:/Project/New_repo/Lighthouse/build/Desktop_Qt_6_8_2_MSVC2022_64bit-Debug/gstqml6gl/gstqml6gl_autogen/include/../2ZXRJ4PMCC/moc_qt6glitem.cpp.json

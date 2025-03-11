@@ -35,20 +35,21 @@ Window {
         anchors.bottom: statusBar.top
     }
 
-    StatusBar{
-        id: statusBar
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        height:20
 
-    }
 
     CentralView{
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: controlView.left
         anchors.bottom: statusBar.top
+    }
+    StatusBar{
+        id: statusBar
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        height:90
+
     }
 
 }

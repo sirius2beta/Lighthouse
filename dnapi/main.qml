@@ -15,6 +15,8 @@ import DenovoUI 1.0
 
 
 Window {
+    FontLoader { source: "font/Roboto-Black.ttf" }
+    FontLoader { source: "font/Roboto-Regular.ttf" }
     id: dnMainWindow
     width: 1280
     height: 720
@@ -28,7 +30,7 @@ Window {
     property real lon: parseFloat(DeNovoViewer.sensorManager.mav1Model.get(1).displayValue)/10000000
     property real lat: parseFloat(DeNovoViewer.sensorManager.mav1Model.get(2).displayValue)/10000000
 
-
+    property string version: "V3.1"
 
     Rectangle{
         color: "#111111"
@@ -38,15 +40,16 @@ Window {
 
     DNFlyView{
         id: _centerVideoView
-        anchors.bottom: _bottom.top
+        anchors.bottom: parent.bottom
         anchors.top: parent.top
-        anchors.left: _leftTool.right
+        anchors.left: parent.left
         anchors.right: _controlView.left
-        anchors.margins: 15
+        //anchors.margins: 15
 
 
 
     }
+    /*
     Rectangle{
         id: _leftTool
         anchors.left: parent.left
@@ -57,6 +60,7 @@ Window {
         ColumnLayout{
             anchors.fill:parent
             anchors.margins: 5
+
             Button {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 70
@@ -65,9 +69,27 @@ Window {
                     id: _boatManagerIcon
                     source: "res/boatManager.png"
                 }
+                onClicked: popup.open()
 
 
             }
+            Rectangle{
+                Layout.fillWidth: true
+                Layout.preferredHeight: 60
+                radius:5
+                color: "#074799"
+                Text{
+                    anchors.fill: parent
+                    text: version
+                    font.family: "Segoe UI"
+                    font.pixelSize: 20
+                    color:"white"
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+
+                }
+            }
+
             Image {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 80
@@ -79,34 +101,45 @@ Window {
                 Layout.fillHeight: true
             }
         }
+        Popup {
+                id: popup
+                x: 50
+                y: 10
+                width: 200
+                height: 50
+                modal: true
+                focus: true
+                closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
+                padding: 10
+                contentItem: Text {
+                    text: "Version 3.0.0"
+                    font.family: "Segoe UI"
+                    font.pixelSize: 20
+                    color:"white"
+                }
+        }
     }
-
-
-
-
-
-
-
+    */
 
     ControlView{
         id: _controlView
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.bottom: _bottom.top
+        anchors.bottom: parent.bottom
         width: 300
         totalBatteryPercentage: parseInt(DeNovoViewer.sensorManager.mav0Model.get(3).displayValue)
         totalBatteryVoltage: parseInt(DeNovoViewer.sensorManager.mav0Model.get(1).displayValue)
         totalBatteryCurrent: parseInt(DeNovoViewer.sensorManager.mav0Model.get(2).displayValue)
     }
-
+/*
     Rectangle{
         id: _bottom
-        anchors.left: _leftTool.right
+        anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.margins: 15
         radius: 10
-        height:parent.height/4
+        height:50
         color: "#25252a"
         clip: true;
         ScrollView{
@@ -116,6 +149,7 @@ Window {
                 anchors.margins:10
                 spacing: 10
                 implicitWidth: 500
+
                 BoatManagerUI{
                     id: _boatManager
                 }
@@ -232,6 +266,7 @@ Window {
                         Layout.fillWidth: true
                 }
             }
+
         }
 
 
@@ -240,15 +275,12 @@ Window {
 
 
     }
-    Popup {
-            id: popup
-            x: 100
-            y: 100
-            width: 200
-            height: 300
-            modal: true
-            focus: true
-            closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
+
+*/
+    QuickTab{
+        anchors.bottom:parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
     }
 
     Item {
@@ -261,7 +293,7 @@ Window {
     Component.onCompleted: {
         DeNovoViewer.controlManager.controls.get(0).setField(0,1000)
         dnvalue = DeNovoViewer.controlManager.controls.get(0).getField(0);
-        //console.log(parseInt(DeNovoViewer.sensorManager.mav1Model.get(1).displayValue))
+        console.log(DeNovoViewer.controlManager.controls.get(0).maxSpeed)
         //console.log(parseInt(DeNovoViewer.sensorManager.mav1Model.get(0).displayValue))
 
     }

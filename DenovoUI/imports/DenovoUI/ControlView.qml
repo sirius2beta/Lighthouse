@@ -1,5 +1,7 @@
 ﻿import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtQuick.Controls 2.15
+
 
 Item {
     id: root
@@ -19,15 +21,9 @@ Item {
         id: controlMenu
 
     }
-    BoatGaugePanel{
-        id: dataPanel
-        anchors.top: controlMenu.bottom
-        anchors.bottom: parent.bottom
-        _totalBatteryPercentage: totalBatteryPercentage
-        _totalBatteryVoltage: totalBatteryVoltage
-        _totalBatteryCurrent: totalBatteryCurrent
-        _cabinTemp: cabinTemp
-
+    DataPanel{
+        anchors.top:controlMenu.bottom
     }
+
 
 }

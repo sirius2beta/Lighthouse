@@ -12,7 +12,7 @@ Item {
     Rectangle{
         id:background
         opacity: 1
-        color: "#3b3b3b"
+        color: "#973b3b3b"
         anchors.fill: parent
         clip: true
 
@@ -124,14 +124,6 @@ Item {
 
     }
 
-
-    Rectangle{
-        width: 60
-        height: 40
-        color: "#49ffffff"
-        anchors.horizontalCenter: parent.horizontalCenter
-
-    }
 
     Image {
         id: headingBox

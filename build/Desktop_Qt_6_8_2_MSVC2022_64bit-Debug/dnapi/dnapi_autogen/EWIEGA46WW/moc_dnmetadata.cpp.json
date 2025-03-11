@@ -1,0 +1,18 @@
+{
+    "classes": [
+        {
+            "className": "DNMetaData",
+            "lineNumber": 6,
+            "object": true,
+            "qualifiedClassName": "DNMetaData",
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QObject"
+                }
+            ]
+        }
+    ],
+    "inputFile": "dnmetadata.h",
+    "outputRevision": 68
+}

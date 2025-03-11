@@ -1,0 +1,104 @@
+{
+    "classes": [
+        {
+            "className": "ControlItem",
+            "lineNumber": 9,
+            "methods": [
+                {
+                    "access": "public",
+                    "index": 1,
+                    "name": "run",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "index",
+                            "type": "int"
+                        },
+                        {
+                            "name": "value",
+                            "type": "QString"
+                        }
+                    ],
+                    "index": 2,
+                    "name": "setField",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "index",
+                            "type": "int"
+                        }
+                    ],
+                    "index": 3,
+                    "name": "getField",
+                    "returnType": "DNValue*"
+                }
+            ],
+            "object": true,
+            "properties": [
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 0,
+                    "name": "name",
+                    "read": "name",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "QString",
+                    "user": false
+                },
+                {
+                    "constant": true,
+                    "designable": true,
+                    "final": false,
+                    "index": 1,
+                    "name": "boatID",
+                    "read": "boatID",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "int",
+                    "user": false
+                }
+            ],
+            "qualifiedClassName": "ControlItem",
+            "signals": [
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "boatID",
+                            "type": "int"
+                        },
+                        {
+                            "name": "topic",
+                            "type": "uint8_t"
+                        },
+                        {
+                            "name": "command",
+                            "type": "QByteArray"
+                        }
+                    ],
+                    "index": 0,
+                    "name": "sendMsgbyID",
+                    "returnType": "void"
+                }
+            ],
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QObject"
+                }
+            ]
+        }
+    ],
+    "inputFile": "controlitem.h",
+    "outputRevision": 68
+}

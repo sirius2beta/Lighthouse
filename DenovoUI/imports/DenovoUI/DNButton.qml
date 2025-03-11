@@ -17,7 +17,7 @@ Button {
     property string iconSource: ""
     property string bgColor: "#444444"
 
-    width: 90
+    width: 70
     height: 35
 
     implicitWidth: Math.max(

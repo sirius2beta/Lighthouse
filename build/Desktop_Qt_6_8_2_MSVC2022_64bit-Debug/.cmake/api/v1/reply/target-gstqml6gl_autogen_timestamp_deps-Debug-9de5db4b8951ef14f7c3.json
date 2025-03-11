@@ -1,0 +1,31 @@
+{
+	"backtrace" : 0,
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : 
+		[
+			"gstqml6gl/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			}
+		]
+	},
+	"folder" : 
+	{
+		"name" : "QtInternalTargets"
+	},
+	"id" : "gstqml6gl_autogen_timestamp_deps::@abb458c7df341164f247",
+	"isGeneratorProvided" : true,
+	"name" : "gstqml6gl_autogen_timestamp_deps",
+	"paths" : 
+	{
+		"build" : "gstqml6gl",
+		"source" : "gstqml6gl"
+	},
+	"sources" : [],
+	"type" : "UTILITY"
+}

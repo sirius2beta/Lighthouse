@@ -175,7 +175,7 @@ Item {
         y: 307
         text:"home"
         onClicked: {
-            root.homePage()
+            root.parent.source = ""
         }
     }
 

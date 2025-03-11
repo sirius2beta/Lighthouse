@@ -1,0 +1,18 @@
+{
+    "classes": [
+        {
+            "className": "DNCore",
+            "lineNumber": 14,
+            "object": true,
+            "qualifiedClassName": "DNCore",
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QObject"
+                }
+            ]
+        }
+    ],
+    "inputFile": "dncore.h",
+    "outputRevision": 68
+}

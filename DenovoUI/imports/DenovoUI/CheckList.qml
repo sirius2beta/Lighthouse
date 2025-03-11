@@ -35,7 +35,7 @@ Item {
             height: 49
             text:"home"
             onClicked: {
-                root.homePage()
+                root.parent.loader = ""
             }
         }
 

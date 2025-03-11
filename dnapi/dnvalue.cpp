@@ -154,8 +154,6 @@ QByteArray DNValue::bytesData()
         bool str2 = _rawValue.toBool();
         memcpy(str1, &str2, sizeof(bool));
         return QByteArray(str1,sizeof(bool));
-    }else{
-        qDebug()<<"DNValue::Fatal error: no data type "<<_type;
     }
     return QByteArray();
 }

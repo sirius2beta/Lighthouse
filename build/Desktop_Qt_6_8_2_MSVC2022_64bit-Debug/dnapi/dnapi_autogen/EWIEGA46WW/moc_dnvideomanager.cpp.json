@@ -1,0 +1,166 @@
+{
+    "classes": [
+        {
+            "className": "DNVideoManager",
+            "lineNumber": 17,
+            "methods": [
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "index",
+                            "type": "int"
+                        }
+                    ],
+                    "index": 9,
+                    "name": "getVideoItem",
+                    "returnType": "VideoItem*"
+                }
+            ],
+            "object": true,
+            "properties": [
+                {
+                    "constant": false,
+                    "designable": true,
+                    "final": false,
+                    "index": 0,
+                    "name": "count",
+                    "notify": "coutChanged",
+                    "read": "count",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "int",
+                    "user": false
+                }
+            ],
+            "qualifiedClassName": "DNVideoManager",
+            "signals": [
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "addr",
+                            "type": "QHostAddress"
+                        },
+                        {
+                            "name": "topic",
+                            "type": "char"
+                        },
+                        {
+                            "name": "command",
+                            "type": "QByteArray"
+                        }
+                    ],
+                    "index": 0,
+                    "name": "sendMsg",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "count",
+                            "type": "int"
+                        }
+                    ],
+                    "index": 1,
+                    "name": "coutChanged",
+                    "returnType": "void"
+                }
+            ],
+            "slots": [
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "videoItem",
+                            "type": "VideoItem*"
+                        }
+                    ],
+                    "index": 2,
+                    "name": "onPlay",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "videoItem",
+                            "type": "VideoItem*"
+                        }
+                    ],
+                    "index": 3,
+                    "name": "onStop",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "index": 4,
+                    "name": "onBoatAdded",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "videoItem",
+                            "type": "VideoItem*"
+                        }
+                    ],
+                    "index": 5,
+                    "name": "onRequestFormat",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "ID",
+                            "type": "int"
+                        },
+                        {
+                            "name": "data",
+                            "type": "QByteArray"
+                        }
+                    ],
+                    "index": 6,
+                    "name": "setVideoFormat",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "connectionType",
+                            "type": "int"
+                        }
+                    ],
+                    "index": 7,
+                    "name": "onConnectionChanged",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "ID",
+                            "type": "int"
+                        }
+                    ],
+                    "index": 8,
+                    "name": "connectionChanged",
+                    "returnType": "void"
+                }
+            ],
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QObject"
+                }
+            ]
+        }
+    ],
+    "inputFile": "dnvideomanager.h",
+    "outputRevision": 68
+}

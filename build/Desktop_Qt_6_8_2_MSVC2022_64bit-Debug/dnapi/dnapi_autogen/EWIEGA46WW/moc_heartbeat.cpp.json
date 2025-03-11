@@ -1,0 +1,98 @@
+{
+    "classes": [
+        {
+            "className": "HeartBeat",
+            "lineNumber": 11,
+            "object": true,
+            "qualifiedClassName": "HeartBeat",
+            "signals": [
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "addr",
+                            "type": "QHostAddress"
+                        },
+                        {
+                            "name": "topic",
+                            "type": "char"
+                        },
+                        {
+                            "name": "command",
+                            "type": "QByteArray"
+                        }
+                    ],
+                    "index": 0,
+                    "name": "sendMsg",
+                    "returnType": "void"
+                }
+            ],
+            "slots": [
+                {
+                    "access": "public",
+                    "index": 1,
+                    "name": "beat",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "index": 2,
+                    "name": "checkAlive",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "ip",
+                            "type": "QString"
+                        },
+                        {
+                            "name": "ID",
+                            "type": "int"
+                        }
+                    ],
+                    "index": 3,
+                    "name": "alive",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "ID",
+                            "type": "int"
+                        },
+                        {
+                            "name": "isPrimary",
+                            "type": "bool"
+                        }
+                    ],
+                    "index": 4,
+                    "name": "onChangeIP",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "boatname",
+                            "type": "QString"
+                        }
+                    ],
+                    "index": 5,
+                    "name": "onDeleteBoat",
+                    "returnType": "void"
+                }
+            ],
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QObject"
+                }
+            ]
+        }
+    ],
+    "inputFile": "heartbeat.h",
+    "outputRevision": 68
+}

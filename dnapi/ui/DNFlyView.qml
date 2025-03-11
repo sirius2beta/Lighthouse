@@ -6,37 +6,6 @@ import DenovoUI 1.0
 
 Item {
 
-
-
-    DNVideoView{
-        id: videoView0
-        pipView: _pipView
-        videoObjectName: "videoContent0"
-    }
-
-    DNVideoView{
-        id: videoView1
-        pipView: _pipView
-        _index: 1
-        videoObjectName: "videoContent1"
-    }
-
-
-
-
-    PipView{
-        id: _pipView
-        sizeRatio: 9/16
-        anchors.left:           parent.left
-        anchors.top:         hud.bottom
-        anchors.margins:        10
-        item1:                  videoView0
-        item2:                  videoView1
-        name: "his"
-        z:1
-        show:                   true
-    }
-
     HUD{
         id: hud
         visible: true
@@ -52,9 +21,52 @@ Item {
         yaw:parseInt(DeNovoViewer.sensorManager.mav1Model.get(4).displayValue)/100
         temp: parseFloat(DeNovoViewer.sensorManager.cabinModel.get(0).displayValue)
         rtk:DeNovoViewer.sensorManager.mav1Model.get(0).displayValue
+        boat_rssi:parseInt(DeNovoViewer.sensorManager.kbestModel.get(0).displayValue)
+        ground_rssi:parseInt(DeNovoViewer.sensorManager.kbestModel.get(1).displayValue)
         gs: Math.round(parseFloat(DeNovoViewer.sensorManager.mav1Model.get(7).displayValue)*100)/100
         z:2
 
     }
+    Item{
+        anchors.top: hud.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        DNVideoView{
+            id: videoView0
+            pipView: _pipView
+            _index:0
+            videoObjectName: "videoContent0"
+        }
+
+        DNVideoView{
+            id: videoView1
+            pipView: _pipView
+            _index: 1
+            videoObjectName: "videoContent1"
+        }
+
+
+
+
+        PipView{
+            id: _pipView
+            sizeRatio: 9/16
+            anchors.left:        parent.left
+            anchors.top:         parent.top
+            anchors.margins:        10
+            item1:                  videoView0
+            item2:                  videoView1
+            name: "his"
+            z:1
+            show:                   true
+        }
+    }
+
+
+
+
+
+
 
 }

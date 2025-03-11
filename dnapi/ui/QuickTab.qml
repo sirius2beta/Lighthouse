@@ -11,11 +11,10 @@ Item {
     property string video_no: ""
     property real port:0
     property VideoItem videoItem
-    FontLoader { source: "qrc:/imports/DenovoUI/font/Roboto-Black.ttf" }
-    FontLoader { source: "qrc:/imports/DenovoUI/font/Roboto-Regular.ttf" }
+
     Rectangle{
         anchors.fill: parent
-        color: "#000000"
+        color: "#00000000"
         border.width: 0
 
     }
