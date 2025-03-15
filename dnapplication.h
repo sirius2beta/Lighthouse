@@ -16,12 +16,14 @@ public:
     DNApplication(int &argc, char* argv[]);
     ~DNApplication();
     void _shutdown();
-    void _init();
+    void _init(int &argc, char *argv[]);
     QObject* _rootQmlObject();
     QQuickWindow* mainRootWindow();
     static DNApplication* _app;
 
     DNCore* core() { return _core; }
+signals:
+    void initiated();
 private:
     DNCore* _core;
     QQmlApplicationEngine* _qmlEngine = nullptr;

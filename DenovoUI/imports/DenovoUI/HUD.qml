@@ -17,31 +17,32 @@ Item {
     property real gs:0
     property real dtm:0
     property string rtk: "0"
-    property real boat_rssi:-1000
-    property real ground_rssi:0
+    property real boat_rssi:0
+    property real ground_rssi: 0
     property real tx_strength: {
-        if(ground_rssi>-81){
+        if(ground_rssi == 0){
+            return 0;
+        }else if(ground_rssi>-81){
             return 4
         }else if(ground_rssi>-91){
             return 3
         }else if(ground_rssi>-101){
             return 2
-        }else if(ground_rssi>-110){
-            return 1
         }
-        return 0
+        return 1
     }
     property real rx_strength: {
-        if(boat_rssi>-81){
+        if(boat_rssi == 0){
+            return 0
+        }else if(boat_rssi>-81){
             return 4
         }else if(boat_rssi>-91){
             return 3
         }else if(boat_rssi>-101){
             return 2
-        }else if(boat_rssi>-110){
-            return 1
         }
-        return 0
+            return 1
+
     }
 
 /*
@@ -184,7 +185,7 @@ Item {
             }
             Item {
                 id: name
-                width: 55
+                width: 90
                 height: 50
 
 
@@ -199,6 +200,7 @@ Item {
 
                             spacing: 4
                             Text{
+                                rightPadding: 5
                                 color: "#ffffff"
                                 text: "Rx"
                                 font.family: "roboto"
@@ -214,10 +216,18 @@ Item {
 
                                 }
                             }
+                            Text{
+                                leftPadding: 5
+                                color: "#ffffff"
+                                text: boat_rssi==0?"loss":ground_rssi
+                                font.family: "roboto"
+                                font.pixelSize: 14
+                            }
                         }
                         RowLayout{
                             spacing: 4
                             Text{
+                                rightPadding: 5
                                 color: "#ffffff"
                                 text: "Tx"
                                 font.family: "roboto"
@@ -232,6 +242,13 @@ Item {
                                     color: index >= tx_strength?"#555555":"#00ff01"
 
                                 }
+                            }
+                            Text{
+                                leftPadding: 5
+                                color: "#ffffff"
+                                text: (ground_rssi==0)?"loss":ground_rssi
+                                font.family: "roboto"
+                                font.pixelSize: 14
                             }
                         }
                     }

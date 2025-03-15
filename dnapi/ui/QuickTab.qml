@@ -1,5 +1,5 @@
-﻿import QtQuick 2.15
-import QtQuick.Controls 2.15
+﻿import QtQuick
+import QtQuick.Controls
 import DeNovoViewer 1.0
 import DeNovoViewer.Boat 1.0
 
@@ -11,6 +11,14 @@ Item {
     property string video_no: ""
     property real port:0
     property VideoItem videoItem
+    property int _index: 0
+
+    function setIndex(index){
+        _index = index
+        videoItem = DeNovoViewer.videoManager.getVideoItem(index)
+        videoItem.setBoatID(DeNovoViewer.boatManager.getIDbyInex(_boatNo.currentIndex))
+        console.log("init listview index:",_boatNo.currentIndex)
+    }
 
     Rectangle{
         anchors.fill: parent
@@ -228,12 +236,19 @@ Item {
         anchors.bottom: parent.top
         x: videoBox.x
         height:200
-        width:200
+        width:250
         visible: false
         radius:5
         color: "#444444"
-        border.width:1
-        border.color:"#999999"
+
+        Rectangle{
+            anchors.left: parent.left
+            anchors.top: parent.top
+            width: parent.width
+            height: parent.height-5
+            color: "#444444"
+        }
+
         Rectangle{
             id: _title
             anchors.left: parent.left
@@ -244,75 +259,127 @@ Item {
             color: "#222222"
             border.width:1
             border.color:"#999999"
-            Text{
+            Rectangle{
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                width: parent.width
+                height: parent.height-5
+                color: "#222222"
+            }
 
+            Text{
+                topPadding: 5
+                leftPadding: 5
                 font.family: "roboto"
-                font.pixelSize: 18
-                text:" Video"
+                font.pixelSize: 16
+                text:" Video settings"
                 color:"white"
             }
+
         }
         Column{
             anchors.horizontalCenter:  parent.horizontalCenter
+            anchors.top:  parent.top
+            anchors.topMargin: 10
             spacing:5
-            ComboBox {
-                id: _boatNo
-                editable: false
-                model: DeNovoViewer.boatManager.boatListModel
-                displayText: (currentIndex!=-1)?DeNovoViewer.boatManager.boatListModel.get(currentIndex).name:""
-                font.family: "Segoe UI"
-                Connections {
-                    function onActivated(index) {
-                        videoItem.setBoatID(DeNovoViewer.boatManager.getIDbyInex(index))
-                        console.log("listview index:",_boatNo.currentIndex)
-                    }
-
+            Row{
+                Text {
+                    verticalAlignment: Text.AlignVCenter
+                    height:40
+                    width: 80
+                    leftPadding: 10
+                    text: "Boat"
+                    font.pointSize: 10
+                    color: "white"
+                    font.family: "Segoe UI"
                 }
-                Connections{
-                    target: DeNovoViewer.boatManager
-                    function onBoatAdded() {
-                        if(_boatNo.currentIndex == -1){
-                            _boatNo.currentIndex = 0
+                ComboBox {
+                    id: _boatNo
+                    height:40
+                    editable: false
+                    model: DeNovoViewer.boatManager.boatListModel
+                    displayText: (currentIndex!=-1)?DeNovoViewer.boatManager.boatListModel.get(currentIndex).name:""
+                    font.family: "Segoe UI"
+                    Connections {
+                        function onActivated(index) {
+                            videoItem.setBoatID(DeNovoViewer.boatManager.getIDbyInex(index))
+                            console.log("listview index:",_boatNo.currentIndex)
+                        }
+
+                    }
+                    Connections{
+                        target: DeNovoViewer.boatManager
+                        function onBoatAdded() {
+                            if(_boatNo.currentIndex == -1){
+                                _boatNo.currentIndex = 0
+                            }
                         }
                     }
-                }
 
-                delegate: ItemDelegate  {
-                    width: _boatNo.width;
-                    height: 30
-                    Text {
-                        verticalAlignment: Text.AlignVCenter
-                        leftPadding: 10
-                        text: object.name
-                        font.pointSize: 10
-                        color: "white"
-                        font.family: "Segoe UI"
+                    delegate: ItemDelegate  {
+                        width: _boatNo.width;
+                        height: 30
+                        Text {
+                            verticalAlignment: Text.AlignVCenter
+                            leftPadding: 10
+                            text: object.name
+                            font.pointSize: 10
+                            color: "white"
+                            font.family: "Segoe UI"
+                        }
+                        //required property string modelData
                     }
-                    //required property string modelData
+
                 }
-
             }
-            ComboBox{
-                id: _videoNo
-
-                font.family: "Segoe UI"
-                model: videoItem?videoItem.videoNoListModel:0
-                Connections{
-                    function onActivated(index) {
-                        videoItem.setVideoIndex(index)
-                        console.log("set videoIndex: ", index)
+            Row{
+                Text {
+                    verticalAlignment: Text.AlignVCenter
+                    height:40
+                    width: 80
+                    leftPadding: 10
+                    text: "VidoeNo"
+                    font.pointSize: 10
+                    color: "white"
+                    font.family: "Segoe UI"
+                }
+                ComboBox{
+                    id: _videoNo
+                    height:40
+                    font.family: "Segoe UI"
+                    model: videoItem?videoItem.videoNoListModel:0
+                    Connections{
+                        function onActivated(index) {
+                            videoItem.setVideoIndex(index)
+                            console.log("set videoIndex: ", index)
+                        }
                     }
-                }
 
+                }
             }
-            ComboBox{
-                id: _qualityNo
-                font.family: "Segoe UI"
-                model: videoItem?videoItem.formatListStringModel:0
-                Connections{
-                    function onActivated(index) {
-                        videoItem.setFormatNo(index)
-                        console.log("set formatNo:", index)
+
+            Row{
+                Text {
+                    verticalAlignment: Text.AlignVCenter
+                    height:40
+                    width: 80
+                    leftPadding: 10
+                    text: "Quality"
+                    font.pointSize: 10
+                    color: "white"
+                    font.family: "Segoe UI"
+                }
+                ComboBox{
+                    height:40
+
+                    id: _qualityNo
+                    font.family: "Segoe UI"
+                    model: videoItem?videoItem.formatListStringModel:0
+                    Connections{
+                        function onActivated(index) {
+                            videoItem.setFormatNo(index)
+                            console.log("set formatNo:", index)
+                        }
                     }
                 }
             }
@@ -320,8 +387,6 @@ Item {
                 spacing:5
                 Button{
                 id: _stopButton
-
-                height: _videoNo.height
                 font.family: "Segoe UI"
                 text: "Stop"
                 onClicked: {
@@ -334,7 +399,7 @@ Item {
             }
                 Button{
                 id: _playButton
-                height: _videoNo.height
+                //height: _videoNo.height
                 font.family: "Segoe UI"
                 text: "Play"
                 onClicked: {
@@ -354,5 +419,9 @@ Item {
         anchors.bottom: parent.top
         visible: false
         anchors.leftMargin: 15
+    }
+
+    Component.onCompleted: {
+        setIndex(_index)
     }
 }

@@ -1,5 +1,6 @@
 ﻿#include <QRunnable>
 #include <gst/gst.h>
+#include <QQuickStyle>
 
 #include "dnapplication.h"
 #include "dnapi/dnvideomanager.h"
@@ -13,6 +14,43 @@ G_BEGIN_DECLS
     GST_PLUGIN_STATIC_DECLARE(qml6);
 
 G_END_DECLS
+
+        static void _putenv(const QString &key, const QString &root, const QString &path = "")
+    {
+        const QByteArray keyArray = key.toLocal8Bit();
+        const QByteArray valueArray = (root + path).toLocal8Bit();
+        (void) qputenv(keyArray, valueArray);
+    }
+
+    static void _setGstEnvVars()
+    {
+        const QString currentDir = QCoreApplication::applicationDirPath();
+
+
+#if defined(Q_OS_MACOS) && defined(QGC_GST_MACOS_FRAMEWORK)
+        _putenv("GST_REGISTRY_REUSE_PLUGIN_SCANNER", "no");
+        _putenv("GST_PLUGIN_SCANNER", currentDir, "/../Frameworks/GStreamer.framework/Versions/1.0/libexec/gstreamer-1.0/gst-plugin-scanner");
+        _putenv("GST_PTP_HELPER_1_0", currentDir, "/../Frameworks/GStreamer.framework/Versions/1.0/libexec/gstreamer-1.0/gst-ptp-helper");
+        _putenv("GIO_EXTRA_MODULES", currentDir, "/../Frameworks/GStreamer.framework/Versions/1.0/lib/gio/modules");
+        _putenv("GST_PLUGIN_SYSTEM_PATH_1_0", currentDir, "/../Frameworks/GStreamer.framework/Versions/1.0/lib/gstreamer-1.0"); // PlugIns/gstreamer
+        _putenv("GST_PLUGIN_SYSTEM_PATH", currentDir, "/../Frameworks/GStreamer.framework/Versions/1.0/lib/gstreamer-1.0");
+        _putenv("GST_PLUGIN_PATH_1_0", currentDir, "/../Frameworks/GStreamer.framework/Versions/1.0/lib/gstreamer-1.0");
+        _putenv("GST_PLUGIN_PATH", currentDir, "/../Frameworks/GStreamer.framework/Versions/1.0/lib/gstreamer-1.0");
+        _putenv("GTK_PATH", currentDir, "/../Frameworks/GStreamer.framework/Versions/1.0");
+#elif defined(Q_OS_WIN)
+        _putenv("GST_REGISTRY_REUSE_PLUGIN_SCANNER", "no");
+        _putenv("GST_PLUGIN_SCANNER", currentDir, "/../libexec/gstreamer-1.0/gst-plugin-scanner");
+        _putenv("GST_PTP_HELPER_1_0", currentDir, "/../libexec/gstreamer-1.0/gst-ptp-helper");
+        _putenv("GIO_EXTRA_MODULES", currentDir, "/../lib/gio/modules");
+        _putenv("GST_PLUGIN_SYSTEM_PATH_1_0", currentDir, "/../lib/gstreamer-1.0");
+        _putenv("GST_PLUGIN_SYSTEM_PATH", currentDir, "/../lib/gstreamer-1.0");
+        _putenv("GST_PLUGIN_PATH_1_0", currentDir, "/../lib/gstreamer-1.0");
+        _putenv("GST_PLUGIN_PATH", currentDir, "/../lib/gstreamer-1.0");
+#endif
+    }
+
+
+
 class FinishVideoInitialization : public QRunnable
 {
 public:
@@ -44,29 +82,13 @@ DNApplication::DNApplication(int &argc, char *argv[])
 
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
 
-    QString pluginpath = QCoreApplication::applicationDirPath()+"/gstreamer-plugins";
-    qputenv("GST_PLUGIN_PATH", pluginpath.toStdString().c_str());
+    QQuickStyle::setStyle("Material");
+
+    _setGstEnvVars();
 
 
-    gst_init (&argc, &argv);
-    GST_PLUGIN_STATIC_REGISTER(qml6);
-    _app = this;
-    _qmlEngine = new QQmlApplicationEngine(this);
 
-    _core = new DNCore(this, QString("config1"));
     // register C++ class of DNcore
-    _init();
-    _core->videoManager()->initGstreamer();
-
-    _qmlEngine->addImportPath("qrc:/imports");
-    _qmlEngine->addImportPath("qrc:/qml");
-    _qmlEngine->load("qrc:/main.qml");
-
-    QQuickWindow* rootWindow = dnApp()->mainRootWindow();
-    if (rootWindow) {
-        rootWindow->scheduleRenderJob (new FinishVideoInitialization (_core->videoManager()),
-                QQuickWindow::BeforeSynchronizingStage);
-    }
 
 
 }
@@ -81,8 +103,14 @@ void DNApplication::_shutdown()
 
 }
 
-void DNApplication::_init()
+void DNApplication::_init(int &argc, char *argv[])
 {
+    gst_init (&argc, &argv);
+    GST_PLUGIN_STATIC_REGISTER(qml6);
+    _app = this;
+    _qmlEngine = new QQmlApplicationEngine(this);
+
+    _core = new DNCore(this, QString("config1"));
     // Register our Qml objects
     qmlRegisterUncreatableType<BoatItem>("DeNovoViewer.Boat", 1, 0, "BoatItem",  "reference only");
     qmlRegisterUncreatableType<BoatManager>("DeNovoViewer.Boat", 1, 0, "BoatManager",  "reference only");
@@ -97,8 +125,23 @@ void DNApplication::_init()
     qmlRegisterSingletonType<DNQmlGlobal>("DeNovoViewer", 1, 0, "DeNovoViewer", DNQmlGlobalSingletonFactory);
     qDebug()<<"global init()";
 
+    _core->videoManager()->initGstreamer();
+
+    _qmlEngine->addImportPath("qrc:/imports");
+    _qmlEngine->addImportPath("qrc:/qml");
+    _qmlEngine->load("qrc:/main.qml");
+
+    QQuickWindow* rootWindow = dnApp()->mainRootWindow();
+    if (rootWindow) {
+        rootWindow->scheduleRenderJob (new FinishVideoInitialization (_core->videoManager()),
+                                      QQuickWindow::BeforeSynchronizingStage);
+    }
+
+    emit initiated();
+
 
 }
+
 
 QObject* DNApplication::_rootQmlObject()
 {

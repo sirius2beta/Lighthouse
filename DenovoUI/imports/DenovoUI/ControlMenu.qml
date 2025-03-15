@@ -81,7 +81,7 @@ Item {
                         imgsrc: "images/tune.png"
                         text: "Device"
                         onClicked: {
-                            playSound.play()
+                            //playSound.play()
                             loader.source = "DeviceControl.qml"
                         }
 

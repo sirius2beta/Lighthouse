@@ -7,10 +7,13 @@ list(APPEND CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/find-modules
 )
 
+set(QGC_WINDOWS_ICON_PATH "${CMAKE_SOURCE_DIR}/deploy/windows/Lighthouse.ico" CACHE FILEPATH "Windows Icon Path")
+
 option(QGC_ENABLE_GST_VIDEOSTREAMING "Enable GStreamer Video Backend" ON)
 
 include(FetchContent)
 include(CMakePrintHelpers)
+include(CustomOptions)
 ##
 
 project(Lighthouse VERSION 0.1 LANGUAGES CXX)
@@ -30,6 +33,19 @@ list(APPEND QGC_RESOURCES
 )
 
 set(CMAKE_AUTORCC ON)
+
+
+# windows installer files shared with core and custom
+ set(DEPLOY_WIN_FILES
+     "${CMAKE_SOURCE_DIR}/deploy/windows/driver.msi"
+     "${CMAKE_SOURCE_DIR}/deploy/windows/nullsoft_installer.nsi"
+     "${CMAKE_SOURCE_DIR}/deploy/windows/QGroundControl.rc"
+     "${QGC_WINDOWS_INSTALL_HEADER_PATH}"
+     "${QGC_WINDOWS_ICON_PATH}"
+ )
+
+
+
 
 
 qt_add_executable(${APP_NAME}
@@ -69,8 +85,43 @@ set_target_properties(${APP_NAME} PROPERTIES
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
 )
+
+
+
+# Destination directory where files will be copied
+set(QGC_INSTALLER_SOURCE_WIN "${CMAKE_BINARY_DIR}/deploy/windows")
+file(MAKE_DIRECTORY ${QGC_INSTALLER_SOURCE_WIN})
+foreach(FILE ${DEPLOY_WIN_FILES})
+    # filename without the path
+    get_filename_component(FILE_NAME ${FILE} NAME)
+    # re-copy the file if it changes
+    add_custom_command(
+        OUTPUT "${QGC_INSTALLER_SOURCE_WIN}/${FILE_NAME}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${FILE}" "${QGC_INSTALLER_SOURCE_WIN}/${FILE_NAME}"
+        DEPENDS "${FILE}"  # Depend on the source file so that it re-copies when it changes
+    )
+    list(APPEND QGC_INSTALLER_SOURCE_WIN_FILES "${QGC_INSTALLER_SOURCE_WIN}/${FILE_NAME}")
+endforeach()
+
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${QGC_INSTALLER_SOURCE_WIN_FILES})
+set_target_properties(${CMAKE_PROJECT_NAME}
+    PROPERTIES
+        WIN32_EXECUTABLE TRUE
+        QT_TARGET_RC_ICONS "${QGC_WINDOWS_ICON_PATH}"
+)
+add_compile_definitions(_USE_MATH_DEFINES)
+
+
+
 add_subdirectory(gstqml6gl)
 add_subdirectory(dnapi)
+
+install(TARGETS ${APP_NAME}
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
 target_link_libraries(${APP_NAME}
     PRIVATE
         LH
@@ -80,11 +131,6 @@ target_link_libraries(${APP_NAME}
 )
 
 include(GNUInstallDirs)
-install(TARGETS ${APP_NAME}
-    BUNDLE DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
 
 ##
 set(CMAKE_CXX_STANDARD 20)
@@ -92,5 +138,6 @@ set(CMAKE_CXX_STANDARD 20)
 
 ##
 
+include(Install)
 
 

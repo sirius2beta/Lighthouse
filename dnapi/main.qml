@@ -23,8 +23,8 @@ Window {
     visible: true
     title: DeNovoViewer.programName
     //visibility: Window.FullScreen
-    Material.theme: Material.Dark
-    Material.accent: Material.Purple
+    //Material.theme: Material.Dark
+    //Material.accent: Material.Purple
     property DNValue dnvalue: DNValue{}
 
     property real lon: parseFloat(DeNovoViewer.sensorManager.mav1Model.get(1).displayValue)/10000000
@@ -278,6 +278,7 @@ Window {
 
 */
     QuickTab{
+        id: quicktab
         anchors.bottom:parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
@@ -294,6 +295,7 @@ Window {
         DeNovoViewer.controlManager.controls.get(0).setField(0,1000)
         dnvalue = DeNovoViewer.controlManager.controls.get(0).getField(0);
         console.log(DeNovoViewer.controlManager.controls.get(0).maxSpeed)
+
         //console.log(parseInt(DeNovoViewer.sensorManager.mav1Model.get(0).displayValue))
 
     }

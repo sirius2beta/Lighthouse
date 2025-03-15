@@ -183,7 +183,7 @@ Item {
             width:100
             radius:8
             color: "#333333"
-            visible: false
+            visible: true
             Rectangle{
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
@@ -215,7 +215,7 @@ Item {
             anchors.right: parent.right
             height:0
             color: "#333333"
-            visible: false
+            visible: true
             clip: true
             Button{
                 id: _playButton

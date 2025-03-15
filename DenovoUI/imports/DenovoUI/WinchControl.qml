@@ -61,11 +61,6 @@ Item {
         contentHeight: 700
         contentWidth: parent.width
 
-
-
-            FontLoader { source: "font/Roboto-Black.ttf" }
-            FontLoader { source: "font/Roboto-Regular.ttf" }
-
             ColumnLayout{
 
                 id: column

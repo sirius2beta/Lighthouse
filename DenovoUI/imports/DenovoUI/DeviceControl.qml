@@ -4,8 +4,7 @@ import QtQuick.Layouts 1.15
 import DeNovoViewer 1.0
 
 Item {
-    FontLoader { source: "font/Roboto-Black.ttf" }
-    FontLoader { source: "font/Roboto-Regular.ttf" }
+
     id: root
     width: 200
     height: 350

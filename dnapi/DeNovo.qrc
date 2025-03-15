@@ -30,6 +30,8 @@
         <file alias="headingBox.png">res/headingBox.png</file>
         <file alias="home_pin.png">res/home_pin.png</file>
         <file alias="navigation.png">res/navigation.png</file>
+        <file alias="test_splash.jpg">res/test_splash.jpg</file>
+        <file alias="splash.png">res/splash.png</file>
     </qresource>
     <qresource prefix="/qmlimages">
         <file alias="pipResize.svg">res/pipResize.svg</file>
