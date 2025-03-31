@@ -18,6 +18,7 @@ DNCore::DNCore(QObject *parent, QString config)
 
     connect(_videoManager, &DNVideoManager::sendMsg, _networkManager, &NetworkManager::sendMsg);
     connect(_networkManager, &NetworkManager::setFormat, _videoManager, &DNVideoManager::setVideoFormat);
+    connect(_networkManager, &NetworkManager::detectMsg, _videoManager, &DNVideoManager::onDetectMsg);
     connect(_boatManager, &BoatManager::connectionChanged, _videoManager, &DNVideoManager::connectionChanged);
     connect(_boatManager, &BoatManager::connectionTypeChanged, _videoManager, &DNVideoManager::onConnectionChanged);
     connect(_boatManager, &BoatManager::boatAdded, _videoManager, &DNVideoManager::onBoatAdded);

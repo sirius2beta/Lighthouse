@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <marinelink>
     <enum name="VIDEO_FORMAT">
-        <entry value="0" name = "1920 1080 30"></entry>
-        <entry value="1" name = "1280 720 30"></entry>
-        <entry value="2" name = "640 480 30"></entry>
-        <entry value="3" name = "320 240 30"></entry>
+        <entry value="0" name = "1080p"></entry>
+        <entry value="1" name = "720p"></entry>
+        <entry value="2" name = "640x480"></entry>
+        <entry value="3" name = "320x240"></entry>
     </enum>
     <enum name="SENSOR">
         <sensorgroup value="0" name="CABIN">

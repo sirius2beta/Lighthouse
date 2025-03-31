@@ -5,7 +5,8 @@ import DeNovoViewer.Boat 1.0
 import DenovoUI 1.0
 
 Item {
-
+    id: root
+    signal swapped(videoItem: VideoItem)
     HUD{
         id: hud
         visible: true
@@ -37,6 +38,7 @@ Item {
             pipView: _pipView
             _index:0
             videoObjectName: "videoContent0"
+            display_no: 1
         }
 
         DNVideoView{
@@ -44,6 +46,7 @@ Item {
             pipView: _pipView
             _index: 1
             videoObjectName: "videoContent1"
+            display_no: 2
         }
 
 
@@ -60,6 +63,7 @@ Item {
             name: "his"
             z:1
             show:                   true
+            onSwapped: (videoItem) => root.swapped(videoItem)
         }
     }
 

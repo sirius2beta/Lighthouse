@@ -26,6 +26,10 @@ public:
     DNValue(QVariant _rawValue, DNMetaData::ValueType_t type, QObject *parent = nullptr);
     DNValue(const DNValue& other, QObject *parent = nullptr);
     DNValue(const DNValue* other, QObject *parent = nullptr);
+
+    Q_INVOKABLE bool toBool() { return _rawValue.toBool(); }
+    Q_INVOKABLE int toInt() { return _rawValue.toInt(); }
+    Q_INVOKABLE float toFloat() { return _rawValue.toFloat(); }
     const DNValue& operator = (const DNValue& other);
     QVariant data() { return _rawValue; }
     QByteArray bytesData();

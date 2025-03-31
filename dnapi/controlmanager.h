@@ -23,9 +23,9 @@ public:
     DNQmlObjectListModel* controls() { return &_controls;}
 
     Q_INVOKABLE ControlItem* getDevice(int index);
-    void onControlMsg(int boatID, QByteArray command);
+    void onControlMsg(uint8_t boatID, QByteArray command);
 signals:
-    void sendMsg(int boatID, char topic, QByteArray command);
+    void sendMsg(uint8_t boatID, char topic, QByteArray command);
 
 
 private:

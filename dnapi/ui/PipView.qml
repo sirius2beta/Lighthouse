@@ -1,6 +1,7 @@
 ﻿import QtQuick 2.15
 import QtQuick.Window 2.15
-
+import DeNovoViewer 1.0
+import DeNovoViewer.Boat 1.0
 
 Item {
     id:         _root
@@ -27,6 +28,8 @@ Item {
     property real   _maxSize:           0.75                // Percentage of parent control size
     property real   _minSize:           0.10
     property bool   _componentComplete: false
+
+    signal swapped(videoItem: VideoItem)
 
     Component.onCompleted: {
         _initForItems()
@@ -67,13 +70,16 @@ Item {
             _fullItem = item2
             _pipOrWindowItem = item1
             item1IsFull = false
+            swapped(item2.videoItem)
         } else {
             item1.pipState.state = item1.pipState.fullState
             item2.pipState.state = item2.pipState.pipState
             _fullItem = item1
             _pipOrWindowItem = item2
             item1IsFull = true
+            swapped(item1.videoItem)
         }
+
 
     }
 

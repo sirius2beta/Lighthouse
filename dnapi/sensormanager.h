@@ -40,10 +40,10 @@ public:
 
 
 signals:
-    void sensorDataChanged(int ID, DNValue& value);
+    void sensorDataChanged(uint8_t ID, DNValue& value);
 
 public slots:
-    void onSensorMsg(int ID, QByteArray data); //處理來自networkmanager的訊息
+    void onSensorMsg(uint8_t ID, QByteArray data); //處理來自networkmanager的訊息
 
 private:
     QSettings* settings;

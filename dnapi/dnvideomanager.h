@@ -6,6 +6,7 @@
 #include <QSettings>
 #include <QHostAddress>
 #include <QQuickItem>
+#include <QStringList>
 #include <gst/gst.h>
 
 #include "videoitem.h"
@@ -23,6 +24,7 @@ public:
 
     ~DNVideoManager();
     Q_PROPERTY(int count READ count NOTIFY coutChanged);
+
     Q_INVOKABLE VideoItem* getVideoItem(int index) { return videoList[index];}
     void init();
     void initVideo();
@@ -38,18 +40,21 @@ public slots:
     void onStop(VideoItem* videoItem);
     void onBoatAdded();
     void onRequestFormat(VideoItem* videoItem);
-    void setVideoFormat(int ID, QByteArray data);
+    void onDetectMsg(uint8_t boatID, QByteArray detectMsg);
+    void setVideoFormat(uint8_t ID, QByteArray data);
     void onConnectionChanged(int connectionType);
-    void connectionChanged(int ID);
+    void connectionChanged(uint8_t ID);
 signals:
     void sendMsg(QHostAddress addr, char topic, QByteArray command);
     void coutChanged(int count);
+
 private:
     QVector<VideoItem*> videoList;
     QSettings* settings;
     DNCore* _core;
     GstElement *_testpipeline;
     GstElement *_testsink;
+
 
 };
 

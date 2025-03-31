@@ -30,11 +30,10 @@ void NetworkManager::sendMsg(QHostAddress addr, uint8_t topic, QByteArray comman
     serverSocket->writeDatagram(cmd,cmd.size(), addr, 50006);
 }
 
-void NetworkManager::sendMsgbyID(int boatID, uint8_t topic, QByteArray command)
+void NetworkManager::sendMsgbyID(uint8_t boatID, uint8_t topic, QByteArray command)
 {
     BoatItem* boat = _core->boatManager()->getBoatbyID(boatID);
     if(boat != 0){
-        qDebug()<<"sd";
         command.prepend(boatID);
         sendMsg(QHostAddress(boat->currentIP()), topic, command);
     }else{
@@ -44,8 +43,6 @@ void NetworkManager::sendMsgbyID(int boatID, uint8_t topic, QByteArray command)
 
 void NetworkManager::onUDPMsg()
 {
-
-
     while(clientSocket->hasPendingDatagrams()){
         QByteArray data;
         QHostAddress addr;
@@ -67,7 +64,7 @@ void NetworkManager::onUDPMsg()
         QString msgType = _core->configManager()->messageChar(topic);
         //qDebug() << topic<<","<<msgType;
         if(msgType == ConfigManager::msg_heartbeat()){
-            int ID = int(data[0]);
+            uint8_t ID = uint8_t(data[0]);
             //qDebug() << ID;
             BoatItem* boat = _core->boatManager()->getBoatbyID(ID);
 
@@ -78,18 +75,22 @@ void NetworkManager::onUDPMsg()
 
 
         }else if(msgType == ConfigManager::msg_format()){
-            int ID = int(data[0]);
+            uint8_t ID = uint8_t(data[0]);
             data.remove(0,1);
             emit setFormat(ID, data);
         }else if(msgType == ConfigManager::msg_sensor()){
             //qDebug()<<"NetworkManager:: on sensor msg";
-            int ID = int(data[0]);
+            uint8_t ID = uint8_t(data[0]);
             data.remove(0,1);
             emit sensorMsg(ID, data);
-        }else if(topic == 5){
-            int ID = int(data[0]);
+        }else if(topic == ConfigManager::msg_control){
+            uint8_t ID = uint8_t(data[0]);
             data.remove(0,1);
             emit controlMsg(ID,data);
+        }else if(topic == ConfigManager::msg_detect){
+            uint8_t ID = uint8_t(data[0]);
+            data.remove(0,1);
+            emit detectMsg(ID,data);
         }
         const QString content = QLatin1String(" Received Topic: ")
                     + QChar(topic)

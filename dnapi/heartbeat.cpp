@@ -44,7 +44,7 @@ HeartBeat::~HeartBeat()
 
 
 
-void HeartBeat::onChangeIP(int ID, bool isPrimary)
+void HeartBeat::onChangeIP(uint8_t ID, bool isPrimary)
 {
 
     if(primary == isPrimary){
@@ -88,7 +88,7 @@ void HeartBeat::HeartBeatLoop()
 }
 
 
-void HeartBeat::alive(QString ip, int ID)
+void HeartBeat::alive(QString ip, uint8_t ID)
 {
     if((ip == boatIP) && (ID == boat->ID())){
         //qDebug()<<"get HeartBeat boatname:"<<boat->name();

@@ -23,8 +23,8 @@ signals:
 public slots:
     void beat();
     void checkAlive();
-    void alive(QString ip, int ID);
-    void onChangeIP(int ID, bool isPrimary);
+    void alive(QString ip, uint8_t ID);
+    void onChangeIP(uint8_t ID, bool isPrimary);
     void onDeleteBoat(QString boatname);
 
 private:

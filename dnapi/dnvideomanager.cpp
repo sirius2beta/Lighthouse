@@ -94,28 +94,32 @@ void DNVideoManager::addVideoItem(int index, QString title, int boatID, int vide
     connect(newvideoitem, &VideoItem::videoPlayed, this, &DNVideoManager::onPlay);
     connect(newvideoitem, &VideoItem::videoStoped, this, &DNVideoManager::onStop);
     connect(newvideoitem, &VideoItem::requestFormat, this, &DNVideoManager::onRequestFormat);
+    connect(newvideoitem, &VideoItem::sendMsg, _core->networkManager(), &NetworkManager::sendMsgbyID);
 
 }
 
 void DNVideoManager::onPlay(VideoItem* videoItem)
 {
     QHostAddress ip = QHostAddress(_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP());
-    char rawdata[7];
+    char rawdata[8];
 
     uint8_t videoInexraw = videoItem->videoNo();
     uint8_t formatIndexraw = videoItem->formatIndex();
     uint8_t encoder = videoItem->encoder() == QString("h264")? 0:1;
     int32_t port = videoItem->port();
+    uint8_t aiEnabled = videoItem->AIEnabled();
 
     memcpy(rawdata, &videoInexraw, sizeof(uint8_t));
     memcpy(rawdata+1, &formatIndexraw, sizeof(uint8_t));
     memcpy(rawdata+2, &encoder, sizeof(uint8_t));
 
     memcpy(rawdata+3, &port, sizeof(int32_t));
-    QByteArray msg = QByteArray(rawdata,7);
+    memcpy(rawdata+7, &aiEnabled, sizeof(int8_t));
+    QByteArray msg = QByteArray(rawdata,8);
     qDebug()<<"DNVideoManager::onPlay:"+QString::number(videoItem->port())+",send: "+msg;
     //if(msg == QString("")) return;
     emit sendMsg(ip, _core->configManager()->message("COMMAND"), msg);
+
 }
 
 void DNVideoManager::onStop(VideoItem* videoItem)
@@ -146,6 +150,23 @@ void DNVideoManager::onBoatAdded()
     */
 }
 
+void DNVideoManager::onDetectMsg(uint8_t boatID, QByteArray detectMsg)
+{
+
+    uint8_t cmd_ID = uint8_t(detectMsg[0]);
+    uint8_t video_no = uint8_t(detectMsg[1]);
+    QStringList list;
+    if(cmd_ID == 1){
+        detectMsg.remove(0,2);
+        for(int i = 0; i< videoList.size(); i++){
+            if(videoList[i]->videoNo() == video_no){
+                videoList[i]->proscessDetection(detectMsg);
+            }
+        }
+
+    }
+}
+
 void DNVideoManager::onRequestFormat(VideoItem* videoItem)
 {
     QHostAddress addr(_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP());
@@ -153,7 +174,7 @@ void DNVideoManager::onRequestFormat(VideoItem* videoItem)
     emit sendMsg(addr, _core->configManager()->message("FORMAT"), "");
 }
 
-void DNVideoManager::setVideoFormat(int ID, QByteArray data)
+void DNVideoManager::setVideoFormat(uint8_t ID, QByteArray data)
 {
     for(int i = 0; i < videoList.size(); i++){
         if(videoList[i]->boatID() == ID){
@@ -170,7 +191,7 @@ void DNVideoManager::onConnectionChanged(int connectionType)
     }
 }
 
-void DNVideoManager::connectionChanged(int ID)
+void DNVideoManager::connectionChanged(uint8_t ID)
 {
     qDebug()<<"DNVideoManager::connectionChanged: "<<ID;
     for(int i = 0; i < videoList.size(); i++){

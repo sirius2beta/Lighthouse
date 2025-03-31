@@ -9,6 +9,7 @@
 #include <QQuickWindow>
 #include <QQuickItem>
 #include <QMap>
+#include <QHostAddress>
 
 class DNCore;
 class VideoItem : public QObject
@@ -20,9 +21,14 @@ public:
     Q_PROPERTY(QStringList videoNoListModel READ videoNoListModel NOTIFY videoNoListModelChanged)
     Q_PROPERTY(QStringList qualityListModel READ qualityListModel NOTIFY qualityListModelChanged)
     Q_PROPERTY(QStringList formatListStringModel READ formatListStringModel NOTIFY formatListStringModelChanged)
+    Q_PROPERTY(QList<int> detectionMatrixModel READ detectionMatrixModel NOTIFY detectionMatrixModelChanged)
+
     Q_PROPERTY(int boatID READ boatID NOTIFY boatIDChanged )
+    Q_PROPERTY(int videoNo READ videoNo CONSTANT)
+    Q_PROPERTY(int formatNo READ formatNo CONSTANT)
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(int PCPort READ PCPort NOTIFY PCPortChanged)
+    Q_PROPERTY(bool AIEnabled READ AIEnabled CONSTANT)
     //Q_PROPERTY(QString port READ port NOTIFY IPChanged)
     //Q_PROPERTY(bool primaryConnected READ primaryConnected  NOTIFY connectStatusChanged)
     //Q_PROPERTY(bool secondaryConnected READ secondaryConnected  NOTIFY connectStatusChanged)
@@ -30,6 +36,8 @@ public:
 
     Q_INVOKABLE void play();
     Q_INVOKABLE void stop();
+    Q_INVOKABLE void setAIEnabled(bool enabled);
+    Q_INVOKABLE void update(); // update camera info
 
     Q_INVOKABLE void setProxy(bool isProxy);
     Q_INVOKABLE void setEncoder(QString encoder);
@@ -54,28 +62,31 @@ public:
     int port() {return _proxy?(_PCPort+100):_PCPort;}
     int index() {return _index; }
     int videoNo() {
-        //qDebug()<<_videoIndex<<","<<_videoNoListModel.size();
         if(_videoIndex == -1){
-            qDebug()<<_videoIndex<<","<<_videoNoListModel.size();
             return -1;
         }else{
-            qDebug()<<_videoIndex<<",,"<<_videoNoListModel.size();
             return _videoNoListModel[_videoIndex].toInt();
         }
     }
     int formatIndex() { return _formatListModel[_formatNo].toInt();}
+    int formatNo() {    return _formatNo; }
     bool isPlaying(){ return _isPlaying;}
     int connectionPriority() { return _connectionPriority;}
     bool videoInfo() { return _isVideoInfo; }
+    bool AIEnabled() { return _AIEnabled;}
     QStringList videoNoListModel() { return _videoNoListModel; }
     QStringList qualityListModel() { return _formatListModel; }
     QStringList formatListStringModel() {return _formatStringListModel; }
+    QList<int> detectionMatrixModel() { return _detectionMatrixModel;}
+
 
 
     QString encoder() {return _encoder;}
     QString videoFormat();
+    void proscessDetection(QByteArray data);
 
 signals:
+    void sendMsg(int8_t boatID, char topic, QByteArray data);
     void requestFormat(VideoItem* v); //set _requestFormat = true before sending
     void boatIDChanged(int ID);
     void PCPortChanged(int port);
@@ -86,6 +97,8 @@ signals:
     void videoNoListModelChanged(QStringList model);
     void qualityListModelChanged(QStringList model);
     void formatListStringModelChanged(QStringList model);
+    void detectionMatrixModelChanged(QList<int> model);
+
 
 private:
     DNCore* _core;
@@ -102,6 +115,7 @@ private:
     QString _encoder;
     bool _proxy;
     bool _requestFormat;
+    bool _AIEnabled;
     QQuickItem* _videoWidget;
 
     GstElement *_pipeline;
@@ -115,7 +129,7 @@ private:
     QStringList _videoNoListModel;
     QStringList _formatListModel;
     QStringList _formatStringListModel;
-
+    QList<int> _detectionMatrixModel;
 
 };
 

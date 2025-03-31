@@ -20,6 +20,7 @@ Item {
     Layout.preferredWidth: 300
     Layout.fillHeight: true
     Layout.alignment: Qt.AlignLeft
+
     Rectangle{
         anchors.top: parent.top
         anchors.right: parent.right
@@ -27,23 +28,36 @@ Item {
         anchors.bottom: parent.bottom
         radius:5
         color: "#444444"
-        border.width:1
-        border.color:"#999999"
         opacity: 100
+        border.width: 2
+        border.color: "#dddddd"
+
         Rectangle{
             id: _title
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
+            anchors.margins: 2
+
             radius: 5
             height:35
             color: "#222222"
-            border.width:1
-            border.color:"#999999"
-            Text{
 
-                font.family: "Segoe UI"
-                font.pixelSize: 20
+            Rectangle{
+                anchors.centerIn: parent
+                anchors.bottom: parent.bottom
+                width: parent.width
+                height: parent.height-5
+                radius: 0
+                color: "#222222"
+            }
+
+            Text{
+                anchors.fill: parent
+                verticalAlignment: Qt.AlignVCenter
+                leftPadding: 2
+                font.family: "Roboto"
+                font.pixelSize: 18
                 text:" BoatManager"
                 color:"white"
             }
@@ -151,8 +165,7 @@ Item {
                 }
             }
             highlight: Rectangle {
-                border.color: "white"
-                border.width: 1
+
                 color: "#2d464c";
                 radius: 2
             }

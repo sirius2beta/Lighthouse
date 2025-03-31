@@ -45,7 +45,7 @@ void ControlManager::setBoatID(int boatID)
     _boatID = boatID;
 }
 
-void ControlManager::onControlMsg(int boatID, QByteArray command)
+void ControlManager::onControlMsg(uint8_t boatID, QByteArray command)
 {
     if(boatID != _boatID){
         qDebug()<<"id"<<boatID<<","<<_boatID;

@@ -24,9 +24,11 @@ VideoItem::VideoItem(QObject *parent, DNCore* core, int index, QString title, in
     _proxy(false),
     _requestFormat(true),
     _isPlaying(false),
-    _isVideoInfo(false)
+    _isVideoInfo(false),
+    _AIEnabled(false)
 {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
+
 
 }
 
@@ -41,6 +43,7 @@ VideoItem::~VideoItem()
         gst_object_unref (_sink);
     }
 }
+
 void VideoItem::initVideo(QQuickItem *widget)
 {
     _videoWidget = widget;
@@ -54,7 +57,7 @@ void VideoItem::initVideo(QQuickItem *widget)
           glupload ! qml6glsink name=sink").arg(QString::number(_PCPort));
      }
 
-    if(!_isPlaying){
+    if(!_initialized){
         _pipeline= gst_parse_launch(gstcmd.toLocal8Bit(), NULL);
         _sink = gst_bin_get_by_name((GstBin*)_pipeline,"sink");
         g_object_set(_sink, "widget", widget, NULL);
@@ -62,8 +65,6 @@ void VideoItem::initVideo(QQuickItem *widget)
 
     }
 
-
-    _isPlaying = true;
     _initialized = true;
 }
 
@@ -103,7 +104,6 @@ void VideoItem::setBoatID(int ID)
         emit requestFormat(this);
 
     }
-
 }
 
 void VideoItem::setIndex(int index)
@@ -123,7 +123,6 @@ void VideoItem::setVideoIndex(int index)
     _formatStringListModel.clear();
 
     QList<int> h = _videoFormatList[_videoNoListModel.at(index).toInt()];
-    qDebug()<<"VideoItem::h: "<<h.size();
     for(int i = 0; i< h.size(); i++){
         _formatListModel<<QString::number(h[i]);
         _formatStringListModel<<_core->configManager()->videoFormatString(h[i]);
@@ -222,6 +221,37 @@ void VideoItem::stop()
 
 }
 
+void VideoItem::setAIEnabled(bool enabled)
+{
+    qDebug()<<"setAIEnabled:"<<enabled;
+    QByteArray bt;
+    //uint8_t video_no = _videoIndex;
+    //bt.append(boatID());
+    uint8_t cmd_ID = 0;
+    bt.append(cmd_ID);
+    bt.append(uint8_t(videoNo()));
+    bt.append(enabled);
+    bt.append(uint8_t(_formatNo));
+    _AIEnabled = enabled;
+    //emit sendMsg(boatID(), 6, bt);
+}
+
+void VideoItem::update()
+{
+    stop();
+    //new list model
+    _videoNoListModel.clear();
+    _formatListModel.clear();
+    _formatStringListModel.clear();
+    emit videoNoListModelChanged(_videoNoListModel);
+    emit qualityListModelChanged(_formatListModel);
+    emit formatListStringModelChanged(_formatStringListModel);
+
+    _requestFormat = true;
+    _preVideoIndex = -1;
+    emit requestFormat(this);
+}
+
 void VideoItem::setProxy(bool isProxy)
 {
     _proxy = isProxy;
@@ -263,4 +293,38 @@ QString VideoItem::videoFormat()
     }
     return _formatListModel[_formatNo];
 
+}
+
+void VideoItem::proscessDetection(QByteArray data)
+{
+    _detectionMatrixModel.clear();
+
+
+
+    for(int i = 0; i< data.size(); ){
+        if(i%17==0){
+            uint8_t x;
+            memcpy(&x, data.data()+i, sizeof(uint8_t));
+            _detectionMatrixModel.append(x);
+           // qDebug()<<"class:"<< x;
+            i += 1;
+        }else if(i%17==9){
+            float x;
+            float y;
+            memcpy(&x, data.data()+i, sizeof(float));
+            _detectionMatrixModel.append(x*100);
+            memcpy(&y, data.data()+i+4, sizeof(float));
+            _detectionMatrixModel.append(y*100);
+            i+=8;
+
+        }else{
+            uint16_t x;
+            memcpy(&x, data.data()+i, sizeof(uint16_t));
+            _detectionMatrixModel.append(x);
+            i += 2;
+        }
+
+
+    }
+    emit detectionMatrixModelChanged(_detectionMatrixModel);
 }

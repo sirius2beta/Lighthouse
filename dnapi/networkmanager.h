@@ -15,13 +15,14 @@ public:
     void init();
 
 signals:
-    void AliveResponse(QString ip, int ID);
-    void setFormat(int ID, QByteArray data);
-    void sensorMsg(int ID, QByteArray data);
-    void controlMsg(int ID, QByteArray data);
+    void AliveResponse(QString ip, uint8_t boatID);
+    void setFormat(uint8_t boatID, QByteArray data);
+    void sensorMsg(uint8_t boatID, QByteArray data);
+    void controlMsg(uint8_t boatID, QByteArray data);
+    void detectMsg(uint8_t boatID, QByteArray data);
 public slots:
     void sendMsg(QHostAddress addr, uint8_t topic, QByteArray command = "");
-    void sendMsgbyID(int boatID, uint8_t topic, QByteArray command = "");
+    void sendMsgbyID(uint8_t boatID, uint8_t topic, QByteArray command = "");
 
 protected slots:
     void onUDPMsg();

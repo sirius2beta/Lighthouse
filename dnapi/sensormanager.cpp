@@ -45,7 +45,7 @@ DNQmlObjectListModel* SensorManager::getSensorModel(int index)
 }
 
 
-void SensorManager::onSensorMsg(int ID, QByteArray data)
+void SensorManager::onSensorMsg(uint8_t ID, QByteArray data)
 {
 
     //DNMetaData::ValueType_t datatype;
