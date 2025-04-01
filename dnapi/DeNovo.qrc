@@ -37,6 +37,11 @@
         <file alias="radar_front.png">res/radar_front.png</file>
         <file alias="radar.png">res/radar.png</file>
     </qresource>
+    <qresource prefix="/fonts">
+        <file alias="Roboto-Regular.ttf">res/fonts/Roboto-Regular.ttf</file>
+        <file alias="Roboto-Bold.ttf">res/fonts/Roboto-Bold.ttf</file>
+        <file alias="Roboto-Black.ttf">res/fonts/Roboto-Black.ttf</file>
+    </qresource>
     <qresource prefix="/qmlimages">
         <file alias="pipResize.svg">res/pipResize.svg</file>
         <file alias="pipHide.svg">res/pipHide.svg</file>

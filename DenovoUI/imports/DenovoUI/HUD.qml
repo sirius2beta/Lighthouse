@@ -1,7 +1,7 @@
 ﻿import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
-import QtMultimedia 5.7
+import QtQuick.Layouts
+import QtMultimedia
 
 Item {
     id: root
@@ -44,7 +44,30 @@ Item {
             return 1
 
     }
-
+    MediaPlayer {
+        id: alarmSound1
+        source: "sound/warning1.mp3"
+        loops: MediaPlayer.Infinite
+        audioOutput: AudioOutput {
+            muted: !Constants.voltAlarm
+        }
+    }
+    MediaPlayer {
+        id: alarmSound2
+        source: "sound/alarm2.wav"
+        loops: MediaPlayer.Infinite
+        audioOutput: AudioOutput {
+            muted: !Constants.depthAlarm
+        }
+    }
+    MediaPlayer {
+        id: alarmSound3
+        source: "sound/alarm4.wav"
+        loops: MediaPlayer.Infinite
+        audioOutput: AudioOutput {
+            muted: !Constants.cabinTAlarm
+        }
+    }
 /*
     Audio {
               id: alarmSound1

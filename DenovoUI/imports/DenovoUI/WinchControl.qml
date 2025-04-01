@@ -388,7 +388,7 @@ Item {
                     value:DeNovoViewer.controlManager.controls.get(0).maxSpeed
                     onValueChanged:{
                         console.log(DeNovoViewer.controlManager.controls.get(0).maxSpeed)
-                        DeNovoViewer.controlManager.controls.get(0).maxSpeed = this.value
+                        DeNovoViewer.controlManager.controls.get(0).set = this.value
                     }
                 }
 

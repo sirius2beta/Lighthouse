@@ -14,9 +14,8 @@ import DeNovoViewer.Display 1.0
 import DenovoUI 1.0
 
 
-Window {
-    FontLoader { source: "font/Roboto-Black.ttf" }
-    FontLoader { source: "font/Roboto-Regular.ttf" }
+
+Window {  
     id: dnMainWindow
     width: 1280
     height: 720
@@ -62,6 +61,7 @@ Window {
 
     QuickTab{
         id: quicktab
+
         anchors.bottom:parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right

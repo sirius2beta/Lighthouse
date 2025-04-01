@@ -1,6 +1,7 @@
 ﻿#include <QRunnable>
 #include <gst/gst.h>
 #include <QQuickStyle>
+#include <QtGui/QFontDatabase>
 
 #include "dnapplication.h"
 #include "dnapi/dnvideomanager.h"
@@ -82,6 +83,7 @@ DNApplication::DNApplication(int &argc, char *argv[])
 
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
 
+
     QQuickStyle::setStyle("Material");
 
     _setGstEnvVars();
@@ -95,12 +97,11 @@ DNApplication::DNApplication(int &argc, char *argv[])
 
 DNApplication::~DNApplication()
 {
-
 }
 
 void DNApplication::_shutdown()
 {
-
+    delete _qmlEngine;
 }
 
 void DNApplication::_init(int &argc, char *argv[])
@@ -109,6 +110,8 @@ void DNApplication::_init(int &argc, char *argv[])
     GST_PLUGIN_STATIC_REGISTER(qml6);
     _app = this;
     _qmlEngine = new QQmlApplicationEngine(this);
+
+
 
     _core = new DNCore(this, QString("config1"));
     // Register our Qml objects
@@ -124,6 +127,10 @@ void DNApplication::_init(int &argc, char *argv[])
     // Register Qml Singletons
     qmlRegisterSingletonType<DNQmlGlobal>("DeNovoViewer", 1, 0, "DeNovoViewer", DNQmlGlobalSingletonFactory);
     qDebug()<<"global init()";
+
+    QFontDatabase::addApplicationFont(":/fonts/Roboto-Regular.ttf");
+    QFontDatabase::addApplicationFont(":/fonts/Roboto-Bold.ttf");
+    QFontDatabase::addApplicationFont(":/fonts/Roboto-Black.ttf");
 
     _core->videoManager()->initGstreamer();
 

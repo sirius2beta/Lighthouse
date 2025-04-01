@@ -30,12 +30,7 @@ Item {
     property bool controlHide: true
     property int _index: 0
     property VideoItem videoItem
-    function setIndex(index){
-        _index = index
-        videoItem = DeNovoViewer.videoManager.getVideoItem(index)
-        videoItem.setBoatID(DeNovoViewer.boatManager.getIDbyInex(_boatNo.currentIndex))
-        console.log("init listview index:",_boatNo.currentIndex)
-    }
+
     property var labelMap : [
         "person",         "bicycle",    "car",           "motorbike",     "aeroplane",   "bus",           "train",
         "truck",          "boat",       "traffic light", "fire hydrant",  "stop sign",   "parking meter", "bench",
@@ -260,15 +255,12 @@ Item {
         }
     }
 
-    onIsFullChanged: SequentialAnimation{
-
+    onIsFullChanged: fade_in_out_animation.start()
+    SequentialAnimation{
+        id: fade_in_out_animation
         PropertyAnimation{ target: video_display_no; property: "opacity"; to: 1 ; duration:100}
         PropertyAnimation{ target: video_display_no; property: "opacity"; to: 1 ; duration:500}
         PropertyAnimation{ target: video_display_no; property: "opacity"; to: 0 ; duration:500}
-
-    }
-    Component.onCompleted: {
-        setIndex(_index)
 
     }
 

@@ -4,10 +4,12 @@
 #include <gst/gst.h>
 #include <QDebug>
 #include <QSplashScreen>
+
 #include "dnapplication.h"
 
 int main(int argc, char *argv[])
 {
+
     DNApplication* app = new DNApplication(argc, argv);
     QPixmap pixmap(":/res/splash.png");
     QSplashScreen splash(pixmap);

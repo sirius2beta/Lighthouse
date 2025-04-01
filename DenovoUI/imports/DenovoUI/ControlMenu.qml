@@ -1,7 +1,7 @@
-﻿import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
-import QtMultimedia 5.7
+﻿import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtMultimedia
 
 
 Item {
@@ -18,6 +18,15 @@ Item {
               }
           }
 */
+
+    MediaPlayer {
+        id: playSound
+        source: "sound/click79.wav"
+        Component.onCompleted: { play() }
+        audioOutput: AudioOutput {
+            muted: true
+        }
+    }
     SwipeView{
         id: swipeView
         anchors.fill: parent
@@ -40,7 +49,7 @@ Item {
                         imgsrc: "images/winch.png"
                         text: "Winch"
                         onClicked: {
-
+                            playSound.play()
                             swipeView.currentIndex = 1
                             loader.source = "WinchControl.qml"
                         }
@@ -81,7 +90,7 @@ Item {
                         imgsrc: "images/tune.png"
                         text: "Device"
                         onClicked: {
-                            //playSound.play()
+                            playSound.play()
                             loader.source = "DeviceControl.qml"
                         }
 
@@ -102,7 +111,8 @@ Item {
 
     Component.onCompleted: {
 
-        playSound.play()
+        //playSound.play()
+        playSound.audioOutput.muted = false
 
 
     }
