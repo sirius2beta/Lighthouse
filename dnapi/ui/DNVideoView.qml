@@ -18,6 +18,9 @@ Item {
     property bool isFull: videoPipState.state === videoPipState.fullState
     property string videoObjectName //required, bind to C++ gstreamer g_object_set
     property int display_no: 0
+    property int h_resolution: 480
+    property int w_resolution: 640
+    property real ratio: w_resolution/h_resolution
 
     PipState {
         id:         videoPipState
@@ -50,11 +53,10 @@ Item {
     Rectangle{
         id: background
         anchors.fill: parent
-        color: "#000000"
-        radius: 0
+        color: isFull?"#000000":"#222222"
+        radius: isFull?0:10
         clip: true
         border.width: isFull?0:1
-        border.color: "#999999"
 
         GstGLQt6VideoItem {
             id: video
@@ -180,13 +182,14 @@ Item {
     Rectangle{
         id: radar
         visible: isFull
-        width:200
-        height: 200
+        width:150
+        height: 150
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
+        anchors.margins: 10
         color: "#333333"
         border.color: "#555555"
-        radius:100
+        radius:width/2
         Image {
             anchors.fill: parent
             source: "qrc:/res/radar.png"
@@ -199,8 +202,8 @@ Item {
             delegate: Rectangle {
                 width:5
                 height:5
-                x: -model.cx*5/100+100
-                y: (cy>0 ||cy<10)? -model.cy*5/100+100: 0
+                x: -model.cx*5/radius+radius
+                y: (cy>0 ||cy<10)? -model.cy*5/radius+radius: 0
                 color:"#ff5555"
             }
         }
@@ -224,22 +227,37 @@ Item {
 
     Connections {
         target: videoItem
+        function onFormatNoChanged(no){
+            if(no === 0){
+                _root.w_resolution = 1920
+                _root.h_resolution = 1080
+            }else if(no === 1){
+                _root.w_resolution = 1280
+                _root.h_resolution = 720
+            }else if(no === 2){
+                _root.w_resolution = 640
+                _root.h_resolution = 480
+            }
+            console.log("format no changed", _root.ratio)
+        }
+    }
+
+    Connections {
+        target: videoItem
         function onDetectionMatrixModelChanged(model){
+            print(model.length)
             var count = model.length/7
             var videoRatio = 1
             var dx = 0
             var dy = 0
-            if(videoItem.formatNo == 2){
-                var ratio = 4/3
-                if(background.width/background.height > ratio){
-                    videoRatio = background.height/480
-                    dx = (background.width-background.height*4/3)/2
-                }else{
-                    videoRatio = background.width/640
-                    dy = (background.height-background.width*3/4)/2
-                }
-            }
 
+            if(background.width/background.height > _root.ratio){
+                videoRatio = background.height/_root.h_resolution
+                dx = (background.width-background.height*ratio)/2
+            }else{
+                videoRatio = background.width/_root.w_resolution
+                dy = (background.height-background.width/_root.ratio)/2
+            }
 
             detect_model.clear()
             for(var i = 0; i< count; i++){
@@ -251,8 +269,16 @@ Item {
                 var box_cy = model[i*7 + 6]*1
                 detect_model.append({x:box_x, y:box_y, width:box_w, height:box_h, cx: box_cx, cy: box_cy})
             }
-
         }
+    }
+
+    Rectangle{
+        id: border
+        anchors.fill: parent
+        color: "#00000000"
+        radius: isFull?0:10
+        border.width: isFull?0:1
+        border.color: "#555555"
     }
 
     onIsFullChanged: fade_in_out_animation.start()
@@ -263,5 +289,14 @@ Item {
         PropertyAnimation{ target: video_display_no; property: "opacity"; to: 0 ; duration:500}
 
     }
+
+    function setIndex(index){
+            _index = index
+            videoItem = DeNovoViewer.videoManager.getVideoItem(index)
+    }
+
+    Component.onCompleted: {
+            setIndex(_index)
+        }
 
 }

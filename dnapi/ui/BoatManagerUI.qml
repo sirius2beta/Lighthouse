@@ -27,7 +27,7 @@ Item {
         anchors.left: parent.left
         anchors.bottom: parent.bottom
         radius:5
-        color: "#444444"
+        color: "#222222"
         opacity: 100
         border.width: 2
         border.color: "#dddddd"
@@ -41,7 +41,7 @@ Item {
 
             radius: 5
             height:35
-            color: "#222222"
+            color: "#191919"
 
             Rectangle{
                 anchors.centerIn: parent
@@ -49,7 +49,7 @@ Item {
                 width: parent.width
                 height: parent.height-5
                 radius: 0
-                color: "#222222"
+                color: "#191919"
             }
 
             Text{

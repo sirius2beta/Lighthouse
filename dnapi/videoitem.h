@@ -25,7 +25,7 @@ public:
 
     Q_PROPERTY(int boatID READ boatID NOTIFY boatIDChanged )
     Q_PROPERTY(int videoNo READ videoNo CONSTANT)
-    Q_PROPERTY(int formatNo READ formatNo CONSTANT)
+    Q_PROPERTY(int formatNo READ formatNo NOTIFY formatNoChanged)
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(int PCPort READ PCPort NOTIFY PCPortChanged)
     Q_PROPERTY(bool AIEnabled READ AIEnabled CONSTANT)
@@ -92,6 +92,7 @@ signals:
     void PCPortChanged(int port);
     void titleChanged(QString title);
     void indexChanged(int index);
+    void formatNoChanged(int formateNo);
     void videoPlayed(VideoItem* v);
     void videoStoped(VideoItem* v);
     void videoNoListModelChanged(QStringList model);

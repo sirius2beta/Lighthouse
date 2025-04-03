@@ -6,7 +6,7 @@ import DeNovoViewer.Boat 1.0
 Item {
     id: root
     width: 1280
-    height: 110
+    //height: 110
     property string quality: ""
     property string video_no: ""
     property real port:0

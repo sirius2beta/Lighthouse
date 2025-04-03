@@ -46,8 +46,6 @@ set(CMAKE_AUTORCC ON)
 
 
 
-
-
 qt_add_executable(${APP_NAME}
     main.cpp
     ${QGC_RESOURCES}

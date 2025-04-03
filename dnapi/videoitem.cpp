@@ -173,6 +173,7 @@ void VideoItem::setFormatNo(int no)
         return;
     }
     _formatNo = no;
+    emit formatNoChanged(_formatNo);
 }
 
 void VideoItem::setDisplay(WId xwinid)

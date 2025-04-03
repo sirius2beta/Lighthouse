@@ -5,11 +5,11 @@ QtObject {
     readonly property int width: 1920
     readonly property int height: 1080
     property real voltLL:19
-    property bool voltAlarm: true
+    property bool voltAlarm: false
     property real cabinTU: 50
-    property bool cabinTAlarm: true
+    property bool cabinTAlarm: false
     property real depthLL: 50
-    property bool depthAlarm: true
+    property bool depthAlarm: false
 
 
     property string relativeFontDirectory: "fonts"

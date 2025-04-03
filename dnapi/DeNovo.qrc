@@ -18,6 +18,7 @@
         <file alias="DeNovoViewer/Display/DNFlyView.qml">ui/DNFlyView.qml</file>
         <file alias="DeNovoViewer/Display/WinchControl.qml">ui/WinchControl.qml</file>
         <file alias="DeNovoViewer/Display/QuickTab.qml">ui/QuickTab.qml</file>
+        <file alias="DeNovoViewer/Display/RightTool.qml">ui/RightTool.qml</file>
     </qresource>
     <qresource prefix="/res">
         <file alias="boatManager.png">res/boatManager.png</file>
@@ -36,6 +37,12 @@
         <file alias="warning.png">res/warning.png</file>
         <file alias="radar_front.png">res/radar_front.png</file>
         <file alias="radar.png">res/radar.png</file>
+        <file alias="radar.png">res/radar.png</file>
+        <file alias="notifications_active.png">res/notifications_active.png</file>
+        <file alias="notifications_off.png">res/notifications_off.png</file>
+        <file alias="menu.png">res/menu.png</file>
+        <file alias="video_display.png">res/video_display.png</file>
+        <file alias="sail_boat.png">res/sail_boat.png</file>
     </qresource>
     <qresource prefix="/fonts">
         <file alias="Roboto-Regular.ttf">res/fonts/Roboto-Regular.ttf</file>

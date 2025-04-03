@@ -68,35 +68,14 @@ Item {
             muted: !Constants.cabinTAlarm
         }
     }
-/*
-    Audio {
-              id: alarmSound1
-              source: "sound/warning1.mp3"
-              loops: Audio.Infinite
-              muted: !Constants.voltAlarm
-    }
 
-    Audio {
-              id: alarmSound2
-              source: "sound/alarm2.wav"
-              loops: Audio.Infinite
-              muted: !Constants.depthAlarm
-    }
-    
-    Audio {
-              id: alarmSound3
-              source: "sound/alarm4.wav"
-              loops: Audio.Infinite
-              muted: !Constants.cabinTAlarm
-    }
 
-*/
 
     Rectangle{
         id: rectangle3
         anchors.fill: parent
-        color: "#2f2f33"
-        border.color: "#565656"
+        color: "#191919"
+        //border.color: "#565656"
 
 
 
@@ -297,6 +276,7 @@ Item {
                             }
                         }
                     }
+
                     MouseArea{
                         anchors.fill: parent
                         onClicked:{
@@ -385,6 +365,7 @@ Item {
             }
 
             Rectangle {
+                id: temperature_indicator
                 width: 1
                 height: 45
                 color: temp>Constants.cabinTU?"#7cff0000":"#00000000"
@@ -658,6 +639,47 @@ Item {
                 }
 
             }
+            Button {
+                id: mute_button
+                text: ""
+                Layout.alignment:Qt.AlignTop
+                Layout.preferredWidth:30
+                Layout.preferredHeight: 30
+                topInset: 0
+                bottomInset: 0
+                padding: 0
+                property bool activate: false
+                background: Rectangle {
+                    implicitWidth: 30
+                    implicitHeight: 30
+                    color: parent.down ? "#000000" : "#333333"
+                    border.color: "#26282a"
+                    border.width: 1
+                    radius: 4
+                    Rectangle{
+                        anchors.fill: parent
+                        radius:4
+                        anchors.margins: 2
+                        color:"#88999900"
+                    }
+
+                    Image{
+                        id: img
+                        anchors.margins: 2
+                        anchors.fill: parent
+
+                        source: parent.activate?"qrc:/res/notifications_active.png":"qrc:/res/notifications_off.png"
+                    }
+                }
+                onClicked: {
+                    activate=activate?false:true
+                    img.source = activate?"qrc:/res/notifications_active.png":"qrc:/res/notifications_off.png"
+                    Constants.depthAlarm = activate
+                    Constants.cabinTAlarm = activate
+                    Constants.voltAlarm = activate
+                }
+            }
+
         }
 
 
@@ -665,6 +687,8 @@ Item {
 
 
     }
+
+
     SlidingScale{
         opacity: 1
         anchors.top: parent.bottom

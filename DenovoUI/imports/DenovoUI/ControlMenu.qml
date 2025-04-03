@@ -8,16 +8,6 @@ Item {
     id: root
     width: 300
     height: 400
-    /*
-    Audio {
-              id: playSound
-              source: "sound/click79.wav"
-              muted: true
-              onStopped: {
-                  muted = false
-              }
-          }
-*/
 
     MediaPlayer {
         id: playSound
