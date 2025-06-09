@@ -5,4 +5,4 @@
 - Gstreamer 1.22.12
 
 ## Build log
-### 2025/06/09 更新上穩定版本，windows installer可用
+- 2025/06/09 更新上穩定版本，windows installer可用
