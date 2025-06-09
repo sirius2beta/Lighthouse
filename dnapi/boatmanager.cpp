@@ -28,55 +28,61 @@ void BoatManager::init()
     qDebug()<<"BoatManager::init(): Initiating...";
     settings->beginGroup(QString("%1").arg(_core->config()));
     int size = settings->beginReadArray("boat");
+    if(size == 0){
+        settings->endArray();
+        settings->endGroup();
+        addBoat(); //一開始如果沒有船的設定，先新增一艘船
+    }else{
+        for(int i = 0; i < size; i++){
+            settings->setArrayIndex(i);
+            QString boatname = settings->value("boatname").toString();
+            int ID = settings->value("ID").toInt();
+            QString boatPIP = settings->value("/PIP").toString();
+            QString boatSIP = settings->value("/SIP").toString();
 
-    for(int i = 0; i < size; i++){
-        settings->setArrayIndex(i);
-        QString boatname = settings->value("boatname").toString();
-        int ID = settings->value("ID").toInt();
-        QString boatPIP = settings->value("/PIP").toString();
-        QString boatSIP = settings->value("/SIP").toString();
+            BoatItem* boat = new BoatItem(this);
+            boat->setID(ID);
+            boat->setName(boatname);
+            boat->setPIP(boatPIP);
+            boat->setSIP(boatSIP);
+            _boatList.append(boat);
 
-        BoatItem* boat = new BoatItem(this);
-        boat->setID(ID);
-        boat->setName(boatname);
-        boat->setPIP(boatPIP);
-        boat->setSIP(boatSIP);
-        _boatList.append(boat);
+            _boatListModel.append(boat);
 
-        _boatListModel.append(boat);
+            int current = boatItemModel->rowCount();
+            QStandardItem* item1 = new QStandardItem(boatname);
+            QStandardItem* item2 = new QStandardItem(QString("SB"));
+            item2->setData(boatPIP);
+            item2->setBackground(QBrush(QColor(120,0,0)));
+            QStandardItem* item3 = new QStandardItem(QString("SB"));
+            item3->setData(boatSIP);
+            item3->setBackground(QBrush(QColor(120,0,0)));
+            boatItemModel->setItem(current,0,item1);
+            boatItemModel->setItem(current,1,item2);
+            boatItemModel->setItem(current,2,item3);
 
-        int current = boatItemModel->rowCount();
-        QStandardItem* item1 = new QStandardItem(boatname);
-        QStandardItem* item2 = new QStandardItem(QString("SB"));
-        item2->setData(boatPIP);
-        item2->setBackground(QBrush(QColor(120,0,0)));
-        QStandardItem* item3 = new QStandardItem(QString("SB"));
-        item3->setData(boatSIP);
-        item3->setBackground(QBrush(QColor(120,0,0)));
-        boatItemModel->setItem(current,0,item1);
-        boatItemModel->setItem(current,1,item2);
-        boatItemModel->setItem(current,2,item3);
+            connect(boat, &BoatItem::nameChanged, this, &BoatManager::onBoatNameChange);
+            connect(boat, &BoatItem::IPChanged, this, &BoatManager::onIPChanged);
+            connect(boat, &BoatItem::connectStatusChanged, this, &BoatManager::onConnectStatusChanged);
+            //connect(boat, &BoatItem::disconnected, this, &BoatManager::onDisonnected);
 
-        connect(boat, &BoatItem::nameChanged, this, &BoatManager::onBoatNameChange);
-        connect(boat, &BoatItem::IPChanged, this, &BoatManager::onIPChanged);
-        connect(boat, &BoatItem::connectStatusChanged, this, &BoatManager::onConnectStatusChanged);
-        //connect(boat, &BoatItem::disconnected, this, &BoatManager::onDisonnected);
+            HeartBeat* _primaryHeartBeat = new HeartBeat(boat, 50006, true, boat, _core);
+            _primaryHeartBeat->HeartBeatLoop();
+            HeartBeat* _secondaryHeartBeat = new HeartBeat(boat, 50006, false, boat, _core);
+            _secondaryHeartBeat->HeartBeatLoop();
 
-        HeartBeat* _primaryHeartBeat = new HeartBeat(boat, 50006, true, boat, _core);
-        _primaryHeartBeat->HeartBeatLoop();
-        HeartBeat* _secondaryHeartBeat = new HeartBeat(boat, 50006, false, boat, _core);
-        _secondaryHeartBeat->HeartBeatLoop();
+            connect(boat, &BoatItem::connectionChanged, this, &BoatManager::connectionChanged);
+            connect(boat, &BoatItem::IPChanged, _primaryHeartBeat, &HeartBeat::onChangeIP);
+            connect(boat, &BoatItem::IPChanged, _secondaryHeartBeat, &HeartBeat::onChangeIP);
 
-        connect(boat, &BoatItem::connectionChanged, this, &BoatManager::connectionChanged);
-        connect(boat, &BoatItem::IPChanged, _primaryHeartBeat, &HeartBeat::onChangeIP);
-        connect(boat, &BoatItem::IPChanged, _secondaryHeartBeat, &HeartBeat::onChangeIP);
+            qDebug()<<"  - Add boat: ID:"<<ID<<", name:"<<boatname ;
 
-        qDebug()<<"  - Add boat: ID:"<<ID<<", name:"<<boatname ;
+        }
 
+        settings->endArray();
+        settings->endGroup();
     }
 
-    settings->endArray();
-    settings->endGroup();
     qDebug()<<"BoatManager::init(): Initiate complete";
 }
 
@@ -84,18 +90,18 @@ void BoatManager::addBoat()
 {
 
     QVector<bool> indexfree(256, true);
-        int index = 0;
-        for(int i = 0; i< size(); i++){
-            indexfree[getBoatbyIndex(i)->ID()] = false;
+    int index = 0;
+    for(int i = 0; i< size(); i++){
+        indexfree[getBoatbyIndex(i)->ID()] = false;
 
-        }
-        for(int i =0; i<256; i++){
-            if(indexfree[i] == true){
-                index = i;
+    }
+    for(int i =0; i<256; i++){
+        if(indexfree[i] == true){
+            index = i;
 
-                break;
-            }
+            break;
         }
+    }
 
 
 

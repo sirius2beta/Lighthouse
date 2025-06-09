@@ -7,7 +7,7 @@ list(APPEND CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/find-modules
 )
 
-set(QGC_WINDOWS_ICON_PATH "${CMAKE_SOURCE_DIR}/deploy/windows/Lighthouse.ico" CACHE FILEPATH "Windows Icon Path")
+set(QGC_WINDOWS_ICON_PATH "${CMAKE_SOURCE_DIR}/deploy/windows/logo.ico" CACHE FILEPATH "Windows Icon Path")
 
 option(QGC_ENABLE_GST_VIDEOSTREAMING "Enable GStreamer Video Backend" ON)
 

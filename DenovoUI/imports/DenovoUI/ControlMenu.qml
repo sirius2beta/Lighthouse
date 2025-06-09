@@ -7,12 +7,11 @@ import QtMultimedia
 Item {
     id: root
     width: 300
-    height: 400
+    height: 300
 
     MediaPlayer {
         id: playSound
         source: "sound/click79.wav"
-        Component.onCompleted: { play() }
         audioOutput: AudioOutput {
             muted: true
         }
@@ -27,7 +26,6 @@ Item {
             width: 200
             height: 350
             color: "#1a1a1c"
-            border.color: "#565656"
             Column{
                 anchors.top: parent.top
                 anchors.topMargin: 20
@@ -45,13 +43,15 @@ Item {
                         }
                     }
                     MenuButton{
-                        imgsrc: "images/videocam.png"
-                        text: "Video"
+                        imgsrc: "images/tune.png"
+                        text: "Device"
                         onClicked: {
                             playSound.play()
-                            loader.source = "VideoControl.qml"
+                            loader.source = "DeviceControl.qml"
                         }
+
                     }
+
                 }
                 Row{
                     spacing: 20
@@ -74,19 +74,7 @@ Item {
 
                     }
                 }
-                Row{
-                    spacing: 20
-                    MenuButton{
-                        imgsrc: "images/tune.png"
-                        text: "Device"
-                        onClicked: {
-                            playSound.play()
-                            loader.source = "DeviceControl.qml"
-                        }
 
-                    }
-
-                }
 
             }
 

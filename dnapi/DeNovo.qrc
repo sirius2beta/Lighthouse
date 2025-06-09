@@ -13,12 +13,16 @@
         <file alias="DeNovoViewer/Display/DNPopup.qml">ui/DNPopup.qml</file>
         <file alias="DeNovoViewer/Display/EditBoatDialog.qml">ui/EditBoatDialog.qml</file>
         <file alias="DeNovoViewer/Display/PipView.qml">ui/PipView.qml</file>
+        <file alias="DeNovoViewer/Display/PipView2.qml">ui/PipView2.qml</file>
         <file alias="DeNovoViewer/Display/PipState.qml">ui/PipState.qml</file>
         <file alias="DeNovoViewer/Display/CenterVideoView.qml">ui/CenterVideoView.qml</file>
         <file alias="DeNovoViewer/Display/DNFlyView.qml">ui/DNFlyView.qml</file>
         <file alias="DeNovoViewer/Display/WinchControl.qml">ui/WinchControl.qml</file>
         <file alias="DeNovoViewer/Display/QuickTab.qml">ui/QuickTab.qml</file>
         <file alias="DeNovoViewer/Display/RightTool.qml">ui/RightTool.qml</file>
+        <file alias="DeNovoViewer/Display/MapView.qml">ui/MapView.qml</file>
+        <file alias="DeNovoViewer/Display/BoatSetting.qml">ui/BoatSetting.qml</file>
+        <file alias="DeNovoViewer/Display/VideoSetting.qml">ui/VideoSetting.qml</file>
     </qresource>
     <qresource prefix="/res">
         <file alias="boatManager.png">res/boatManager.png</file>
@@ -43,6 +47,7 @@
         <file alias="menu.png">res/menu.png</file>
         <file alias="video_display.png">res/video_display.png</file>
         <file alias="sail_boat.png">res/sail_boat.png</file>
+        <file alias="close.png">res/close.png</file>
     </qresource>
     <qresource prefix="/fonts">
         <file alias="Roboto-Regular.ttf">res/fonts/Roboto-Regular.ttf</file>

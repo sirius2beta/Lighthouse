@@ -131,7 +131,7 @@ Item {
         preventStealing: true
         hoverEnabled:   true
         onClicked:  {
-            if(item1._index!=2){
+            if(item1._index!=1){
                 _swapPip()
             }
         }
@@ -140,35 +140,58 @@ Item {
     // MouseArea to drag in order to resize the PiP area
     MouseArea {
         id:             pipResize
-        anchors.bottom:    parent.bottom
-        anchors.right:  parent.right
         height:         25
         width:          25
         preventStealing: true
         cursorShape: Qt.PointingHandCursor
+        state: "attach"
 
         property real initialX:     0
         property real initialWidth: 0
 
+        states: [
+            State {
+                name: "detatch"
+                AnchorChanges {
+                    target: pipResize
+                    anchors.left: _root.right
+                    anchors.top: undefined
+
+                }
+            },
+            State {
+                name: "attach"
+                AnchorChanges {
+                    target: pipResize
+                    anchors.left: _root.left
+                    anchors.top: _root.top
+
+                }
+            }
+
+
+        ]
+
         // When we push the mouse button down, we un-anchor the mouse area to prevent a resizing loop
         onPressed: (mouse) => {
-            pipResize.anchors.bottom = undefined // Top doesn't seem to 'detach'
-            pipResize.anchors.right = undefined // This one works right, which is what we really need
+
+            pipResize.state = "detatch"
             pipResize.initialX = mouse.x
             pipResize.initialWidth = _root.width
+
         }
 
         // When we let go of the mouse button, we re-anchor the mouse area in the correct position
         onReleased: {
-            pipResize.anchors.bottom = _root.bottom
-            pipResize.anchors.right = _root.right
+
+            pipResize.state = "attach"
         }
 
         // Drag
         onPositionChanged: (mouse) => {
             if (pipResize.pressed) {
                 var parentWidth = _root.parent.width
-                var newWidth = pipResize.initialWidth + mouse.x - pipResize.initialX
+                var newWidth =  - mouse.x
                 if (newWidth < parentWidth * _maxSize && newWidth > parentWidth * _minSize) {
                     _pipSize = newWidth
                 }
@@ -178,16 +201,17 @@ Item {
 
     // Resize icon
     Image {
+        id: resize_icon
         source:         "/qmlimages/pipResize.svg"
         fillMode:       Image.PreserveAspectFit
         mipmap: true
-        anchors.right:  parent.right
-        anchors.bottom:    parent.bottom
+        anchors.left:  parent.left
+        anchors.top:    parent.top
         visible:        _isExpanded && pipMouseArea.containsMouse
         height:         25
         width:          25
         sourceSize.height:  height
-        rotation:90
+        rotation: -90
     }
 
     // Check min/max constraints on pip size when when parent is resized

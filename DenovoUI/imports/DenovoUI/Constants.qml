@@ -9,6 +9,8 @@ QtObject {
     property real cabinTU: 50
     property bool cabinTAlarm: false
     property real depthLL: 50
+    property real rssiLL: -100
+    property bool rssiAlarm: false
     property bool depthAlarm: false
 
 
@@ -16,7 +18,11 @@ QtObject {
 
     /* Edit this comment to add your custom font */
     readonly property font font: Qt.font({
-                                             family: "Segoe UI",
+                                             family: "roboto",
+                                             pixelSize: Qt.application.font.pixelSize
+                                         })
+    readonly property font blackfont: Qt.font({
+                                             family: "roboto black",
                                              pixelSize: Qt.application.font.pixelSize
                                          })
     readonly property font largeFont: Qt.font({

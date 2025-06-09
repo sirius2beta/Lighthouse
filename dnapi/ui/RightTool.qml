@@ -14,7 +14,7 @@ Item {
     property int _index: 0
     signal openControlView()
 
-    function setIndex(index){
+    function setIndex(index){ //set video item index
         _index = index
         _videoItem = DeNovoViewer.videoManager.getVideoItem(index)
         _videoItem.setBoatID(DeNovoViewer.boatManager.getIDbyInex(_boatNo.currentIndex))
@@ -28,6 +28,9 @@ Item {
         _qualityNo.currentIndex = videoItem.formatNo
 
     }
+
+    signal openBoatSetting()
+    signal openVideoSetting()
 
     Rectangle{
         id: right_tool
@@ -111,7 +114,8 @@ Item {
                     }
                 }
                 onClicked: {
-                    _control.visible = _control.visible?false:true
+                    //_control.visible = _control.visible?false:true
+                    openVideoSetting()
                 }
             }
             Button {
@@ -151,7 +155,7 @@ Item {
                     }
                 }
                 onClicked: {
-                    _boatManager.visible = _boatManager.visible?false:true
+                    openBoatSetting()
                 }
             }
 
@@ -352,15 +356,10 @@ Item {
             }
 
         }
+
     }
 
-    BoatManagerUI{
-        id: _boatManager
-        anchors.top: parent.top
-        anchors.right: parent.left
-        visible: false
-        anchors.leftMargin: 15
-    }
+
 
 
     Component.onCompleted: {

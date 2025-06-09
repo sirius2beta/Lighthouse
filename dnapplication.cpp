@@ -80,19 +80,8 @@ DNApplication* DNApplication::_app = nullptr;
 DNApplication::DNApplication(int &argc, char *argv[])
     :QApplication (argc, argv)
 {
-
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
-
-
-    QQuickStyle::setStyle("Material");
-
     _setGstEnvVars();
-
-
-
-    // register C++ class of DNcore
-
-
 }
 
 DNApplication::~DNApplication()
@@ -110,8 +99,6 @@ void DNApplication::_init(int &argc, char *argv[])
     GST_PLUGIN_STATIC_REGISTER(qml6);
     _app = this;
     _qmlEngine = new QQmlApplicationEngine(this);
-
-
 
     _core = new DNCore(this, QString("config1"));
     // Register our Qml objects

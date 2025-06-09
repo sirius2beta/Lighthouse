@@ -100,7 +100,7 @@ Item {
                     }
 
                     Text {
-                        Layout.preferredWidth: 30
+                        Layout.preferredWidth: 80
                         font.family: "Segoe UI"
                         font.pixelSize: 16
                         color:"white"

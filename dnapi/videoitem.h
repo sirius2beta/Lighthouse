@@ -29,6 +29,7 @@ public:
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(int PCPort READ PCPort NOTIFY PCPortChanged)
     Q_PROPERTY(bool AIEnabled READ AIEnabled CONSTANT)
+    Q_PROPERTY(int blockID READ blockID CONSTANT)
     //Q_PROPERTY(QString port READ port NOTIFY IPChanged)
     //Q_PROPERTY(bool primaryConnected READ primaryConnected  NOTIFY connectStatusChanged)
     //Q_PROPERTY(bool secondaryConnected READ secondaryConnected  NOTIFY connectStatusChanged)
@@ -48,6 +49,7 @@ public:
     Q_INVOKABLE void setVideoIndex(int index);
     Q_INVOKABLE void setFormatNo(int no);
     Q_INVOKABLE void setProxyMode(bool p){ _proxyMode = p;}
+    Q_INVOKABLE void setBlockID(int ID) { _blockID = ID;}; // update camera info
 
     void initVideo(QQuickItem *widget);
     void setDisplay(WId xwinid);
@@ -78,7 +80,7 @@ public:
     QStringList qualityListModel() { return _formatListModel; }
     QStringList formatListStringModel() {return _formatStringListModel; }
     QList<int> detectionMatrixModel() { return _detectionMatrixModel;}
-
+    int blockID() { return _blockID; }
 
 
     QString encoder() {return _encoder;}
@@ -112,6 +114,7 @@ private:
     int _formatNo;
     int _PCPort;
     int _connectionPriority;
+    int _blockID;
     WId _xwinid;
     QString _encoder;
     bool _proxy;

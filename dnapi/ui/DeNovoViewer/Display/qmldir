@@ -7,9 +7,13 @@ AquaUI 1.0 AquaUI.qml
 BoatStatusView 1.0 BoatStatusView.qml
 DNPopup 1.0 DNPopup.qml
 PipView 1.0 PipView.qml
+PipView2 1.0 PipView2.qml
 PipState 1.0 PipState.qml
 CenterVideoView 1.0 CenterVideoView.qml
 DNFlyView 1.0 DNFlyView.qml
 WinchControl 1.0 WinchControl.qml
 QuickTab 1.0 QuickTab.qml
 RightTool 1.0 RightTool.qml
+MapView 1.0 MapView.qml
+BoatSetting 1.0 BoatSetting.qml
+VideoSetting 1.0 VideoSetting.qml

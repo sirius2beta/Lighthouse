@@ -7,6 +7,8 @@ Item {
     id: root
     width: 900
     height: 72
+    property bool primaryConnected: false
+    property bool secondaryConnected: false
     property real depth: 0
     property real volt: 0
     property real amp: 0
@@ -68,6 +70,14 @@ Item {
             muted: !Constants.cabinTAlarm
         }
     }
+    MediaPlayer {
+        id: alarmSound4
+        source: "sound/alarm4.wav"
+        loops: MediaPlayer.Infinite
+        audioOutput: AudioOutput {
+            muted: !Constants.rssiAlarm
+        }
+    }
 
 
 
@@ -75,18 +85,12 @@ Item {
         id: rectangle3
         anchors.fill: parent
         color: "#191919"
-        //border.color: "#565656"
-
-
-
-
-
 
         RowLayout {
             id: rowLayout
             anchors.fill: parent
             Column{
-                id: column
+                id: gs_column
                 x: 21
                 y: 14
                 width: 95
@@ -128,7 +132,7 @@ Item {
             }
 
             Column {
-                id: column1
+                id: distance_column
                 x: 126
                 y: 14
                 width: 95
@@ -171,6 +175,43 @@ Item {
                 Layout.fillWidth: true
 
             }
+            Column{
+                id:connection_column
+                spacing:5
+                RowLayout{
+                    spacing:5
+                    Rectangle{
+                        width: 10
+                        height: 10
+                        radius:5
+                        color: primaryConnected? "#00ff01":"#555555"
+                    }
+                    Text{
+                        Layout.fillHeight: true
+                        bottomPadding: 3
+                        color: "#ffffff"
+                        text: "primary"
+                        font.family: "roboto"
+                    }
+                }
+                Row{
+                    spacing:5
+                    Rectangle{
+                        width: 10
+                        height: 10
+                        radius:5
+                        color: secondaryConnected? "#00ff01":"#555555"
+                    }
+                    Text{
+                        Layout.fillHeight: true
+                        bottomPadding: 3
+                        color: "#ffffff"
+                        text: "secondary"
+                        font.family: "roboto"
+                    }
+                }
+            }
+
             Rectangle {
                 width: 15
                 height: 45
@@ -192,6 +233,7 @@ Item {
 
 
                 Rectangle{
+                    id: rssi_block
                     anchors.fill: parent
                     color: "#00ffffff"
                     border.color: "#00666666"
@@ -207,6 +249,7 @@ Item {
                                 text: "Rx"
                                 font.family: "roboto"
                                 font.pixelSize: 14
+
                             }
                             Repeater{
                                 model:4
@@ -224,6 +267,15 @@ Item {
                                 text: boat_rssi==0?"loss":ground_rssi
                                 font.family: "roboto"
                                 font.pixelSize: 14
+                                onTextChanged: {
+                                    if(boat_rssi<Constants.rssiLL || ground_rssi < Constants.rssiLL || ground_rssi == 0 || boat_rssi == 0 ){
+                                        rssi_block.color = "#55990000"
+                                        alarmSound4.play()
+                                    }else{
+                                        rssi_block.color = "00ffffff"
+                                        alarmSound4.stop()
+                                    }
+                                }
                             }
                         }
                         RowLayout{
@@ -267,12 +319,13 @@ Item {
                             id:alarmsettings4
                             anchors.fill:parent
                             enableUpper: false
-                            lowerValue: Constants.voltLL
-                            alarmOn: Constants.voltAlarm
+                            lowerValue: Constants.rssiLL
+                            upperValue: 1
+                            alarmOn: Constants.rssiAlarm
                             onSave: {
-                                Constants.voltLL = lowerValue
-                                Constants.voltAlarm = alarmOn
-                                popup.close()
+                                Constants.rssiLL = lowerValue
+                                Constants.rssiAlarm = alarmOn
+                                popup4.close()
                             }
                         }
                     }
@@ -393,7 +446,7 @@ Item {
                         width: 70
                         color: "#ffffff"
                         text: parseFloat(temp)+" C"
-                        font.family: "roboto"
+                        font.family: Constants.blackfont.family
                         font.pixelSize: 18
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.WordWrap
@@ -481,7 +534,7 @@ Item {
                         width: 70
                         color: "#ffffff"
                         text: parseFloat(volt)+" v"
-                        font.family: "roboto"
+                        font.family: Constants.blackfont.family
                         font.pixelSize: 18
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.WordWrap
@@ -583,7 +636,7 @@ Item {
                         width: 70
                         color: "#ffffff"
                         text: depth+" cm"
-                        font.family: "roboto"
+                        font.family: Constants.blackfont.family
                         font.pixelSize: 18
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.WordWrap
@@ -600,6 +653,7 @@ Item {
                 }
                 Popup{
                     id: popup3
+                    x:-100
                     y:parent.height
                     width:200
                     height:300
@@ -607,12 +661,15 @@ Item {
                     focus: true
                     padding:0
                     leftInset: 0
+
+
                     AlarmSettings{
                         id:alarmsettings3
                         anchors.fill:parent
                         enableUpper: false
                         lowerValue: Constants.depthLL
                         alarmOn: Constants.depthAlarm
+
                         onSave: {
                             Constants.depthLL = lowerValue
                             Constants.depthAlarm = alarmOn
@@ -677,6 +734,11 @@ Item {
                     Constants.depthAlarm = activate
                     Constants.cabinTAlarm = activate
                     Constants.voltAlarm = activate
+                    Constants.rssiAlarm = activate
+                    alarmsettings.alarmOn = activate
+                    alarmsettings2.alarmOn = activate
+                    alarmsettings3.alarmOn = activate
+                    alarmsettings4.alarmOn = activate
                 }
             }
 

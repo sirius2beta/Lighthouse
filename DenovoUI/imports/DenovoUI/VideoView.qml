@@ -19,13 +19,6 @@ Item {
         color: "#00ffffff"
         anchors.verticalCenter: parent.verticalCenter
         anchors.horizontalCenter: parent.horizontalCenter
-        Rectangle{
-            width:10
-            height:10
-            x:100
-            y:100
-
-        }
 
         Image {
             id: indicator1

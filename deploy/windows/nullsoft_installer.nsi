@@ -44,10 +44,19 @@ InstallDir "$PROGRAMFILES64\${APPNAME}"
 
 SetCompressor /SOLID /FINAL lzma
 
+Function finishpageaction
+CreateShortcut "$desktop\${APPNAME}.lnk" "$INSTDIR\bin\${EXENAME}.exe"
+FunctionEnd
+
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_BITMAP "${HEADER_BITMAP}";
 !define MUI_ICON "${INSTALLER_ICON}";
 !define MUI_UNICON "${INSTALLER_ICON}";
+
+!define MUI_FINISHPAGE_SHOWREADME ""
+!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "Create Desktop Shortcut"
+!define MUI_FINISHPAGE_SHOWREADME_FUNCTION finishpageaction
 
 !insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder
 !insertmacro MUI_PAGE_DIRECTORY
@@ -56,7 +65,15 @@ SetCompressor /SOLID /FINAL lzma
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 
+
+!insertmacro MUI_PAGE_FINISH
+!define MUI_PAGE_FINISH_BITMAP "${HEADER_BITMAP}";
 !insertmacro MUI_LANGUAGE "English"
+
+
+
+
+
 
 Section
   DetailPrint "Checking for 32 bit uninstaller"
@@ -113,6 +130,7 @@ driversInstalled:
   ReadRegDWORD $0 HKCU "${QGCDRIVERVERSIONKEY}" "version"
   IntCmp $0 ${QGCCURRENTDRIVERVERSION} done driversOutOfDate done
 
+
 driversOutOfDate:
   DetailPrint "UAV Drivers out of date."
   goto installDrivers
@@ -130,7 +148,7 @@ installDrivers:
   goto done
 
 done:
-  SetRegView lastused
+SetRegView lastused
 SectionEnd
 
 Section "Uninstall"
@@ -155,9 +173,5 @@ Section "create Start Menu Shortcuts"
   SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
   CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${APPNAME}.lnk" "$INSTDIR\bin\${EXENAME}.exe" "" "$INSTDIR\bin\${EXENAME}.exe" 0
-  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${APPNAME} (GPU Compatibility Mode).lnk" "$INSTDIR\bin\${EXENAME}.exe" "-desktop" "$INSTDIR\bin\${EXENAME}.exe" 0
-  !insertmacro DemoteShortCut "$SMPROGRAMS\$StartMenuFolder\${APPNAME} (GPU Compatibility Mode).lnk"
-  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${APPNAME} (GPU Safe Mode).lnk" "$INSTDIR\bin\${EXENAME}.exe" "-swrast" "$INSTDIR\bin\${EXENAME}.exe" 0
-  !insertmacro DemoteShortCut "$SMPROGRAMS\$StartMenuFolder\${APPNAME} (GPU Safe Mode).lnk"
-SectionEnd
 
+SectionEnd

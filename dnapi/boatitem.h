@@ -17,7 +17,7 @@ public:
     ~BoatItem();
 
     Q_PROPERTY(int ID READ ID CONSTANT)
-    Q_PROPERTY(QString name READ name NOTIFY nameChanged)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(QString PIP READ PIP WRITE setPIP NOTIFY PIPChanged)
     Q_PROPERTY(QString SIP READ SIP WRITE setSIP NOTIFY SIPChanged)
     Q_PROPERTY(bool primaryConnected READ primaryConnected  NOTIFY primaryConnectedChanged)

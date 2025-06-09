@@ -20,16 +20,14 @@ Window {
     width: 1280
     height: 720
     visible: true
-    title: DeNovoViewer.programName
-    //visibility: Window.FullScreen
-    //Material.theme: Material.Dark
-    //Material.accent: Material.Purple
+    title: "LightHouse v1.0.0"
     property DNValue dnvalue: DNValue{}
 
     property real lon: parseFloat(DeNovoViewer.sensorManager.mav1Model.get(1).displayValue)/10000000
     property real lat: parseFloat(DeNovoViewer.sensorManager.mav1Model.get(2).displayValue)/10000000
 
     property string version: "V3.1"
+    property int currentBoatIndex: 0
 
     Rectangle{
         color: "#111111"
@@ -55,7 +53,8 @@ Window {
         ground_rssi:parseInt(DeNovoViewer.sensorManager.kbestModel.get(1).displayValue)
         gs: Math.round(parseFloat(DeNovoViewer.sensorManager.mav1Model.get(7).displayValue)*100)/100
         z:2
-
+        primaryConnected: DeNovoViewer.boatManager.boatListModel.get(currentBoatIndex).primaryConnected
+        secondaryConnected: DeNovoViewer.boatManager.boatListModel.get(currentBoatIndex).secondaryConnected
     }
 
     DNFlyView{
@@ -63,43 +62,74 @@ Window {
         anchors.bottom: status_bar.top
         anchors.top: hud.bottom
         anchors.left: parent.left
-        anchors.right: _controlView.left
-        onSwapped: (videoItem) => {
-            quicktab.setVideoItem(videoItem)
-            right_tool.setVideoItem(videoItem)
+        width: parent.width - right_drawer.position
+        onSwapped:function(videoItem){
+
         }
-    }
-
-    ControlView{
-        id: _controlView
-        anchors.right: parent.right
-        anchors.top: hud.bottom
-        anchors.bottom: status_bar.top
-
-        totalBatteryPercentage: parseInt(DeNovoViewer.sensorManager.mav0Model.get(3).displayValue)
-        totalBatteryVoltage: parseInt(DeNovoViewer.sensorManager.mav0Model.get(1).displayValue)
-        totalBatteryCurrent: parseInt(DeNovoViewer.sensorManager.mav0Model.get(2).displayValue)
-    }
-
-    QuickTab{
-        id: quicktab
-
-        anchors.bottom:status_bar.top
-        anchors.left: parent.left
-        anchors.right: parent.right
 
     }
 
     RightTool{
         id: right_tool
-        anchors.right: _controlView.left
+        anchors.right: parent.right
         anchors.top: hud.bottom
         anchors.margins: 5
 
+
         onOpenControlView:{
-            _controlView.hide = _controlView.hide?false:true
+            //_controlView.hide = _controlView.hide?false:true
+            right_block.source = "qrc:/imports/DenovoUI/ControlView.qml"
+
+            right_block.item.totalBatteryPercentage = Qt.binding(function(){ return parseInt(DeNovoViewer.sensorManager.mav0Model.get(3).displayValue)})
+            right_block.item.totalBatteryVoltage=  Qt.binding(function(){ return parseInt(DeNovoViewer.sensorManager.mav0Model.get(1).displayValue)})
+            right_block.item.totalBatteryCurrent=  Qt.binding(function(){ return parseInt(DeNovoViewer.sensorManager.mav0Model.get(2).displayValue)})
+            right_drawer.open()
+        }
+        onOpenBoatSetting:{
+            right_block.source = "qrc:/qml/DeNovoViewer/Display/BoatSetting.qml"
+            right_drawer.open()
+        }
+        onOpenVideoSetting:{
+            right_block.source = "qrc:/qml/DeNovoViewer/Display/VideoSetting.qml"
+            right_block.item.setBoatID(0)
+            right_drawer.open()
         }
     }
+    Drawer{
+        id: right_drawer
+        width:300
+        y:72
+        height: parent.height
+        edge:           Qt.RightEdge
+        dragMargin:     0
+        closePolicy:    Drawer.NoAutoClose
+        interactive: false
+        visible: false
+        dim: false
+
+        Rectangle{
+            anchors.fill: parent
+            anchors.topMargin: -16
+            color:"#000000"
+        }
+
+
+        Loader{
+            id: right_block
+            anchors.fill: parent
+            anchors.topMargin: -16
+            onSourceChanged: {
+                if(!right_block.loaded()){
+                    right_drawer.visible = false
+                }
+            }
+
+
+        }
+
+    }
+
+
 
     Rectangle{
         id: status_bar

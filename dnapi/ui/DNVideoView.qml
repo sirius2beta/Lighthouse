@@ -96,7 +96,7 @@ Item {
         id: detection_box
         model: detect_model
         delegate: Rectangle {
-            visible: isFull
+            visible: isFull && videoItem.AIEnabled
             x: model.x
             y: model.y
             width: model.width
@@ -190,6 +190,7 @@ Item {
         color: "#333333"
         border.color: "#555555"
         radius:width/2
+        clip: true
         Image {
             anchors.fill: parent
             source: "qrc:/res/radar.png"
@@ -200,10 +201,10 @@ Item {
         Repeater {
             model: detect_model
             delegate: Rectangle {
-                width:5
-                height:5
-                x: -model.cx*5/radius+radius
-                y: (cy>0 ||cy<10)? -model.cy*5/radius+radius: 0
+                width:4
+                height:4
+                x: -model.cx*5/parent.radius-width/2+parent.radius
+                y: (model.cy>0 ||model.cy<5)? -model.cy*5/parent.radius+parent.radius: 0
                 color:"#ff5555"
             }
         }
@@ -291,12 +292,13 @@ Item {
     }
 
     function setIndex(index){
-            _index = index
-            videoItem = DeNovoViewer.videoManager.getVideoItem(index)
+        _index = index
+        videoItem = DeNovoViewer.videoManager.getVideoItem(index)
+        videoItem.setBlockID(_index)
     }
 
     Component.onCompleted: {
-            setIndex(_index)
-        }
+        setIndex(_index)
+    }
 
 }
