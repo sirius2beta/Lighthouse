@@ -169,7 +169,12 @@ void DNVideoManager::onDetectMsg(uint8_t boatID, QByteArray detectMsg)
 
 void DNVideoManager::onRequestFormat(VideoItem* videoItem)
 {
-    QHostAddress addr(_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP());
+    BoatItem* boat = _core->boatManager()->getBoatbyID(videoItem->boatID());
+    if(boat == 0){
+        qDebug()<<"**Fatal: DNVideoManager::onRequestFormat: boatID "<<videoItem->boatID()<<" not exist!";
+        return;
+    }
+    QHostAddress addr(boat->currentIP());
     qDebug()<<"DNVideoManager::onRequestFormat: currentIP:"<<_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP();
     emit sendMsg(addr, _core->configManager()->message("FORMAT"), "");
 }

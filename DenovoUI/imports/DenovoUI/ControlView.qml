@@ -83,6 +83,7 @@ Item {
 
 
     ControlMenu{
+        height: parent.height/2
         id: controlMenu
         anchors.top:  _title.bottom
 

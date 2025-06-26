@@ -246,7 +246,6 @@ Item {
     Connections {
         target: videoItem
         function onDetectionMatrixModelChanged(model){
-            print(model.length)
             var count = model.length/7
             var videoRatio = 1
             var dx = 0

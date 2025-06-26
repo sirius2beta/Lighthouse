@@ -31,7 +31,7 @@ Item {
     function setVideoItemNo(index){ //set video item index
         _index = index
         _videoItem = DeNovoViewer.videoManager.getVideoItem(index)
-        _videoItem.setBoatID(DeNovoViewer.boatManager.getIDbyInex(id))
+        _videoItem.setBoatID(DeNovoViewer.boatManager.getIDbyInex(0))
         console.log("init listview index:",index)
     }
 
