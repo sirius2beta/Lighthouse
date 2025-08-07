@@ -8,7 +8,7 @@
 
 
 
-VideoItem::VideoItem(QObject *parent, DNCore* core, int index, QString title, int boatID, int videoNo, int formatNo, int PCPort)
+VideoItem::VideoItem(QObject *parent, DNCore* core, int index, QString title, int boatID, int videoNo, int qualityIndex, int PCPort)
     : QObject{parent},
       _core(core),
       _initialized(false),
@@ -16,8 +16,9 @@ VideoItem::VideoItem(QObject *parent, DNCore* core, int index, QString title, in
       _boatID(boatID),
       _index(index),
     _videoIndex(videoNo),
-    _preVideoIndex(-1),
-    _formatNo(formatNo),
+    _currentPlayingVideoIndex(-1),
+    _prePlayingVideoIndex(-1),
+    _qualityIndex(qualityIndex),
     _PCPort(PCPort),
     _connectionPriority(0),
     _encoder(QString("h264")),
@@ -100,7 +101,8 @@ void VideoItem::setBoatID(int ID)
 
         _boatID = ID;
         _requestFormat = true;
-        _preVideoIndex = -1;
+        _prePlayingVideoIndex = -1;
+        _currentPlayingVideoIndex = -1;
         emit requestFormat(this);
 
     }
@@ -128,7 +130,28 @@ void VideoItem::setVideoIndex(int index)
         _formatStringListModel<<_core->configManager()->videoFormatString(h[i]);
     }
     if(_formatListModel.size() > 0){
-        _formatNo = 0;
+        _qualityIndex = 0;
+    }
+    emit qualityListModelChanged(_formatListModel);
+    emit formatListStringModelChanged(_formatStringListModel);
+}
+
+void VideoItem::getVideoFormatByIndex(int index)
+{
+    if(index >= _videoNoListModel.size()){
+        qDebug()<<"**Fatal:: VideoItem::setVideoNo: index out of range";
+        return;
+    }
+    _formatListModel.clear();
+    _formatStringListModel.clear();
+
+    QList<int> h = _videoFormatList[_videoNoListModel.at(index).toInt()];
+    for(int i = 0; i< h.size(); i++){
+        _formatListModel<<QString::number(h[i]);
+        _formatStringListModel<<_core->configManager()->videoFormatString(h[i]);
+    }
+    if(_formatListModel.size() > 0){
+        _qualityIndex = 0;
     }
     emit qualityListModelChanged(_formatListModel);
     emit formatListStringModelChanged(_formatStringListModel);
@@ -142,7 +165,7 @@ void VideoItem::setVideoFormat(QByteArray data)
     qDebug()<<" VideoItem::setVideoNo: got videoFormat";
     _videoFormatList.clear();
     int videoNo;
-    int formatNo;
+    int qualityIndex;
     int readorder = 0;
     if(data.size()%2 != 0 || data.size()/2 == 0){
         qDebug()<<"**Fatal::VideoItem::setVideoNo: wrong format message:"<<data.size();
@@ -150,8 +173,8 @@ void VideoItem::setVideoFormat(QByteArray data)
     }
     for(int i = 0; i < data.size(); i+=2){
         videoNo = int(data[i]);
-        formatNo = int(data[i+1]);
-        _videoFormatList[videoNo].append(formatNo);
+        qualityIndex = int(data[i+1]);
+        _videoFormatList[videoNo].append(qualityIndex);
     }
 
     QMap<int, QList<int>>::const_iterator h = _videoFormatList.constBegin();
@@ -166,14 +189,14 @@ void VideoItem::setVideoFormat(QByteArray data)
     }
 }
 
-void VideoItem::setFormatNo(int no)
+void VideoItem::setQualityIndex(int no)
 {
     if(no >= _formatListModel.size()){
-        qDebug()<<"**Fatal:: VideoItem::setFormatNo: index out of range";
+        qDebug()<<"**Fatal:: VideoItem::setQualityIndex: index out of range";
         return;
     }
-    _formatNo = no;
-    emit formatNoChanged(_formatNo);
+    _qualityIndex = no;
+    emit qualityIndexChanged(_qualityIndex);
 }
 
 void VideoItem::setDisplay(WId xwinid)
@@ -190,25 +213,35 @@ void VideoItem::setConnectionPriority(int connectionType)
         if(_isPlaying){
             qDebug()<<"VideoItem:: connectionTypeChanged:STOP & PLAY";
             stop();
-            play();
+            play(_currentPlayingVideoIndex, _qualityIndex);
         }else{
         }
     }
 
 }
 
-void VideoItem::play()
+void VideoItem::play(int videoIndex, int qualityIndex)
 {
     //QSound::play(":/imports/DenovoUI/images/79.wav");
-    qDebug()<<"VideoItem::play, videoIndex:"<<_videoIndex<<", formatNo:"<<_formatNo;
-    if(_boatID == -1 || _videoIndex == -1 || _formatNo == -1) return;
+    qDebug()<<"VideoItem::play, videoIndex:"<<videoIndex<<", qualityIndex:"<<qualityIndex;
+    if(_boatID == -1 || videoIndex == -1 || qualityIndex == -1) return;
+    if(videoIndex >= _videoNoListModel.size()){
+        qDebug()<<"**Fatal:: VideoItem::setVideoNo: index out of range";
+        return;
+    }
+    if(qualityIndex >= _formatListModel.size()){
+        qDebug()<<"**Fatal:: VideoItem::setQualityIndex: index out of range";
+        return;
+    }
+    _videoIndex = videoIndex;
+    _qualityIndex = qualityIndex;
     int tempIndex = _videoIndex;
-    if(_isPlaying && _preVideoIndex!=-1){
-        _videoIndex = _preVideoIndex;
+    if(_isPlaying && _prePlayingVideoIndex!=-1){
+        _prePlayingVideoIndex = _currentPlayingVideoIndex;
         stop();
     }
     _videoIndex =tempIndex;
-    _preVideoIndex = _videoIndex;
+    _currentPlayingVideoIndex = _videoIndex;
     _isPlaying = true;
     emit videoPlayed(this);
 }
@@ -230,9 +263,9 @@ void VideoItem::setAIEnabled(bool enabled)
     //bt.append(boatID());
     uint8_t cmd_ID = 0;
     bt.append(cmd_ID);
-    bt.append(uint8_t(videoNo()));
+    bt.append(uint8_t(_videoIndex));
     bt.append(enabled);
-    bt.append(uint8_t(_formatNo));
+    bt.append(uint8_t(_qualityIndex));
     _AIEnabled = enabled;
     //emit sendMsg(boatID(), 6, bt);
 }
@@ -249,7 +282,7 @@ void VideoItem::update()
     emit formatListStringModelChanged(_formatStringListModel);
 
     _requestFormat = true;
-    _preVideoIndex = -1;
+    _prePlayingVideoIndex = -1;
     emit requestFormat(this);
 }
 
@@ -288,15 +321,15 @@ void VideoItem::setEncoder(QString encoder)
 
 QString VideoItem::videoFormat()
 {
-    if(_formatNo == -1){
-        qDebug()<<"**Warning: VideoItem::videoFormat: _formatNo = -1";
+    if(_qualityIndex == -1){
+        qDebug()<<"**Warning: VideoItem::videoFormat: _qualityIndex = -1";
         return QString("");
     }
-    return _formatListModel[_formatNo];
+    return _formatListModel[_qualityIndex];
 
 }
 
-void VideoItem::proscessDetection(QByteArray data)
+void VideoItem::processDetection(QByteArray data)
 {
     _detectionMatrixModel.clear();
 

@@ -361,7 +361,7 @@ Item {
                             MouseArea{
                                 anchors.fill: parent
                                 onPressed: {
-                                    DeNovoViewer.controlManager.controls.get(0).run(-1000000)
+                                    DeNovoViewer.controlManager.controls.get(0).run(1000000)
                                     freeupbtn.colorn = "#999999"
                                 }
                                 onReleased:  {

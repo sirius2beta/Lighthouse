@@ -22,7 +22,7 @@ Item {
     property real boat_rssi:0
     property real ground_rssi: 0
     property real tx_strength: {
-        if(ground_rssi == 0){
+        if(ground_rssi == 0 || ground_rssi == -1){
             return 0;
         }else if(ground_rssi>-81){
             return 4
@@ -34,7 +34,7 @@ Item {
         return 1
     }
     property real rx_strength: {
-        if(boat_rssi == 0){
+        if(boat_rssi == 0 || boat_rssi == -1){
             return 0
         }else if(boat_rssi>-81){
             return 4

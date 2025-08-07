@@ -32,6 +32,8 @@ Item {
         _index = index
         _videoItem = DeNovoViewer.videoManager.getVideoItem(index)
         _videoItem.setBoatID(DeNovoViewer.boatManager.getIDbyInex(0))
+        _videoNo.currentIndex = _videoItem.videoIndex
+        console.log("current videoIndex", _videoItem.videoIndex)
         console.log("init listview index:",index)
     }
 
@@ -274,8 +276,8 @@ Item {
                     model: _videoItem?_videoItem.videoNoListModel:0
                     Connections{
                         function onActivated(index) {
-                            _videoItem.setVideoIndex(index)
-                            console.log("set videoIndex: ", index)
+                            _videoItem.getVideoFormatByIndex(index)
+                            console.log("set videoIndex: ", _videoItem.videoIndex)
                         }
                     }
 
@@ -302,15 +304,15 @@ Item {
 
                     Connections{
                         function onActivated(index) {
-                            _videoItem.setFormatNo(index)
-                            console.log("set formatNo:", index)
+                            //_videoItem.setQualityIndex(index)
+                            //console.log("set qualityIndex:", index)
                         }
                     }
                 }
             }
             Switch {
                     text: qsTr("AI detect")
-                    checked: _videoItem.AIEnabled
+                    checked: _videoItem?_videoItem.AIEnabled:0
                     onClicked: _videoItem.setAIEnabled(checked)
             }
             RowLayout{
@@ -355,12 +357,12 @@ Item {
 
                 Button{
                     id: _playButton
-                    //height: _videoNo.height
+                    //height: _videoIndex.height
                     font.family: "Segoe UI"
                     text: "Play"
                     onClicked: {
                         if(_videoItem){
-                            _videoItem.play()
+                            _videoItem.play(_videoNo.currentIndex, _qualityNo.currentIndex)
                         }
                     }
                 }

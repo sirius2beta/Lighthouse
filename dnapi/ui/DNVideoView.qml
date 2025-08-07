@@ -228,7 +228,7 @@ Item {
 
     Connections {
         target: videoItem
-        function onFormatNoChanged(no){
+        function onQualityListModelChanged(no){
             if(no === 0){
                 _root.w_resolution = 1920
                 _root.h_resolution = 1080

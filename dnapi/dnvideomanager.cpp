@@ -81,9 +81,9 @@ void DNVideoManager::setVideoTest(QQuickItem* widget)
     gst_element_set_state (_testpipeline, GST_STATE_PLAYING);
 }
 
-void DNVideoManager::addVideoItem(int index, QString title, int boatID, int videoNo, int formatNo, int PCPort)
+void DNVideoManager::addVideoItem(int index, QString title, int boatID, int videoNo, int qualityIndex, int PCPort)
 {
-    VideoItem* newvideoitem = new VideoItem(this, _core, index, title, boatID, videoNo, formatNo, PCPort);
+    VideoItem* newvideoitem = new VideoItem(this, _core, index, title, boatID, videoNo, qualityIndex, PCPort);
     QQmlEngine::setObjectOwnership(newvideoitem, QQmlEngine::CppOwnership);
     if(settings->value(QString("%1/w%2/videoinfo").arg(_core->config(),QString::number(newvideoitem->index()))) == 1){
         newvideoitem->setVideoInfo(true);
@@ -125,7 +125,7 @@ void DNVideoManager::onPlay(VideoItem* videoItem)
 void DNVideoManager::onStop(VideoItem* videoItem)
 {
 
-    if(videoItem->videoNo() == -1){
+    if(videoItem->currentPlayingVideoIndex() == -1){
         return;
     }
 
@@ -159,8 +159,8 @@ void DNVideoManager::onDetectMsg(uint8_t boatID, QByteArray detectMsg)
     if(cmd_ID == 1){
         detectMsg.remove(0,2);
         for(int i = 0; i< videoList.size(); i++){
-            if(videoList[i]->videoNo() == video_no){
-                videoList[i]->proscessDetection(detectMsg);
+            if(videoList[i]->videoIndex() == video_no){
+                videoList[i]->processDetection(detectMsg);
             }
         }
 
@@ -203,7 +203,7 @@ void DNVideoManager::connectionChanged(uint8_t ID)
         if(videoList[i]->boatID() == ID){
             if(videoList[i]->isPlaying()){
                 videoList[i]->stop();
-                videoList[i]->play();
+                videoList[i]->play(videoList[i]->videoIndex(), videoList[i]->qualityIndex());
             }
 
         }
