@@ -83,6 +83,8 @@
         <entry value="3" name="QUIT"></entry>
         <entry value="4" name="SENSOR"></entry>
         <entry value="5" name="CONTROL"></entry>
+        <entry value="6" name="DETECT"></entry>
+        <entry value="7" name="SEAGRASS"></entry>
     </enum>
     <enum name="DEVICE_TYPE">
         <entry value="0" name="Pixhawk" idVendor="1209" idProduct="5740" ></entry>

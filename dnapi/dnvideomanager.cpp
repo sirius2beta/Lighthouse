@@ -94,6 +94,9 @@ void DNVideoManager::addVideoItem(int index, QString title, int boatID, int vide
     connect(newvideoitem, &VideoItem::videoPlayed, this, &DNVideoManager::onPlay);
     connect(newvideoitem, &VideoItem::videoStoped, this, &DNVideoManager::onStop);
     connect(newvideoitem, &VideoItem::requestFormat, this, &DNVideoManager::onRequestFormat);
+    connect(newvideoitem, &VideoItem::setAsSeagrassCameraSignal, this, &DNVideoManager::onSettingSeagrassCamera);
+    connect(newvideoitem, &VideoItem::startSeagrassCameraRecordingSignal, this, &DNVideoManager::onStartSeagrassCameraRecording);
+    connect(newvideoitem, &VideoItem::stopSeagrassCameraRecordingSignal, this, &DNVideoManager::onStopSeagrassCameraRecording);
     connect(newvideoitem, &VideoItem::sendMsg, _core->networkManager(), &NetworkManager::sendMsgbyID);
 
 }
@@ -198,7 +201,9 @@ void DNVideoManager::onConnectionChanged(int connectionType)
 
 void DNVideoManager::connectionChanged(uint8_t ID)
 {
+
     qDebug()<<"DNVideoManager::connectionChanged: "<<ID;
+    /* 先不使用
     for(int i = 0; i < videoList.size(); i++){
         if(videoList[i]->boatID() == ID){
             if(videoList[i]->isPlaying()){
@@ -208,4 +213,78 @@ void DNVideoManager::connectionChanged(uint8_t ID)
 
         }
     }
+*/
+}
+
+void DNVideoManager::onSettingSeagrassCamera(VideoItem* videoItem)
+{
+
+    QString videoNo = QString("video")+QString::number(videoItem->videoNo());
+    if(_core->boatManager()->getBoatbyID(videoItem->boatID()) == 0){
+        qDebug()<<"\u001b[38;5;203m"<<"Fatal:: DNVideoManager::onStop, boat ID:"<< videoItem->boatID()<<" not exist"<<"\033[0m";
+        return;
+    }
+    QHostAddress ip = QHostAddress(_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP());
+    char rawdata[8];
+    uint8_t operation = 0;
+    uint8_t videoInexraw = videoItem->videoNo();
+    uint8_t formatIndexraw = videoItem->formatIndex();
+    uint8_t encoder = videoItem->encoder() == QString("h264")? 0:1;
+    int32_t port = videoItem->port();
+
+    memcpy(rawdata, &operation, sizeof(uint8_t));
+    memcpy(rawdata+1, &videoInexraw, sizeof(uint8_t));
+    memcpy(rawdata+2, &formatIndexraw, sizeof(uint8_t));
+    memcpy(rawdata+3, &encoder, sizeof(uint8_t));
+    memcpy(rawdata+4, &port, sizeof(int32_t));
+
+    QByteArray msg = QByteArray(rawdata,8);
+    qDebug()<<"DNVideoManager::onPlay:"+QString::number(videoItem->port())+",send: "+msg;
+    //if(msg == QString("")) return;
+    emit sendMsg(ip, _core->configManager()->message("SEAGRASS"), msg);
+
+}
+
+void DNVideoManager::onStartSeagrassCameraRecording(VideoItem* videoItem)
+{
+
+    if(_core->boatManager()->getBoatbyID(videoItem->boatID()) == 0){
+        qDebug()<<"\u001b[38;5;203m"<<"Fatal:: DNVideoManager::onStop, boat ID:"<< videoItem->boatID()<<" not exist"<<"\033[0m";
+        return;
+    }
+    QHostAddress ip = QHostAddress(_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP());
+    char rawdata[1];
+    uint8_t operation = 1;
+
+
+    memcpy(rawdata, &operation, sizeof(uint8_t));
+
+
+    QByteArray msg = QByteArray(rawdata,1);
+    qDebug()<<"DNVideoManager::onStartRecording:"+QString::number(videoItem->port())+",send: "+msg;
+    //if(msg == QString("")) return;
+    emit sendMsg(ip, _core->configManager()->message("SEAGRASS"), msg);
+
+}
+
+void DNVideoManager::onStopSeagrassCameraRecording(VideoItem* videoItem)
+{
+
+    if(_core->boatManager()->getBoatbyID(videoItem->boatID()) == 0){
+        qDebug()<<"\u001b[38;5;203m"<<"Fatal:: DNVideoManager::onStop, boat ID:"<< videoItem->boatID()<<" not exist"<<"\033[0m";
+        return;
+    }
+    QHostAddress ip = QHostAddress(_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP());
+    char rawdata[1];
+    uint8_t operation = 2;
+
+
+    memcpy(rawdata, &operation, sizeof(uint8_t));
+
+
+    QByteArray msg = QByteArray(rawdata,1);
+    qDebug()<<"DNVideoManager::onStopRecording:"+QString::number(videoItem->port())+",send: "+msg;
+    //if(msg == QString("")) return;
+    emit sendMsg(ip, _core->configManager()->message("SEAGRASS"), msg);
+
 }

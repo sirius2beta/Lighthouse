@@ -286,6 +286,42 @@ void VideoItem::update()
     emit requestFormat(this);
 }
 
+void VideoItem::setAsSeagrassCamera(int videoIndex, int qualityIndex)
+{
+
+    qDebug()<<"VideoItem::play, videoIndex:"<<videoIndex<<", qualityIndex:"<<qualityIndex;
+    if(_boatID == -1 || videoIndex == -1 || qualityIndex == -1) return;
+    if(videoIndex >= _videoNoListModel.size()){
+        qDebug()<<"**Fatal:: VideoItem::setVideoNo: index out of range";
+        return;
+    }
+    if(qualityIndex >= _formatListModel.size()){
+        qDebug()<<"**Fatal:: VideoItem::setQualityIndex: index out of range";
+        return;
+    }
+    _videoIndex = videoIndex;
+    _qualityIndex = qualityIndex;
+    int tempIndex = _videoIndex;
+    if(_isPlaying && _prePlayingVideoIndex!=-1){
+        _prePlayingVideoIndex = _currentPlayingVideoIndex;
+        stop();
+    }
+    _videoIndex =tempIndex;
+    _currentPlayingVideoIndex = _videoIndex;
+    _isPlaying = true;
+    emit setAsSeagrassCameraSignal(this);
+}
+
+void VideoItem::startSeagrassCameraRecording()
+{
+    emit startSeagrassCameraRecordingSignal(this);
+}
+
+void VideoItem::stopSeagrassCameraRecording()
+{
+    emit stopSeagrassCameraRecordingSignal(this);
+}
+
 void VideoItem::setProxy(bool isProxy)
 {
     _proxy = isProxy;

@@ -44,6 +44,9 @@ public slots:
     void setVideoFormat(uint8_t ID, QByteArray data);
     void onConnectionChanged(int connectionType);
     void connectionChanged(uint8_t ID);
+    void onSettingSeagrassCamera(VideoItem* videoItem);
+    void onStartSeagrassCameraRecording(VideoItem* videoItem);
+    void onStopSeagrassCameraRecording(VideoItem* videoItem);
 signals:
     void sendMsg(QHostAddress addr, char topic, QByteArray command);
     void coutChanged(int count);

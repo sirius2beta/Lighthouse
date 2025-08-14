@@ -40,6 +40,9 @@ public:
     Q_INVOKABLE void stop();
     Q_INVOKABLE void setAIEnabled(bool enabled);
     Q_INVOKABLE void update(); // update camera info
+    Q_INVOKABLE void setAsSeagrassCamera(int videoIndex, int qualityIndex);
+    Q_INVOKABLE void startSeagrassCameraRecording();
+    Q_INVOKABLE void stopSeagrassCameraRecording();
 
     Q_INVOKABLE void setProxy(bool isProxy);
     Q_INVOKABLE void setEncoder(QString encoder);
@@ -105,6 +108,9 @@ signals:
     void qualityListModelChanged(QStringList model);
     void formatListStringModelChanged(QStringList model);
     void detectionMatrixModelChanged(QList<int> model);
+    void setAsSeagrassCameraSignal(VideoItem* v);
+    void startSeagrassCameraRecordingSignal(VideoItem* v);
+    void stopSeagrassCameraRecordingSignal(VideoItem* v);
 
 
 private:

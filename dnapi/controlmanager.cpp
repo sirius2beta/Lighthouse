@@ -48,13 +48,13 @@ void ControlManager::setBoatID(int boatID)
 void ControlManager::onControlMsg(uint8_t boatID, QByteArray command)
 {
     if(boatID != _boatID){
-        qDebug()<<"id"<<boatID<<","<<_boatID;
+        //qDebug()<<"id"<<boatID<<","<<_boatID;
         return;
     }
     int8_t index;
     memcpy(&index, command.data(), sizeof(int8_t));
     command.remove(0,1);
-    qDebug()<<"ControlManager::onMsg, index:"<<index;
+    //qDebug()<<"ControlManager::onMsg, index:"<<index;
     for(int i = 0; i < _controls.count(); i++){
         ControlItem* control = qobject_cast<ControlItem*>(_controls[i]);
         if(control->controlType() == index){

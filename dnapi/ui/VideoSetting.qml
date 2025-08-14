@@ -337,6 +337,54 @@ Item {
                     }
                 }
 
+
+            }
+            Text{
+                Layout.fillWidth: true
+                text:"seagrass camera"
+                color:"#ffffff"
+                font.pixelSize: 14
+            }
+            Button{
+                id: _seagrassDetectButton
+                font.family: "Segoe UI"
+                text: "設定為Seagrass Camera"
+                Layout.alignment: Qt.AlignRight
+                onClicked: {
+                    if(_videoItem){
+                        _videoItem.setAsSeagrassCamera(_videoNo.currentIndex, _qualityNo.currentIndex)
+                    }
+                }
+            }
+
+            RowLayout{
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignRight
+                Button{
+
+
+                    id: _startSeagrassRecordingButton
+                    font.family: "Segoe UI"
+                    text: "開始錄製"
+                    onClicked: {
+                        if(_videoItem){
+                            _videoItem.startSeagrassCameraRecording()
+                        }
+                    }
+                }
+
+                Button{
+                    id: _stopSeagrassRecordingButton
+                    //height: _videoIndex.height
+                    font.family: "Segoe UI"
+                    text: "停止錄製"
+                    onClicked: {
+                        if(_videoItem){
+                            _videoItem.stopSeagrassCameraRecording()
+                        }
+                    }
+                }
+
             }
 
             RowLayout{
