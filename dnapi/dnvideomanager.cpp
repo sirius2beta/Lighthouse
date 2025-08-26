@@ -104,21 +104,23 @@ void DNVideoManager::addVideoItem(int index, QString title, int boatID, int vide
 void DNVideoManager::onPlay(VideoItem* videoItem)
 {
     QHostAddress ip = QHostAddress(_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP());
-    char rawdata[8];
+    char rawdata[9];
 
+    uint8_t operation = 1;
     uint8_t videoInexraw = videoItem->videoNo();
     uint8_t formatIndexraw = videoItem->formatIndex();
     uint8_t encoder = videoItem->encoder() == QString("h264")? 0:1;
     int32_t port = videoItem->port();
     uint8_t aiEnabled = videoItem->AIEnabled();
 
-    memcpy(rawdata, &videoInexraw, sizeof(uint8_t));
-    memcpy(rawdata+1, &formatIndexraw, sizeof(uint8_t));
-    memcpy(rawdata+2, &encoder, sizeof(uint8_t));
+    memcpy(rawdata, &operation, sizeof(uint8_t));
+    memcpy(rawdata+1, &videoInexraw, sizeof(uint8_t));
+    memcpy(rawdata+2, &formatIndexraw, sizeof(uint8_t));
+    memcpy(rawdata+3, &encoder, sizeof(uint8_t));
 
-    memcpy(rawdata+3, &port, sizeof(int32_t));
-    memcpy(rawdata+7, &aiEnabled, sizeof(int8_t));
-    QByteArray msg = QByteArray(rawdata,8);
+    memcpy(rawdata+4, &port, sizeof(int32_t));
+    memcpy(rawdata+8, &aiEnabled, sizeof(int8_t));
+    QByteArray msg = QByteArray(rawdata,9);
     qDebug()<<"DNVideoManager::onPlay:"+QString::number(videoItem->port())+",send: "+msg;
     //if(msg == QString("")) return;
     emit sendMsg(ip, _core->configManager()->message("COMMAND"), msg);
@@ -155,14 +157,14 @@ void DNVideoManager::onBoatAdded()
 
 void DNVideoManager::onDetectMsg(uint8_t boatID, QByteArray detectMsg)
 {
-
     uint8_t cmd_ID = uint8_t(detectMsg[0]);
     uint8_t video_no = uint8_t(detectMsg[1]);
     QStringList list;
     if(cmd_ID == 1){
         detectMsg.remove(0,2);
         for(int i = 0; i< videoList.size(); i++){
-            if(videoList[i]->videoIndex() == video_no){
+            if(videoList[i]->videoNo() == video_no){
+
                 videoList[i]->processDetection(detectMsg);
             }
         }

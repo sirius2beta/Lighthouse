@@ -86,7 +86,7 @@ void WinchControl::setStatus(uint8_t s)
 
 void WinchControl::processMsg(QByteArray command)
 {
-    qDebug()<<"WinchControl::processMsg"<<command.size();
+    //qDebug()<<"WinchControl::processMsg"<<command.size();
     uint8_t action;
     int32_t step;
     int32_t tension;
@@ -97,5 +97,5 @@ void WinchControl::processMsg(QByteArray command)
     memcpy(&status, command.data()+9, sizeof(uint8_t));
     setSteps(step);
     setStatus(status);
-    qDebug()<<"step:"<<step<<"tension"<<tension<<"status"<<status;
+    //qDebug()<<"step:"<<step<<"tension"<<tension<<"status"<<status;
 }
