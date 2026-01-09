@@ -9,7 +9,7 @@ import DeNovoViewer.Boat 1.0
 
 Item {
     width:60
-    height:60*3+20*(3-1)
+    height:60*4+20*(4-1)
     property VideoItem _videoItem
     property int _index: 0
     signal openControlView()
@@ -156,6 +156,46 @@ Item {
                 }
                 onClicked: {
                     openBoatSetting()
+                }
+            }
+            Button {
+                Layout.alignment: Qt.AlignHCenter
+                id: system_status_button
+                text: ""
+                property bool activate: false
+                background: Rectangle {
+                    color: parent.down ? "#99333333" : "#00000000"
+                    //border.color: "#26282a"
+                    //border.width: 1
+                    implicitWidth: 45
+                    implicitHeight: 60
+                    radius: 4
+                    Rectangle{
+                        anchors.fill: parent
+                        radius:4
+                        anchors.margins: 5
+                        color:"#00999900"
+                    }
+
+                    Image{
+                        id: img4
+                        anchors.margins: 5
+                        anchors.top: parent.top
+                        anchors.right: parent.right
+                        anchors.left: parent.left
+                        fillMode: Image.PreserveAspectFit
+
+                        source: "qrc:/res/overview.png"
+                    }
+                    Text{
+                        text: "System"
+                        color: "#ffffff"
+                        anchors.bottom: parent.bottom
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+                }
+                onClicked: {
+                    systemOverviewPanel.visible = systemOverviewPanel.visible?false:true
                 }
             }
 
@@ -357,6 +397,11 @@ Item {
 
         }
 
+    }
+    SystemOverviewPanel{
+        id: systemOverviewPanel
+        anchors.right: parent.left
+        visible: false
     }
 
 

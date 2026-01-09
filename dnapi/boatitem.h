@@ -5,12 +5,12 @@
 #include "device.h"
 
 class HeartBeat;
-
+class DNCore;
 class BoatItem : public QObject
 {
     Q_OBJECT
 public:
-    explicit BoatItem(QObject *parent = nullptr);
+    explicit BoatItem(QObject *parent = nullptr, DNCore* core = nullptr);
     BoatItem(const BoatItem& other, QObject* parent = nullptr);
     const BoatItem& operator=(const BoatItem& other);
 
@@ -22,6 +22,7 @@ public:
     Q_PROPERTY(QString SIP READ SIP WRITE setSIP NOTIFY SIPChanged)
     Q_PROPERTY(bool primaryConnected READ primaryConnected  NOTIFY primaryConnectedChanged)
     Q_PROPERTY(bool secondaryConnected READ secondaryConnected  NOTIFY secondaryConnectedChanged)
+    Q_PROPERTY(QStringList deviceStatusCode READ deviceStatusCode NOTIFY deviceStatusCodeChanged)
 
 
     QString name(void) {    return _name;   };
@@ -51,6 +52,12 @@ public:
     void connect(bool isPrimary);
     void disconnect(bool isPrimary);
 
+    QStringList deviceStatusCode() { return _deviceStatusCode; }
+    void setDeviceStatusCode(QStringList list);
+    Q_INVOKABLE void restartService();
+    Q_INVOKABLE void reboot();
+    Q_INVOKABLE void stopService();
+    Q_INVOKABLE void update();
     QList<Peripheral> peripherals;
     QList<Device> devices;
 signals:
@@ -63,7 +70,16 @@ signals:
     void primaryConnectedChanged(bool isConnected);
     void secondaryConnectedChanged(bool isConnected);
     void connectionChanged(int ID);
+    void deviceStatusCodeChanged(QStringList model);
+    void restartServiceSignal(uint8_t boatID);
+    void rebootSignal(uint8_t boatID);
+    void stopServiceSignal(uint8_t boatID);
+    void updateSignal(uint8_t boatID);
+
+protected slots:
+    void onDeviceStatusMsg(uint8_t boatID, QByteArray detectMsg);
 private:
+    DNCore* _core;
     QString _name = QString("null");
     int _ID;
     QString _PIP;
@@ -74,6 +90,8 @@ private:
     bool _secondaryConnected;
     int _connectionPriority;
     int _linkType;
+    QStringList _deviceStatusCode;
+
 
 
     HeartBeat* _primaryHeartBeat;

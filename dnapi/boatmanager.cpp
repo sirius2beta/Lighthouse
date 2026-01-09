@@ -3,9 +3,10 @@
 #include <QQmlEngine>
 
 BoatManager::BoatManager(QObject* parent, DNCore *core): QObject(parent),
-    _connectionType(0)
+    _connectionType(0), _activeBoat(0)
 {
     _core = core;
+
     settings = new QSettings("Ezosirius", "GPlayer_v1", this);
     boatItemModel = new QStandardItemModel();
     QStringList label = {"name", "Primary", "Secondary"};
@@ -40,7 +41,7 @@ void BoatManager::init()
             QString boatPIP = settings->value("/PIP").toString();
             QString boatSIP = settings->value("/SIP").toString();
 
-            BoatItem* boat = new BoatItem(this);
+            BoatItem* boat = new BoatItem(this, _core);
             boat->setID(ID);
             boat->setName(boatname);
             boat->setPIP(boatPIP);
@@ -64,6 +65,10 @@ void BoatManager::init()
             connect(boat, &BoatItem::nameChanged, this, &BoatManager::onBoatNameChange);
             connect(boat, &BoatItem::IPChanged, this, &BoatManager::onIPChanged);
             connect(boat, &BoatItem::connectStatusChanged, this, &BoatManager::onConnectStatusChanged);
+            connect(boat, &BoatItem::restartServiceSignal, this, &BoatManager::onRestartService);
+            connect(boat, &BoatItem::rebootSignal, this, &BoatManager::onReboot);
+            connect(boat, &BoatItem::stopServiceSignal, this, &BoatManager::onStopService);
+            connect(boat, &BoatItem::updateSignal, this, &BoatManager::onUpdate);
             //connect(boat, &BoatItem::disconnected, this, &BoatManager::onDisonnected);
 
             HeartBeat* _primaryHeartBeat = new HeartBeat(boat, 50006, true, boat, _core);
@@ -82,7 +87,9 @@ void BoatManager::init()
         settings->endArray();
         settings->endGroup();
     }
-
+    if(_boatList.size() > 0){
+        _activeBoat = _boatList[0];
+    }
     qDebug()<<"BoatManager::init(): Initiate complete";
 }
 
@@ -105,7 +112,7 @@ void BoatManager::addBoat()
 
 
 
-    BoatItem* boat = new BoatItem(this);
+    BoatItem* boat = new BoatItem(this, _core);
     QQmlEngine::setObjectOwnership(boat, QQmlEngine::CppOwnership);
     boat->setID(index);
     boat->setName("unknown");
@@ -132,6 +139,10 @@ void BoatManager::addBoat()
     connect(boat, &BoatItem::nameChanged, this, &BoatManager::onBoatNameChange);
     connect(boat, &BoatItem::IPChanged, this, &BoatManager::onIPChanged);
     connect(boat, &BoatItem::connectStatusChanged, this, &BoatManager::onConnectStatusChanged);
+    connect(boat, &BoatItem::restartServiceSignal, this, &BoatManager::onRestartService);
+    connect(boat, &BoatItem::rebootSignal, this, &BoatManager::onReboot);
+    connect(boat, &BoatItem::stopServiceSignal, this, &BoatManager::onStopService);
+    connect(boat, &BoatItem::updateSignal, this, &BoatManager::onUpdate);
     //connect(boat, &BoatItem::disconnected, this, &BoatManager::onDisonnected);
 
     HeartBeat* primaryHeartBeat = new HeartBeat(boat, 50006, true, boat, _core);
@@ -189,6 +200,9 @@ void BoatManager::deleteBoat(int index)
     }
 
     boatItemModel->removeRows(index,1);
+    if(_boatList.size() > 0){
+        _activeBoat = _boatList[0];
+    }
 }
 
 BoatItem* BoatManager::getBoatbyIndex(int index)
@@ -230,7 +244,11 @@ int BoatManager::getIndexbyID(int ID)
     return -1;
 }
 
-
+void BoatManager::setActiveBoatbyIndex(int index)
+{
+    _activeBoat = getBoatbyIndex(index);
+    emit activeBoatChanged();
+}
 
 QString BoatManager::CurrentIP(QString boatname)
 {
@@ -241,6 +259,8 @@ QString BoatManager::CurrentIP(QString boatname)
     }
     return QString();
 }
+
+
 
 int BoatManager::size()
 {
@@ -323,4 +343,52 @@ void BoatManager::onConnectionTypeChanged(int connectiontype)
         _boatList[i]->setConnectionPriority(connectiontype);
     }
     emit connectionTypeChanged(connectiontype);
+}
+
+void BoatManager::onRestartService(uint8_t boatID)
+{
+    QByteArray bt;
+    uint8_t commandType = 0;
+
+    bt.append(boatID);
+    bt.append(commandType);
+
+    // message type use raw
+    emit sendMsgbyID(boatID, 9, bt);
+}
+
+void BoatManager::onReboot(uint8_t boatID)
+{
+    QByteArray bt;
+    uint8_t commandType = 1;
+
+    bt.append(boatID);
+    bt.append(commandType);
+
+    // message type use raw
+    emit sendMsgbyID(boatID, 9, bt);
+}
+
+void BoatManager::onStopService(uint8_t boatID)
+{
+    QByteArray bt;
+    uint8_t commandType = 2;
+
+    bt.append(boatID);
+    bt.append(commandType);
+
+    // message type use raw
+    emit sendMsgbyID(boatID, 9, bt);
+}
+
+void BoatManager::onUpdate(uint8_t boatID)
+{
+    QByteArray bt;
+    uint8_t commandType = 3;
+
+    bt.append(boatID);
+    bt.append(commandType);
+
+    // message type use raw
+    emit sendMsgbyID(boatID, 9, bt);
 }

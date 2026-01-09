@@ -19,6 +19,8 @@ public:
     BoatManager(QObject* parent = nullptr, DNCore* core = nullptr);
     ~BoatManager();
     Q_PROPERTY(DNQmlObjectListModel* boatListModel READ boatListModel NOTIFY onboatListModelChanged)
+    Q_PROPERTY(BoatItem* activeBoat READ activeBoat  NOTIFY activeBoatChanged)
+
     QAbstractItemModel* model() const {return boatItemModel;}
     void init();
     Q_INVOKABLE void addBoat();
@@ -28,8 +30,11 @@ public:
     BoatItem* getBoatbyID(int ID);
     Q_INVOKABLE int getIDbyInex(int index);
     Q_INVOKABLE int getIndexbyID(int ID);
+    Q_INVOKABLE void setActiveBoatbyIndex(int index);
     DNQmlObjectListModel* boatListModel(void) { return &_boatListModel;}
     QString CurrentIP(QString boatname);
+    BoatItem* activeBoat() { return _activeBoat; }
+
     //void setConnectionType(int connectiontype);
     int size();
 signals:
@@ -37,12 +42,20 @@ signals:
     void connectionTypeChanged(int connectiontype);
     void connectionChanged(int ID);
     void onboatListModelChanged(DNQmlObjectListModel* model);
+    void activeBoatChanged();
+    void sendMsgbyID(uint8_t boatID, char topic, QByteArray command);
+
 public slots:
     void onBoatNameChange(int ID, QString newname);
     void onIPChanged(int ID, bool primary);
     void onConnectStatusChanged(int ID, bool isprimary, bool isConnected);
     //void onDisonnected(int ID, bool isprimary);
     void onConnectionTypeChanged(int connectiontype);
+    void onReboot(uint8_t boatID);
+    void onRestartService(uint8_t boatID);
+    void onStopService(uint8_t boatID);
+    void onUpdate(uint8_t boatID);
+
 
 private:
     QSettings *settings;
@@ -51,6 +64,7 @@ private:
     int _connectionType;
     DNCore* _core;
     DNQmlObjectListModel _boatListModel;
+    BoatItem* _activeBoat;
 };
 
 #endif // BOATMANAGER_H

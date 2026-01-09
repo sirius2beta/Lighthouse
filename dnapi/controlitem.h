@@ -18,12 +18,13 @@ public:
     Q_INVOKABLE virtual void run();
     Q_INVOKABLE virtual void setField(int index, QString value);
     Q_INVOKABLE virtual DNValue* getField(int index);
+    Q_INVOKABLE void setBoatID(uint8_t boatID) { _boatID = boatID;}
     //virtual void setFields(QVector<int>  fieldsMap, QVector<DNValue> fields);
     void sendCMD();
     QString name() { return _name; }
     int controlType() { return _controlType;}
     uint8_t boatID() {  return _boatID;}
-    void setBoatID(uint8_t boatID) { _boatID = boatID;}
+
     void setControlType(int type) {_controlType = type;}
     virtual void processMsg(QByteArray command){}
 

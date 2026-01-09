@@ -1,13 +1,18 @@
 ﻿#include "boatitem.h"
+#include "dncore.h"
 
-BoatItem::BoatItem(QObject *parent)
+BoatItem::BoatItem(QObject *parent, DNCore* core)
     : QObject{parent},
+      _core(core),
       _name(QString("")),
       _primaryConnected(false),
       _secondaryConnected(false),
       _connectionPriority(0),
       _linkType(0)
 {
+    QObject::connect(_core->networkManager(), &NetworkManager::deviceStatusMsg, this, &BoatItem::onDeviceStatusMsg);
+    _deviceStatusCode = { "0", "0", "0", "0"};
+
 }
 
 BoatItem::BoatItem(const BoatItem& other, QObject* parent)
@@ -18,6 +23,7 @@ BoatItem::BoatItem(const BoatItem& other, QObject* parent)
 
 const BoatItem& BoatItem::operator=(const BoatItem& other)
 {
+    _core = other._core;
     _name = other._name;
     _ID = other._ID;
     _PIP = other._PIP;
@@ -38,6 +44,7 @@ const BoatItem& BoatItem::operator=(const BoatItem& other)
 
 BoatItem::~BoatItem()
 {
+    QObject::disconnect(_core->networkManager(), &NetworkManager::deviceStatusMsg, this, &BoatItem::onDeviceStatusMsg);
 }
 
 void BoatItem::setName(QString name)
@@ -203,4 +210,47 @@ Device* BoatItem::getDevbyID(int ID)
         }
     }
     return 0;
+}
+
+void BoatItem::setDeviceStatusCode(QStringList list)
+{
+    _deviceStatusCode = list;
+    emit deviceStatusCodeChanged(list);
+}
+
+void BoatItem::restartService()
+{
+    emit restartServiceSignal(_ID);
+}
+
+void BoatItem::reboot()
+{
+    emit rebootSignal(_ID);
+}
+
+void BoatItem::stopService()
+{
+    emit stopServiceSignal(_ID);
+}
+void BoatItem::update()
+{
+    emit updateSignal(_ID);
+}
+
+void BoatItem::onDeviceStatusMsg(uint8_t boatID, QByteArray detectMsg)
+{
+    if(boatID == _ID){
+        uint8_t flightControl;
+        uint8_t GPS;
+        uint8_t winch;
+        uint8_t aqua;
+        memcpy(&flightControl, detectMsg.data(), sizeof(uint8_t));
+        memcpy(&GPS, detectMsg.data()+1, sizeof(uint8_t));
+        memcpy(&winch, detectMsg.data()+2, sizeof(uint8_t));
+        memcpy(&aqua, detectMsg.data()+3, sizeof(uint8_t));
+        QStringList list = {QString::number(flightControl), QString::number(GPS), QString::number(winch), QString::number(aqua)};
+        setDeviceStatusCode(list);
+
+    }
+
 }

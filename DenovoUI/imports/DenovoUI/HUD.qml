@@ -264,7 +264,7 @@ Item {
                             Text{
                                 leftPadding: 5
                                 color: "#ffffff"
-                                text: boat_rssi==0?"loss":ground_rssi
+                                text: boat_rssi==0?"loss":boat_rssi
                                 font.family: "roboto"
                                 font.pixelSize: 14
                                 onTextChanged: {

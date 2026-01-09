@@ -112,6 +112,8 @@ signals:
     void startSeagrassCameraRecordingSignal(VideoItem* v);
     void stopSeagrassCameraRecordingSignal(VideoItem* v);
 
+protected slots:
+    void onCameraMsg(uint8_t boatID, QByteArray msg);
 
 private:
     DNCore* _core;

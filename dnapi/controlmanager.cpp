@@ -29,6 +29,7 @@ void ControlManager::init()
             _controls.append(winchControl);
         }else if(controls[i].controlType() == 2){
             SonarControl* sonarControl = new SonarControl(this);
+            connect(sonarControl, &ControlItem::sendMsgbyID, _core->networkManager(), &NetworkManager::sendMsgbyID);
             _controls.append(sonarControl);
         }
     }

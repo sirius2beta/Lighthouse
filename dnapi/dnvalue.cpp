@@ -9,56 +9,56 @@ QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
 }
 
 DNValue::DNValue(uint8_t i)
-    : _rawValue(i),
+    : _rawValue(static_cast<int8_t>(i)),
     _type(DNMetaData::valueTypeUint8)
 {
 QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
 }
 
 DNValue::DNValue(int8_t i)
-    : _rawValue(i),
+    : _rawValue(static_cast<int8_t>(i)),
     _type(DNMetaData::valueTypeInt8)
 {
 QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
 }
 
 DNValue::DNValue(uint16_t i)
-    : _rawValue(i),
+    : _rawValue(static_cast<int16_t>(i)),
     _type(DNMetaData::valueTypeUint16)
 {
 QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
 }
 
 DNValue::DNValue(int16_t i)
-    : _rawValue(i),
+    : _rawValue(static_cast<int16_t>(i)),
     _type(DNMetaData::valueTypeInt16)
 {
 QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
 }
 
 DNValue::DNValue(uint32_t i)
-    : _rawValue(i),
+    : _rawValue(static_cast<uint32_t>(i)),
     _type(DNMetaData::valueTypeUint32)
 {
 QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
 }
 
 DNValue::DNValue(int32_t i)
-    : _rawValue(i),
+    : _rawValue(static_cast<uint32_t>(i)),
     _type(DNMetaData::valueTypeInt32)
 {
 QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
 }
 
 DNValue::DNValue(uint64_t i)
-    : _rawValue(i),
+    : _rawValue(static_cast<qulonglong>(i)),
     _type(DNMetaData::valueTypeUint64)
 {
 QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
 }
 
 DNValue::DNValue(int64_t i)
-    : _rawValue(i),
+    : _rawValue(static_cast<qulonglong>(i)),
     _type(DNMetaData::valueTypeInt64)
 {
 QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);

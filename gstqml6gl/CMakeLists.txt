@@ -110,7 +110,25 @@ endif()
 ################################################################################
 
 if(GStreamer_VERSION VERSION_GREATER_EQUAL 1.22)
-    include(CPM)
+    # Use Latest Revisions for each minor version: 1.20.7, 1.22.12, 1.24.12, 1.26.2
+    string(REPLACE "." ";" GST_VERSION_LIST ${GStreamer_VERSION})
+    list(GET GST_VERSION_LIST 0 GST_VERSION_MAJOR)
+    list(GET GST_VERSION_LIST 1 GST_VERSION_MINOR)
+    list(GET GST_VERSION_LIST 2 GST_VERSION_PATCH)
+
+    if(GST_VERSION_MINOR EQUAL 20)
+        set(GST_VERSION_PATCH 7)
+    elseif(GST_VERSION_MINOR EQUAL 22)
+        set(GST_VERSION_PATCH 12)
+    elseif(GST_VERSION_MINOR EQUAL 24)
+        set(GST_VERSION_PATCH 12)
+    elseif(GST_VERSION_MINOR EQUAL 26)
+        set(GST_VERSION_PATCH 2)
+    endif()
+
+    set(GST_PLUGINS_VERSION ${GST_VERSION_MAJOR}.${GST_VERSION_MINOR}.${GST_VERSION_PATCH})
+
+    # URL_HASH https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-${GST_PLUGINS_VERSION}.tar.xz.sha256sum
     CPMAddPackage(
         NAME gstreamer_good_plugins
         VERSION ${GST_PLUGINS_VERSION}
@@ -121,7 +139,6 @@ if(GStreamer_VERSION VERSION_GREATER_EQUAL 1.22)
 else()
     set(QGC_GST_QT6_PLUGIN_PATH "${CMAKE_CURRENT_SOURCE_DIR}/qt6")
 endif()
-cmake_print_variables(QGC_GST_QT6_PLUGIN_PATH)
 
 ################################################################################
 
@@ -224,3 +241,10 @@ if(UNIX)
 endif()
 
 ################################################################################
+# Platform-specific zlib options
+set(ZLIB_EXTRA_OPTIONS)
+if(WIN32)
+    set(ZLIB_EXTRA_OPTIONS
+        "ZLIB_INSTALL_COMPAT_DLL OFF"
+    )
+endif()

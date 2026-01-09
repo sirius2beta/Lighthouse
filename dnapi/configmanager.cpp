@@ -5,6 +5,8 @@
 
 const uint8_t ConfigManager::msg_control = 5;
 const uint8_t ConfigManager::msg_detect = 6;
+const uint8_t ConfigManager::msg_devicestatus = 8;
+
 ConfigManager::ConfigManager(QObject *parent)
     : QObject{parent}
 {

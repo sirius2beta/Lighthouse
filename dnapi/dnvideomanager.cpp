@@ -172,6 +172,8 @@ void DNVideoManager::onDetectMsg(uint8_t boatID, QByteArray detectMsg)
     }
 }
 
+
+
 void DNVideoManager::onRequestFormat(VideoItem* videoItem)
 {
     BoatItem* boat = _core->boatManager()->getBoatbyID(videoItem->boatID());

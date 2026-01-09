@@ -91,6 +91,14 @@ void NetworkManager::onUDPMsg()
             uint8_t ID = uint8_t(data[0]);
             data.remove(0,1);
             emit detectMsg(ID,data);
+        }else if(topic == ConfigManager::msg_detect){
+            uint8_t ID = uint8_t(data[0]);
+            data.remove(0,1);
+            emit detectMsg(ID,data);
+        }else if(topic == ConfigManager::msg_devicestatus){
+            uint8_t ID = uint8_t(data[0]);
+            data.remove(0,1);
+            emit deviceStatusMsg(ID, data);
         }
         const QString content = QLatin1String(" Received Topic: ")
                     + QChar(topic)

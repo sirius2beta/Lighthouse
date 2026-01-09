@@ -29,6 +29,7 @@ VideoItem::VideoItem(QObject *parent, DNCore* core, int index, QString title, in
     _AIEnabled(false)
 {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
+    connect(_core->networkManager(), &NetworkManager::cameraMsg, this, &VideoItem::onCameraMsg);
 
 
 }
@@ -47,11 +48,21 @@ VideoItem::~VideoItem()
 
 void VideoItem::initVideo(QQuickItem *widget)
 {
+
+    GstElement *decoder = gst_element_factory_make("decodebin3", nullptr);
+    if (!decoder) {
+        qDebug() << "gst_element_factory_make('decodebin3') failed";
+    }
+    GstElement *sink = nullptr;
+    sink = gst_element_factory_make("qml6glsink", nullptr);
+    if (!sink) {
+        qDebug() << "gst_element_factory_make('qml6glsink') failed";
+    }
     _videoWidget = widget;
 
     QString gstcmd;
      if(_encoder == "h264"){
-         gstcmd = QString("udpsrc port=%1 ! application/x-rtp, media=video, clock-rate=90000, payload=96 ! rtph264depay ! avdec_h264 ! videoconvert  !\
+         gstcmd = QString("udpsrc port=%1 ! application/x-rtp, media=video, clock-rate=90000, payload=96 ! rtph264depay ! decodebin3   !\
           glupload ! glcolorconvert ! qml6glsink name=sink").arg(QString::number(_PCPort));
      }else{
           gstcmd = QString("udpsrc port=%1 ! application/x-rtp, media=video, clock-rate=90000, payload=96 ! rtpjpegdepay ! jpegdec ! videoconvert  !\
@@ -59,10 +70,31 @@ void VideoItem::initVideo(QQuickItem *widget)
      }
 
     if(!_initialized){
-        _pipeline= gst_parse_launch(gstcmd.toLocal8Bit(), NULL);
-        _sink = gst_bin_get_by_name((GstBin*)_pipeline,"sink");
-        g_object_set(_sink, "widget", widget, NULL);
-        gst_element_set_state (_pipeline, GST_STATE_PLAYING);
+         GError *error = nullptr;
+         // 1. 修正元件名稱為 qml6glsink 並增加錯誤捕捉
+         _pipeline = gst_parse_launch(gstcmd.toLocal8Bit(), &error);
+
+         if (error) {
+             qDebug() << "Pipeline 啟動失敗:" << error->message;
+             g_error_free(error);
+             return;
+         }
+
+         if (!_pipeline) {
+             qDebug() << "無法建立 Pipeline，請檢查 GStreamer 插件是否安裝完整。";
+             return;
+         }
+
+         _sink = gst_bin_get_by_name(GST_BIN(_pipeline), "sink");
+
+         if (!_sink) {
+             qDebug() << "找不到名為 'sink' 的元件！";
+         } else {
+             // 2. 修正 g_object_set 的 Sentinel
+             g_object_set(_sink, "widget", widget, NULL);
+         }
+
+         gst_element_set_state(_pipeline, GST_STATE_PLAYING);
 
     }
 
@@ -247,7 +279,7 @@ void VideoItem::play(int videoIndex, int qualityIndex)
 }
 
 void VideoItem::stop()
-{   
+{
     if(_isPlaying){
         _isPlaying = false;
         emit videoStoped(this);
@@ -330,16 +362,20 @@ void VideoItem::setProxy(bool isProxy)
 
 void VideoItem::setEncoder(QString encoder)
 {
+
     if(_encoder != encoder){
         _encoder = encoder;
         QString gstcmd;
 
         if(_encoder == "h264"){
-            gstcmd = QString("udpsrc port=%1 ! application/x-rtp, media=video, clock-rate=90000, payload=96 ! rtph264depay ! avdec_h264 ! videoconvert  !\
-             qml6glsink name=mySink2").arg(QString::number(_PCPort));
-        }else{
-             gstcmd = QString("udpsrc port=%1 ! application/x-rtp, media=video, clock-rate=90000, payload=96 ! rtpjpegdepay ! jpegdec ! videoconvert  !\
-             qml6glsink name=mySink2").arg(QString::number(_PCPort));
+            // 使用 decodebin 自動選取硬體解碼器 (MediaCodec)
+            gstcmd = QString("udpsrc port=%1 ! application/x-rtp, media=video, clock-rate=90000, payload=96 ! "
+                             "rtph264depay ! decodebin ! videoconvert ! "
+                             "qml6glsink name=mySink2").arg(_PCPort);
+        } else {
+            gstcmd = QString("udpsrc port=%1 ! application/x-rtp, media=video, clock-rate=90000, payload=96 ! "
+                             "rtpjpegdepay ! decodebin ! videoconvert ! "
+                             "qml6glsink name=mySink2").arg(_PCPort);
         }
         gst_element_set_state (_pipeline, GST_STATE_NULL);
 
@@ -368,9 +404,6 @@ QString VideoItem::videoFormat()
 void VideoItem::processDetection(QByteArray data)
 {
     _detectionMatrixModel.clear();
-
-
-
     for(int i = 0; i< data.size(); ){
         if(i%17==0){
             uint8_t x;
@@ -397,4 +430,13 @@ void VideoItem::processDetection(QByteArray data)
 
     }
     emit detectionMatrixModelChanged(_detectionMatrixModel);
+}
+
+void VideoItem::onCameraMsg(uint8_t boatID, QByteArray msg)
+{
+    qDebug()<<"VideoItem::onCameraMsg videoItem index:"<<_index<<" , boatID:"<<boatID<<" , _boatID:"<<_boatID;
+    if(boatID == _boatID){
+
+
+    }
 }

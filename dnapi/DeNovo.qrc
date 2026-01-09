@@ -23,6 +23,7 @@
         <file alias="DeNovoViewer/Display/MapView.qml">ui/MapView.qml</file>
         <file alias="DeNovoViewer/Display/BoatSetting.qml">ui/BoatSetting.qml</file>
         <file alias="DeNovoViewer/Display/VideoSetting.qml">ui/VideoSetting.qml</file>
+        <file alias="DeNovoViewer/Display/SystemOverviewPanel.qml">ui/SystemOverviewPanel.qml</file>
     </qresource>
     <qresource prefix="/res">
         <file alias="boatManager.png">res/boatManager.png</file>
@@ -48,6 +49,7 @@
         <file alias="video_display.png">res/video_display.png</file>
         <file alias="sail_boat.png">res/sail_boat.png</file>
         <file alias="close.png">res/close.png</file>
+        <file alias="overview.png">res/overview.png</file>
     </qresource>
     <qresource prefix="/fonts">
         <file alias="Roboto-Regular.ttf">res/fonts/Roboto-Regular.ttf</file>

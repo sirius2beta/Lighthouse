@@ -20,13 +20,12 @@ Window {
     width: 1280
     height: 720
     visible: true
-    title: "LightHouse v5.2"
+    title: "LightHouse v5.3 (GPlayer v5 47aa2c4)"
     property DNValue dnvalue: DNValue{}
 
     property real lon: parseFloat(DeNovoViewer.sensorManager.mav1Model.get(1).displayValue)/10000000
     property real lat: parseFloat(DeNovoViewer.sensorManager.mav1Model.get(2).displayValue)/10000000
 
-    property string version: "V3.1"
     property int currentBoatIndex: 0
 
     Rectangle{
@@ -95,6 +94,7 @@ Window {
             right_drawer.open()
         }
     }
+
     Drawer{
         id: right_drawer
         width:300

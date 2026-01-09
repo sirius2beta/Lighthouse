@@ -2,6 +2,7 @@
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import DeNovoViewer 1.0
+import DeNovoViewer.Boat 1.0
 
 Item {
 
@@ -62,9 +63,6 @@ Item {
 
 
             DNButton{
-                anchors.bottom: parent.bottom
-                anchors.left: parent.left
-                anchors.margins: 5
                 width: 90
                 height: 49
                 text:"home"
@@ -74,7 +72,9 @@ Item {
             }
         }
 
-
+        Component.onCompleted: {
+            DeNovoViewer.controlManager.controls.get(1).setBoatID(DeNovoViewer.boatManager.activeBoat.ID)
+        }
 
     }
 

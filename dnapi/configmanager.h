@@ -29,6 +29,7 @@ public:
     static const QString msg_sensor() { return "SENSOR"; }
     static const uint8_t msg_control;
     static const uint8_t msg_detect;
+    static const uint8_t msg_devicestatus;
 
 
 signals:

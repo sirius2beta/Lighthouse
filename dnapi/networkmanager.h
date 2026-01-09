@@ -20,6 +20,8 @@ signals:
     void sensorMsg(uint8_t boatID, QByteArray data);
     void controlMsg(uint8_t boatID, QByteArray data);
     void detectMsg(uint8_t boatID, QByteArray data);
+    void cameraMsg(uint8_t boatID, QByteArray data);
+    void deviceStatusMsg(uint8_t boatID, QByteArray data);
 public slots:
     void sendMsg(QHostAddress addr, uint8_t topic, QByteArray command = "");
     void sendMsgbyID(uint8_t boatID, uint8_t topic, QByteArray command = "");

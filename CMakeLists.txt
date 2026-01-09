@@ -14,12 +14,33 @@ option(QGC_ENABLE_GST_VIDEOSTREAMING "Enable GStreamer Video Backend" ON)
 include(FetchContent)
 include(CMakePrintHelpers)
 include(CustomOptions)
+include(CPM)
+
 ##
 
 project(Lighthouse VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_AUTORCC ON)
+
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(APP_NAME "Lighthouse")
+
+if(CMAKE_CROSSCOMPILING)
+    if(ANDROID)
+        set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY BOTH)
+        set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE BOTH)
+        set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE BOTH)
+    endif()
+
+    if(NOT IS_DIRECTORY ${QT_HOST_PATH})
+        message(FATAL_ERROR "You need to set QT_HOST_PATH to cross compile Qt.")
+    endif()
+endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Network Qml QuickControls2 Widgets)
 
@@ -32,7 +53,7 @@ list(APPEND QGC_RESOURCES
         ${CMAKE_SOURCE_DIR}/DenovoUI/DenovoUI.qrc
 )
 
-set(CMAKE_AUTORCC ON)
+
 
 
 # windows installer files shared with core and custom
@@ -46,17 +67,16 @@ set(CMAKE_AUTORCC ON)
 
 
 
-qt_add_executable(${APP_NAME}
+qt_add_executable(${CMAKE_PROJECT_NAME}
     main.cpp
+    dnapplication.cpp
+    dnapplication.h
     ${QGC_RESOURCES}
 )
 
-qt_add_library(LH STATIC
-    dnapplication.cpp
-    dnapplication.h
-)
 
-target_link_libraries(LH
+
+target_link_libraries(${CMAKE_PROJECT_NAME}
     PRIVATE
         Qt6::CorePrivate
         Qt6::Gui
@@ -65,12 +85,11 @@ target_link_libraries(LH
         Qt6::Quick
         Qt6::QuickControls2
         gstqml6gl
-        dnapi
+
     PUBLIC
         Qt6::Core
         Qt6::Widgets
 )
-target_include_directories(LH PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -111,7 +130,6 @@ add_compile_definitions(_USE_MATH_DEFINES)
 
 
 
-add_subdirectory(gstqml6gl)
 add_subdirectory(dnapi)
 
 install(TARGETS ${APP_NAME}
@@ -120,12 +138,10 @@ install(TARGETS ${APP_NAME}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-target_link_libraries(${APP_NAME}
-    PRIVATE
-        LH
+target_link_libraries(${CMAKE_PROJECT_NAME}
+
     PRIVATE
      Qt6::Quick
-     gstqml6gl
 )
 
 include(GNUInstallDirs)

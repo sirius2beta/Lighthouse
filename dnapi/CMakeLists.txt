@@ -1,6 +1,6 @@
 find_package(Qt6 REQUIRED COMPONENTS Core Network Qml Gui Quick)
 
-qt_add_library(dnapi STATIC
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     boatitem.cpp
     boatitem.h
     boatmanager.cpp
@@ -17,7 +17,7 @@ qt_add_library(dnapi STATIC
     dncontrol.h
     dncore.cpp
     dncore.h
-    
+
     dnmetadata.cpp
     dnmetadata.h
     dnqmlglobal.cpp
@@ -46,16 +46,15 @@ qt_add_library(dnapi STATIC
     winchcontrol.h
 )
 
-target_link_libraries(dnapi
+target_link_libraries(${CMAKE_PROJECT_NAME}
     PRIVATE
         Qt6::Qml
-        LH
     PUBLIC
         Qt6::Core
         Qt6::Network
         Qt6::Gui
         Qt6::Quick
-        gstqml6gl
 )
 
-target_include_directories(dnapi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_subdirectory(GStreamer)

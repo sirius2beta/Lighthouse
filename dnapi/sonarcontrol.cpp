@@ -3,8 +3,9 @@
 
 
 SonarControl::SonarControl(QObject *parent, QString name, int controlType, QVector<DNValue> fields)
-: ControlItem(parent, name, 2, fields)
+    : ControlItem(parent, name, 2, fields),_powerOn(false)
 {
+
     qDebug()<<"create sonar control: contorl type"<<this->controlType();
 }
 
@@ -16,7 +17,6 @@ void SonarControl::setPower(bool p)
     bt.append(controlType());
     bt.append(commandType);
     bt.append(DNValue(p).bytesData());
-    qDebug()<<p;
 
     // message type use raw
     emit sendMsgbyID(boatID(), 5, bt);
