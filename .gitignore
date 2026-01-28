@@ -31,9 +31,9 @@ ui_*.h
 qrc_*.cpp
 Thumbs.db
 *.res
-*.rc
 /.qmake.cache
 /.qmake.stash
+.CMakeLists.txt.user
 
 # qtcreator generated files
 *.pro.user*
@@ -73,4 +73,5 @@ Thumbs.db
 
 # Build folder
 build/
+.qtcreator/
 
