@@ -1,5 +1,4 @@
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE VideoItemStub.h)
 
 if(QGC_ENABLE_GST_VIDEOSTREAMING)
     if(NOT MACOS)
@@ -10,6 +9,10 @@ if(QGC_ENABLE_GST_VIDEOSTREAMING)
             COMPONENTS Core Base Video Gl GlPrototypes Rtsp
             OPTIONAL_COMPONENTS GlEgl GlWayland GlX11)
     endif()
+
+
+	include(GstStaticFix)
+
 
     add_subdirectory(gstqml6gl)
     # TODO: https://gstreamer.freedesktop.org/documentation/qt6d3d11/index.html#qml6d3d11sink-page
@@ -22,12 +25,14 @@ if(TARGET gstqml6gl)
         PRIVATE
             GStreamer.cc
             GStreamer.h
-            #android_gst_init.cc
-            #GStreamerHelpers.cc
-            #GStreamerHelpers.h
-            #GstVideoReceiver.cc
-            #GstVideoReceiver.h
+
     )
+    if(ANDROID)
+        target_sources(${CMAKE_PROJECT_NAME}
+            PRIVATE
+                android_gst_init.cc
+        )
+    endif()
 
     add_subdirectory(gstqgc)
 
