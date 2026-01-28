@@ -1,4 +1,5 @@
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE VideoItemStub.h)
 
 if(QGC_ENABLE_GST_VIDEOSTREAMING)
     if(NOT MACOS)
@@ -17,9 +18,18 @@ endif()
 if(TARGET gstqml6gl)
     target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE gstqml6gl)
 
+    target_sources(${CMAKE_PROJECT_NAME}
+        PRIVATE
+            GStreamer.cc
+            GStreamer.h
+            #android_gst_init.cc
+            #GStreamerHelpers.cc
+            #GStreamerHelpers.h
+            #GstVideoReceiver.cc
+            #GstVideoReceiver.h
+    )
 
-
-    #add_subdirectory(gstqgc)
+    add_subdirectory(gstqgc)
 
     target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE QGC_GST_STREAMING)
 

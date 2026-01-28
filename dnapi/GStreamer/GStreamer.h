@@ -34,6 +34,6 @@ enum VideoDecoderOptions {
 bool initialize();
 void *createVideoSink(QQuickItem *widget, QObject *parent = nullptr);
 void releaseVideoSink(void *sink);
-VideoReceiver *createVideoReceiver(QObject *parent = nullptr);
+//VideoReceiver *createVideoReceiver(QObject *parent = nullptr);
 
 };

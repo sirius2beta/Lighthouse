@@ -48,6 +48,7 @@ VideoItem::~VideoItem()
 
 void VideoItem::initVideo(QQuickItem *widget)
 {
+    //setenv("GST_DEBUG", "3,decodebin*:6,amc*:6,avdec*:6", 1);
 
     GstElement *decoder = gst_element_factory_make("decodebin3", nullptr);
     if (!decoder) {
@@ -62,8 +63,22 @@ void VideoItem::initVideo(QQuickItem *widget)
 
     QString gstcmd;
      if(_encoder == "h264"){
-         gstcmd = QString("udpsrc port=%1 ! application/x-rtp, media=video, clock-rate=90000, payload=96 ! rtph264depay ! decodebin3   !\
+# ifdef ANDROID
+        gstcmd = QString(
+                     "udpsrc port=%1 ! "
+                     "application/x-rtp, media=video, clock-rate=90000, payload=96 ! "
+                     "rtpjitterbuffer mode=1 latency=200 ! "
+                     "rtph264depay ! h264parse ! "
+                     "amcviddec-c2exynosh264decoder ! "
+                     "queue max-size-buffers=1 leaky=downstream ! " // 修正為 leaky=downstream (或 leaky=1)
+                     "glupload ! "
+                     "glcolorconvert ! "
+                     "qml6glsink name=sink sync=false async=false "
+                     ).arg(QString::number(_PCPort));
+#else
+         gstcmd = QString("udpsrc port=%1 ! application/x-rtp, media=video, clock-rate=90000, payload=96 ! rtph264depay ! avdec_h264   !\
           glupload ! glcolorconvert ! qml6glsink name=sink").arg(QString::number(_PCPort));
+#endif
      }else{
           gstcmd = QString("udpsrc port=%1 ! application/x-rtp, media=video, clock-rate=90000, payload=96 ! rtpjpegdepay ! jpegdec ! videoconvert  !\
           glupload ! qml6glsink name=sink").arg(QString::number(_PCPort));

@@ -8,19 +8,16 @@
  ****************************************************************************/
 
 #include "GStreamer.h"
-#include "GstVideoReceiver.h"
-#include "QGCLoggingCategory.h"
-#include "SettingsManager.h"
-#include "VideoSettings.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QSettings>
 #include <QtQuick/QQuickItem>
+#include <QDir>
 
 #include <gst/gst.h>
 
-QGC_LOGGING_CATEGORY(GStreamerLog, "qgc.videomanager.videoreceiver.gstreamer")
-QGC_LOGGING_CATEGORY(GStreamerAPILog, "qgc.videomanager.videoreceiver.gstreamer.api")
+Q_LOGGING_CATEGORY(GStreamerLog, "qgc.videomanager.videoreceiver.gstreamer")
+Q_LOGGING_CATEGORY(GStreamerAPILog, "qgc.videomanager.videoreceiver.gstreamer.api")
 
 // TODO: Clean These up with Macros or CMake
 G_BEGIN_DECLS
@@ -55,7 +52,7 @@ GST_PLUGIN_STATIC_DECLARE(videoparsersbad);
 GST_PLUGIN_STATIC_DECLARE(vpx);
 GST_PLUGIN_STATIC_DECLARE(vulkan);
 
-GST_PLUGIN_STATIC_DECLARE(qgc);
+//GST_PLUGIN_STATIC_DECLARE(qgc);
 G_END_DECLS
 
 namespace
@@ -123,7 +120,7 @@ void _registerPlugins()
     GST_PLUGIN_STATIC_REGISTER(qml6);
 // #endif
 
-    GST_PLUGIN_STATIC_REGISTER(qgc);
+    //GST_PLUGIN_STATIC_REGISTER(qgc);
 }
 
 void _qtGstLog(GstDebugCategory *category,
@@ -245,7 +242,7 @@ bool _verifyPlugins()
     g_list_foreach(plugins, _checkPlugin, NULL);
     g_list_free(plugins);
 
-    static constexpr const char *pluginNames[2] = {"qml6", "qgc"};
+    static constexpr const char *pluginNames[1] = {"qml6"};
     for (const char *name : pluginNames) {
         GstPlugin *plugin = gst_registry_find_plugin(registry, name);
         if (!plugin) {
@@ -361,11 +358,8 @@ bool initialize()
     _setGstEnvVars();
 
     if (qEnvironmentVariableIsEmpty("GST_DEBUG")) {
-        int gstDebugLevel = 0;
-        QSettings settings;
-        if (settings.contains(AppSettings::gstDebugLevelName)) {
-            gstDebugLevel = settings.value(AppSettings::gstDebugLevelName).toInt();
-        }
+        int gstDebugLevel = 1;
+
         gst_debug_set_default_threshold(static_cast<GstDebugLevel>(gstDebugLevel));
         gst_debug_remove_log_function(gst_debug_log_default);
         gst_debug_add_log_function(_qtGstLog, nullptr, nullptr);
@@ -404,7 +398,7 @@ bool initialize()
         return false;
     }
 
-    _setCodecPriorities(static_cast<GStreamer::VideoDecoderOptions>(SettingsManager::instance()->videoSettings()->forceVideoDecoder()->rawValue().toInt()));
+    _setCodecPriorities(static_cast<GStreamer::VideoDecoderOptions>(0));
 
     GstElement *sink = gst_element_factory_make("qml6glsink", nullptr);
     if (!sink) {
@@ -413,6 +407,19 @@ bool initialize()
     }
 
     gst_clear_object(&sink);
+
+    GstRegistry *registry = gst_registry_get();
+    GList *list = gst_registry_get_feature_list(registry, GST_TYPE_ELEMENT_FACTORY);
+    for (GList *l = list; l != NULL; l = l->next) {
+        GstElementFactory *f = GST_ELEMENT_FACTORY(l->data);
+        const char* name = GST_OBJECT_NAME(f);
+        //qDebug() << "QGC_GStreamer_Debug:  -> " << name;
+        if (g_str_has_prefix(name, "amcviddec")) {
+            qDebug() << "QGC_GStreamer_Debug: 發現可用硬解 -> " << name;
+        }
+    }
+    gst_plugin_feature_list_free(list);
+
     return true;
 }
 
@@ -436,9 +443,5 @@ void releaseVideoSink(void *sink)
     gst_clear_object(&videoSink);
 }
 
-VideoReceiver *createVideoReceiver(QObject *parent)
-{
-    return new GstVideoReceiver(parent);
-}
 
 } // namespace GStreamer
