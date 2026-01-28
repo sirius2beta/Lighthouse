@@ -426,6 +426,9 @@ if(GStreamer_FOUND AND NOT TARGET GStreamer::GStreamer)
             pkg_check_modules(GST_PLUGIN_${plugin} QUIET IMPORTED_TARGET gst${plugin})
             if(GST_PLUGIN_${plugin}_FOUND)
                 target_link_libraries(GStreamer::Plugins INTERFACE PkgConfig::GST_PLUGIN_${plugin})
+            elseif(ANDROID AND "${plugin}" STREQUAL "androidmedia")
+                # 即使 pkg-config 沒找到，只要 androidmedia 插件確實存在，就強制定義
+                target_compile_definitions(GStreamer::Plugins INTERFACE GST_PLUGIN_androidmedia_FOUND)
             else()
                 find_library(GST_PLUGIN_${plugin}_LIBRARY
                     NAMES gst${plugin}

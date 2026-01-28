@@ -1,6 +1,9 @@
 ﻿#include "dnvideomanager.h"
 #include "dnapplication.h"
 #include "dncore.h"
+#ifdef QGC_GST_STREAMING
+#include "GStreamer.h"
+#endif
 //#include "QGCApplication.h"
 #include <QQmlEngine>
 #include <QQuickItem>
@@ -14,6 +17,11 @@ DNVideoManager::DNVideoManager(QObject *parent, DNCore* core)
     QCoreApplication::setOrganizationName("Ezosirius");
     QCoreApplication::setApplicationName("GPlayer_v1");
     settings = new QSettings;
+    #ifdef QGC_GST_STREAMING
+        if (!GStreamer::initialize()) {
+            qDebug() << "Failed To Initialize GStreamer";
+        }
+    #endif
 
 }
 
