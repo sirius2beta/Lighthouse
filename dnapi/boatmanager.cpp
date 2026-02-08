@@ -7,7 +7,6 @@ BoatManager::BoatManager(QObject* parent, DNCore *core): QObject(parent),
 {
     _core = core;
 
-    settings = new QSettings("Ezosirius", "GPlayer_v1", this);
     boatItemModel = new QStandardItemModel();
     QStringList label = {"name", "Primary", "Secondary"};
     boatItemModel->setHorizontalHeaderLabels(label);
@@ -25,21 +24,20 @@ void BoatManager::init()
 {
 
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
-
     qDebug()<<"BoatManager::init(): Initiating...";
-    settings->beginGroup(QString("%1").arg(_core->config()));
-    int size = settings->beginReadArray("boat");
-    if(size == 0){
-        settings->endArray();
-        settings->endGroup();
-        addBoat(); //一開始如果沒有船的設定，先新增一艘船
-    }else{
-        for(int i = 0; i < size; i++){
-            settings->setArrayIndex(i);
-            QString boatname = settings->value("boatname").toString();
-            int ID = settings->value("ID").toInt();
-            QString boatPIP = settings->value("/PIP").toString();
-            QString boatSIP = settings->value("/SIP").toString();
+
+    QSettings settings;
+    // Is the group even there?
+    if (settings.contains(settingsRoot() + "/count")) {
+        // Find out how many configurations we have
+        const int count = settings.value(settingsRoot() + "/count").toInt();
+        for (int i = 0; i < count; i++) {
+            const QString root = settingsRoot() + QStringLiteral("/Link%1").arg(i);
+
+            const QString boatname = settings.value(root + "/name").toString();
+            int ID = settings.value(root+"/id").toInt();
+            QString boatPIP = settings.value(root+"/PIP").toString();
+            QString boatSIP = settings.value(root+"/SIP").toString();
 
             BoatItem* boat = new BoatItem(this, _core);
             boat->setID(ID);
@@ -82,11 +80,13 @@ void BoatManager::init()
 
             qDebug()<<"  - Add boat: ID:"<<ID<<", name:"<<boatname ;
 
-        }
 
-        settings->endArray();
-        settings->endGroup();
+        }
+    }else{
+        addBoat();
+        qDebug()<<"add boat";
     }
+
     if(_boatList.size() > 0){
         _activeBoat = _boatList[0];
     }
@@ -154,17 +154,28 @@ void BoatManager::addBoat()
     connect(boat, &BoatItem::IPChanged, primaryHeartBeat, &HeartBeat::onChangeIP);
     connect(boat, &BoatItem::IPChanged, secondaryHeartBeat, &HeartBeat::onChangeIP);
 
-    settings->beginGroup(QString("%1").arg(_core->config()));
-    int size = settings->beginReadArray("boat");
-    settings->endArray();
-    settings->beginWriteArray("boat");
-    settings->setArrayIndex(size);
-    settings->setValue(QString("boatname"), "unknown");
-    settings->setValue(QString("ID"), index);
-    settings->setValue(QString("PIP"), "");
-    settings->setValue(QString("SIP"), "");
-    settings->endArray();
-    settings->endGroup();
+    QSettings settings;
+    settings.remove(settingsRoot());
+
+    int trueCount = 0;
+    for (int i = 0; i < _boatList.count(); i++) {
+        BoatItem* boat = _boatList[i];
+        if (!boat) {
+            qDebug() << "Internal error for link configuration in LinkManager";
+            continue;
+        }
+
+        const QString root = settingsRoot() + QStringLiteral("/Link%1").arg(trueCount++);
+        settings.setValue(root + "/name", boat->name());
+        settings.setValue(root + "/id", boat->ID());
+        settings.setValue(root + "/PIP", boat->PIP());
+        settings.setValue(root + "/SIP", boat->SIP());
+
+    }
+
+    const QString root = QString(settingsRoot());
+    settings.setValue(root + "/count", trueCount);
+
 
 }
 
@@ -175,23 +186,8 @@ void BoatManager::deleteBoat(int index)
     delete _boatList[index];
     _boatList.removeAt(index);
 
+    saveSettings();
 
-    settings->beginGroup(QString("%1").arg(_core->config()));
-    settings->remove("");
-    settings->beginWriteArray("boat");
-
-
-    for(int i = 0; i<_boatList.size(); i++){
-        BoatItem* boat = _boatList[i];
-        settings->setArrayIndex(i);
-        settings->setValue("boatname",boat->name());
-        settings->setValue("PIP", boat->PIP());
-        settings->setValue("SIP", boat->SIP());
-        settings->setValue("ID", boat->ID());
-    }
-
-    settings->endArray();
-    settings->endGroup();
 
     for(int i = 0; i < _core->videoManager()->count(); i++){
         if(_core->videoManager()->getVideoItem(i)->boatID() == ID){
@@ -266,48 +262,17 @@ int BoatManager::size()
 {
     return _boatList.size();
 }
-/*
-void BoatManager::setConnectionType(int connectiontype)
-{
-    _connectionType = connectiontype;
-    emit connectionTypeChanged(connectiontype);
-}
-*/
+
 void BoatManager::onBoatNameChange(int ID, QString newname)
 {
-    int index = getIndexbyID(ID);
-    qDebug()<<"++id:"<<ID;
-    boatItemModel->item(index, 0)->setText(newname);
-    settings->beginGroup(QString("%1").arg(_core->config()));
-    //int size = settings->beginReadArray("boat");
-    settings->setArrayIndex(index);
-    settings->setValue("boatname",newname);
-
-    settings->endArray();
-    settings->endGroup();
+    saveSettings();
     qDebug()<<"changename";
 }
 
 void BoatManager::onIPChanged(int ID, bool primary)
 {
-    int index = getIndexbyID(ID);
-    qDebug()<<"++:"<<index;
-    BoatItem* boat = _boatList[index];
-    if(primary){
-        boatItemModel->item(index,1)->setData(boat->PIP());
-    }else{
-        boatItemModel->item(index,2)->setData(boat->SIP());
-    }
+    saveSettings();
 
-    settings->beginGroup(QString("%1").arg(_core->config()));
-    settings->beginReadArray("boat");
-
-    settings->setArrayIndex(index);
-    settings->setValue("PIP", boat->PIP());
-    settings->setValue("SIP", boat->SIP());
-
-    settings->endArray();
-    settings->endGroup();
 }
 
 void BoatManager::onConnectStatusChanged(int ID, bool isprimary, bool isConnected)
@@ -391,4 +356,25 @@ void BoatManager::onUpdate(uint8_t boatID)
 
     // message type use raw
     emit sendMsgbyID(boatID, 9, bt);
+}
+
+void BoatManager::saveSettings()
+{
+    QSettings settings;
+    settings.remove(settingsRoot());
+
+    int trueCount = 0;
+    for (int i = 0; i < _boatList.count(); i++) {
+        BoatItem* boat = _boatList[i];
+        if (!boat) continue;
+
+        const QString root = settingsRoot() + QStringLiteral("/Link%1").arg(trueCount++);
+        settings.setValue(root + "/name", boat->name());
+        settings.setValue(root + "/id", boat->ID());
+        settings.setValue(root + "/PIP", boat->PIP());
+        settings.setValue(root + "/SIP", boat->SIP());
+    }
+    settings.setValue(settingsRoot() + "/count", trueCount);
+
+    qDebug() << "Settings saved, boat count:" << trueCount;
 }

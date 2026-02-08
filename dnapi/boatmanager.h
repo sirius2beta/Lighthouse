@@ -55,10 +55,11 @@ public slots:
     void onRestartService(uint8_t boatID);
     void onStopService(uint8_t boatID);
     void onUpdate(uint8_t boatID);
+    void saveSettings();
 
 
 private:
-    QSettings *settings;
+    static QString settingsRoot() { return QStringLiteral("LinkConfigurations"); }
     QStandardItemModel* boatItemModel;
     QList<BoatItem*> _boatList;
     int _connectionType;

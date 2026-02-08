@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QUdpSocket>
 #include "boatmanager.h"
+#include "mavlink.h"
+
 
 class DNCore;
 
@@ -25,9 +27,12 @@ signals:
 public slots:
     void sendMsg(QHostAddress addr, uint8_t topic, QByteArray command = "");
     void sendMsgbyID(uint8_t boatID, uint8_t topic, QByteArray command = "");
+protected:
+    void parseMsg(QHostAddress addr, const uint8_t& boatID, const mavlink_message_t &message);
 
 protected slots:
     void onUDPMsg();
+
 private:
     QUdpSocket *serverSocket;
     QUdpSocket *clientSocket;

@@ -14,9 +14,7 @@ DNVideoManager::DNVideoManager(QObject *parent, DNCore* core)
     : QObject{parent},
       _core(core)
 {
-    QCoreApplication::setOrganizationName("Ezosirius");
-    QCoreApplication::setApplicationName("GPlayer_v1");
-    settings = new QSettings;
+
     #ifdef QGC_GST_STREAMING
         if (!GStreamer::initialize()) {
             qDebug() << "Failed To Initialize GStreamer";
@@ -39,15 +37,8 @@ void DNVideoManager::init()
     QString _config = _core->config();
     for(int i = 0; i < window_count; i++){
         //create settings if first time opened
-        if(settings->value(QString("%1/w%2/in_port").arg(_config,QString::number(i))) == QVariant()){
-            QList<QString> formatlist = {"video0", "YUYV", "640-480-15", "nan", "80", "192.168.0.100", "5200"};
-            settings->setValue(QString("%1/w%2/boat_name").arg(_config,QString::number(i)),QString("unknown"));
-            settings->setValue(QString("%1/w%2/in_port").arg(_config,QString::number(i)),5200+i);
-            settings->setValue(QString("%1/w%2/title").arg(_config,QString::number(i)),QString("window%1").arg(i));
-            settings->setValue(QString("%1/w%2/videoinfo").arg(_config,QString::number(i)), 1);
-            settings->setValue(QString("%1/w%2/formatno").arg(_config,QString::number(i)), 0);
-        }
-        QString title = settings->value(QString("%1/w%2/title").arg(_config,QString::number(i))).toString();
+
+        QString title = QString("window")+QString::number(i);
 
         int PCPort = 5201+i;
 
@@ -93,11 +84,9 @@ void DNVideoManager::addVideoItem(int index, QString title, int boatID, int vide
 {
     VideoItem* newvideoitem = new VideoItem(this, _core, index, title, boatID, videoNo, qualityIndex, PCPort);
     QQmlEngine::setObjectOwnership(newvideoitem, QQmlEngine::CppOwnership);
-    if(settings->value(QString("%1/w%2/videoinfo").arg(_core->config(),QString::number(newvideoitem->index()))) == 1){
-        newvideoitem->setVideoInfo(true);
-    }else{
-        newvideoitem->setVideoInfo(false);
-    }
+
+    newvideoitem->setVideoInfo(false);
+
     videoList.append(newvideoitem);
     connect(newvideoitem, &VideoItem::videoPlayed, this, &DNVideoManager::onPlay);
     connect(newvideoitem, &VideoItem::videoStoped, this, &DNVideoManager::onStop);

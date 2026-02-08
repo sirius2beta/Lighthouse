@@ -58,3 +58,11 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(GStreamer)
+
+# For QGC all dialects means common and development. Though use of development mavlink code should be restricted to debug builds only.
+target_include_directories(${CMAKE_PROJECT_NAME}
+    PRIVATE
+        mavlink
+        mavlink/hypex
+)
+

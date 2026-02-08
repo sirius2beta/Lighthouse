@@ -9,7 +9,6 @@ SensorManager::SensorManager(QObject *parent, DNCore* core)
     _core(core)
 {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
-    settings = new QSettings("Ezosirius", "GPlayer_v1", this);
 }
 
 void SensorManager::init()

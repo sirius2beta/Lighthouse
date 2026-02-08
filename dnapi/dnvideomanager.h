@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QCoreApplication>
-#include <QSettings>
 #include <QHostAddress>
 #include <QQuickItem>
 #include <QStringList>
@@ -53,7 +52,6 @@ signals:
 
 private:
     QVector<VideoItem*> videoList;
-    QSettings* settings;
     DNCore* _core;
     GstElement *_testpipeline;
     GstElement *_testsink;

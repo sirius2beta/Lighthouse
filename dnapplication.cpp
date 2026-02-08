@@ -50,6 +50,11 @@ DNApplication::DNApplication(int &argc, char *argv[])
     :QApplication (argc, argv)
 {
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+    setApplicationName("LightHouse");
+    setOrganizationName("Denovo");
+    setOrganizationDomain("Denovo.org");
+    setApplicationVersion("1.0");
+    QSettings::setDefaultFormat(QSettings::IniFormat);
 
 }
 

@@ -30,7 +30,6 @@ public:
 
 
 private:
-    QSettings* settings;
     QString _config;
     BoatManager* _boatManager;
     NetworkManager* _networkManager;

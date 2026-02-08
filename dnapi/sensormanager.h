@@ -2,7 +2,6 @@
 #define SENSORMANAGER_H
 
 #include <QObject>
-#include <QSettings>
 #include <QStandardItemModel>
 #include "sensoritem.h"
 #include "sensorgroup.h"
@@ -46,7 +45,6 @@ public slots:
     void onSensorMsg(uint8_t ID, QByteArray data); //處理來自networkmanager的訊息
 
 private:
-    QSettings* settings;
     DNCore* _core;
 
     QList<DNQmlObjectListModel*> _sensorGroupListModel;
