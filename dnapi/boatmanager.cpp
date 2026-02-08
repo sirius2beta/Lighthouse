@@ -29,7 +29,6 @@ void BoatManager::init()
     QSettings settings;
     // Is the group even there?
     if (settings.contains(settingsRoot() + "/count")) {
-        // Find out how many configurations we have
         const int count = settings.value(settingsRoot() + "/count").toInt();
         for (int i = 0; i < count; i++) {
             const QString root = settingsRoot() + QStringLiteral("/Link%1").arg(i);
@@ -82,7 +81,8 @@ void BoatManager::init()
 
 
         }
-    }else{
+    }
+    if(_boatList.size() == 0){
         addBoat();
         qDebug()<<"add boat";
     }
