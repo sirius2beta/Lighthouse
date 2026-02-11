@@ -38,7 +38,6 @@ MAVLinkProtocol *MAVLinkProtocol::instance()
 void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
 {
     const SharedLinkInterfacePtr linkPtr = LinkManager::instance()->sharedLinkInterfacePointerForLink(link);
-    qCDebug(MAVLinkProtocolLog) <<"got raw data in hex: " << data.toHex();
     if (!linkPtr) {
         qCDebug(MAVLinkProtocolLog) << "receiveBytes: link gone!" << data.size() << "bytes arrived too late";
         return;

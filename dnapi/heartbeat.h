@@ -7,6 +7,7 @@
 #include "boatitem.h"
 #include "boatmanager.h"
 #include "LinkInterface.h"
+#include "MAVLinkLib.h"
 
 class DNCore;
 class HeartBeat : public QObject
@@ -19,7 +20,7 @@ public:
     ~HeartBeat();
 
 signals:
-    void sendMsg(QHostAddress addr, LinkInterface* link, char topic, QByteArray command);
+    void sendMsg(QHostAddress addr, LinkInterface* link, mavlink_message_t message);
     void sendMsgbyID(const int &ID, char topic, QByteArray command);
 
 public slots:

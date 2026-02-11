@@ -56,66 +56,19 @@ void NetworkManager::init()
     connect(MAVLinkProtocol::instance(), &MAVLinkProtocol::messageReceived, this, &NetworkManager::_mavlinkMessageReceived);
 }
 
-void NetworkManager::sendMsgSelect(QHostAddress addr, bool isPrimary, uint8_t topic, QByteArray command)
+
+
+void NetworkManager::sendMsg(QHostAddress addr, LinkInterface* link, mavlink_message_t message)
 {
-
-    mavlink_custom_legacy_wrapper_t wrapper;
-    mavlink_message_t msg;
-
-    // 2. 準備你要發送的原始資料 (範例資料)
-    QByteArray paddedMsg = command.leftJustified(251, 0, true);
-    uint8_t data_len = command.size();
-    uint8_t payload[251];
-    memcpy(payload, paddedMsg.constData(), 251);
-
-    wrapper.length = data_len;
-    mavlink_msg_custom_legacy_wrapper_encode(255, 2, &msg, &wrapper);
-
-    // 5. 將訊息轉換為位元組陣列，以便透過 Serial/UDP 發送
-    uint8_t buf[MAVLINK_MAX_PACKET_LEN];
-    uint16_t len = mavlink_msg_to_send_buffer(buf, &msg);
-    SharedLinkInterfacePtr sharedLink;
-    if(isPrimary){
-        sharedLink = LinkManager::instance()->mavlinkPrimaryUDPLink();
-    }else{
-        sharedLink = LinkManager::instance()->mavlinkSecondaryUDPLink();
-    }
-
-    if (!sharedLink) {
-        qCDebug(NetworkManagerLog) << "requestDataStream: primary link gone!";
-        return;
-    }
-    sharedLink.get()->writeBytesThreadSafe(addr, (const char*)buf, len);
-}
-
-void NetworkManager::sendMsg(QHostAddress addr, LinkInterface* link, uint8_t topic, QByteArray command)
-{
-
-    mavlink_custom_legacy_wrapper_t wrapper;
-    mavlink_message_t msg;
-
-
-    // 2. 準備你要發送的原始資料 (範例資料)
-    QByteArray paddedMsg = command.leftJustified(251, 0, true);
-    uint8_t data_len = command.size();
-    uint8_t payload[251];
-    memcpy(payload, paddedMsg.constData(), 251);
-
-
-    wrapper.length = data_len;
-
-
-    mavlink_msg_custom_legacy_wrapper_encode(255, 2, &msg, &wrapper);
-
-    // 5. 將訊息轉換為位元組陣列，以便透過 Serial/UDP 發送
-    uint8_t buf[MAVLINK_MAX_PACKET_LEN];
-    uint16_t len = mavlink_msg_to_send_buffer(buf, &msg);
-
     if (!link) {
-        qCDebug(NetworkManagerLog) << "requestDataStream:  link gone!";
+        qCDebug(NetworkManagerLog) << "sendMsg: link gone!";
         return;
     }
-    link->writeBytesThreadSafe(addr, (const char*)buf, len);
+
+    // 5. 發送
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    int len = mavlink_msg_to_send_buffer(buffer, &message);
+    link->writeBytesThreadSafe(addr, (const char*)buffer, len);
 }
 
 void NetworkManager::sendMsgbyID(uint8_t boatID, uint8_t topic, QByteArray command)
@@ -124,7 +77,30 @@ void NetworkManager::sendMsgbyID(uint8_t boatID, uint8_t topic, QByteArray comma
     if(boat != 0){
         SharedLinkInterfacePtr sharedLink = Bridge::instance()->primaryLink().lock();
         command.prepend(boatID);
-        sendMsg(QHostAddress(boat->currentIP()), sharedLink.get(), topic, command);
+        if(command.size()>251){
+            qCDebug(NetworkManagerLog) << "command too long!";
+            return;
+        }
+
+        uint8_t payload[251];
+        memset(payload, 0, sizeof(payload));
+
+        memcpy(payload, command.constData(), command.size());
+
+        mavlink_message_t message{};
+        mavlink_msg_custom_legacy_wrapper_pack_chan(
+            1,                          // System ID
+            2,                          // Component ID
+            sharedLink->mavlinkChannel(),
+            &message,
+            1,                          // Target System
+            1,                          // Target Component
+            (uint8_t)command.size(),    // 原始資料長度
+            topic,
+            payload                     // 使用處理過的填充陣列，而非直接用 command.data()
+            );
+
+        sendMsg(QHostAddress(boat->currentIP()), sharedLink.get(), message);
     }else{
         qDebug()<<"\u001b[38;5;203m"<<"**Fatal error: NetworkManager::sendMsgbyID boatID outof range"<<"\033[0m";
     }
@@ -218,10 +194,6 @@ void NetworkManager::_mavlinkMessageReceived(LinkInterface* link, mavlink_messag
 
     mavlink_status_t status;
     uint8_t systemID;
-
-            qDebug() << "收到 MAVLink 封包! ID =" << message.msgid
-                     << "來自 SysID =" << message.sysid
-                     << "CompID =" << message.compid;
             systemID = message.sysid;
             switch (message.msgid) {
             case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:

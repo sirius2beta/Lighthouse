@@ -37,7 +37,6 @@ HeartBeat::HeartBeat(BoatItem* boat, int port, bool isPrimary, QObject *parent, 
 
 HeartBeat::~HeartBeat()
 {
-    run = false;
 }
 
 
@@ -90,10 +89,10 @@ void HeartBeat::alive(uint8_t ID, const bool &isPrimary)
 
 void HeartBeat::beat()
 {
-    //QString cmd;
     QByteArray cmd_bytes;
     QString ip;
     SharedLinkInterfacePtr sharedLink;
+
     if(primary){
         ip = boat->PIP();
         sharedLink = LinkManager::instance()->mavlinkPrimaryUDPLink();
@@ -103,7 +102,24 @@ void HeartBeat::beat()
     }
 
 
-    emit sendMsg(QHostAddress(ip), sharedLink.get(), _core->configManager()->message("HEARTBEAT"), cmd_bytes);
+
+    uint8_t payload[251];
+    memset(payload, 0, sizeof(payload));
+
+    mavlink_message_t message{};
+    mavlink_msg_custom_legacy_wrapper_pack_chan(
+        1,                          // System ID
+        2,                          // Component ID
+        sharedLink->mavlinkChannel(),
+        &message,
+        1,                          // Target System
+        1,                          // Target Component
+        0,    // 原始資料長度
+        0, // heartbeat topic: 0
+        payload                     // 使用處理過的填充陣列，而非直接用 command.data()
+        );
+
+    emit sendMsg(QHostAddress(ip), sharedLink.get(), message);
 }
 
 void HeartBeat::checkAlive()

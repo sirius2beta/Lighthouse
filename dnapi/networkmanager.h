@@ -27,8 +27,7 @@ signals:
     void cameraMsg(uint8_t boatID, QByteArray data);
     void deviceStatusMsg(uint8_t boatID, QByteArray data);
 public slots:
-    void sendMsgSelect(QHostAddress addr, bool isPrimary, uint8_t topic, QByteArray command = "");
-    void sendMsg(QHostAddress addr, LinkInterface* link, uint8_t topic, QByteArray command = "");
+    void sendMsg(QHostAddress addr, LinkInterface* link, mavlink_message_t message);
     void sendMsgbyID(uint8_t boatID, uint8_t topic, QByteArray command = "");
     void onIPChanged(const int &ID, bool isPrimary);
 protected:
