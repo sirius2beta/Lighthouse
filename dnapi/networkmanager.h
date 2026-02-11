@@ -4,7 +4,9 @@
 #include <QObject>
 #include <QUdpSocket>
 #include "boatmanager.h"
-#include "mavlink.h"
+#include "MAVLinkLib.h"
+#include "LinkManager.h"
+
 
 
 class DNCore;
@@ -17,7 +19,7 @@ public:
     void init();
 
 signals:
-    void AliveResponse(QString ip, uint8_t boatID);
+    void AliveResponse(uint8_t boatID, const bool& isPrimary);
     void setFormat(uint8_t boatID, QByteArray data);
     void sensorMsg(uint8_t boatID, QByteArray data);
     void controlMsg(uint8_t boatID, QByteArray data);
@@ -27,15 +29,14 @@ signals:
 public slots:
     void sendMsg(QHostAddress addr, uint8_t topic, QByteArray command = "");
     void sendMsgbyID(uint8_t boatID, uint8_t topic, QByteArray command = "");
+    void onIPChanged(const int &ID);
 protected:
-    void parseMsg(QHostAddress addr, const uint8_t& boatID, const mavlink_message_t &message);
+    void parseMsg(const bool &isPrimary, const mavlink_message_t &message);
 
 protected slots:
-    void onUDPMsg();
+    void _mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message);
 
 private:
-    QUdpSocket *serverSocket;
-    QUdpSocket *clientSocket;
     DNCore* _core;
 };
 

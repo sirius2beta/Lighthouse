@@ -60,7 +60,7 @@ void BoatManager::init()
             boatItemModel->setItem(current,2,item3);
 
             connect(boat, &BoatItem::nameChanged, this, &BoatManager::onBoatNameChange);
-            connect(boat, &BoatItem::IPChanged, this, &BoatManager::onIPChanged);
+            connect(this, &BoatManager::IPChanged, _core->networkManager(), &NetworkManager::onIPChanged);
             connect(boat, &BoatItem::connectStatusChanged, this, &BoatManager::onConnectStatusChanged);
             connect(boat, &BoatItem::restartServiceSignal, this, &BoatManager::onRestartService);
             connect(boat, &BoatItem::rebootSignal, this, &BoatManager::onReboot);
@@ -74,8 +74,6 @@ void BoatManager::init()
             _secondaryHeartBeat->HeartBeatLoop();
 
             connect(boat, &BoatItem::connectionChanged, this, &BoatManager::connectionChanged);
-            connect(boat, &BoatItem::IPChanged, _primaryHeartBeat, &HeartBeat::onChangeIP);
-            connect(boat, &BoatItem::IPChanged, _secondaryHeartBeat, &HeartBeat::onChangeIP);
 
             qDebug()<<"  - Add boat: ID:"<<ID<<", name:"<<boatname ;
 
@@ -96,13 +94,13 @@ void BoatManager::init()
 void BoatManager::addBoat()
 {
 
-    QVector<bool> indexfree(256, true);
-    int index = 0;
-    for(int i = 0; i< size(); i++){
+    QVector<bool> indexfree(240, true);
+    int index = 1;
+    for(int i = 1; i< size(); i++){
         indexfree[getBoatbyIndex(i)->ID()] = false;
 
     }
-    for(int i =0; i<256; i++){
+    for(int i =1; i<240; i++){
         if(indexfree[i] == true){
             index = i;
 
@@ -137,7 +135,7 @@ void BoatManager::addBoat()
     boatItemModel->setItem(current,2,item3);
 
     connect(boat, &BoatItem::nameChanged, this, &BoatManager::onBoatNameChange);
-    connect(boat, &BoatItem::IPChanged, this, &BoatManager::onIPChanged);
+    connect(this, &BoatManager::IPChanged, _core->networkManager(), &NetworkManager::onIPChanged);
     connect(boat, &BoatItem::connectStatusChanged, this, &BoatManager::onConnectStatusChanged);
     connect(boat, &BoatItem::restartServiceSignal, this, &BoatManager::onRestartService);
     connect(boat, &BoatItem::rebootSignal, this, &BoatManager::onReboot);
@@ -151,8 +149,7 @@ void BoatManager::addBoat()
     secondaryHeartBeat->HeartBeatLoop();
 
     connect(boat, &BoatItem::connectionChanged, this, &BoatManager::connectionChanged);
-    connect(boat, &BoatItem::IPChanged, primaryHeartBeat, &HeartBeat::onChangeIP);
-    connect(boat, &BoatItem::IPChanged, secondaryHeartBeat, &HeartBeat::onChangeIP);
+
 
     QSettings settings;
     settings.remove(settingsRoot());
@@ -175,6 +172,7 @@ void BoatManager::addBoat()
 
     const QString root = QString(settingsRoot());
     settings.setValue(root + "/count", trueCount);
+
 
 
 }
@@ -213,9 +211,7 @@ BoatItem* BoatManager::getBoatbyID(int ID)
 {
 
     for(int i = 0; i<_boatList.size(); i++){
-
         if(_boatList[i]->ID() == ID){
-
             return _boatList[i];
         }
     }
@@ -266,14 +262,10 @@ int BoatManager::size()
 void BoatManager::onBoatNameChange(int ID, QString newname)
 {
     saveSettings();
-    qDebug()<<"changename";
+    emit IPChanged(ID);
+    qDebug()<<"changename! ID:"<<ID;
 }
 
-void BoatManager::onIPChanged(int ID, bool primary)
-{
-    saveSettings();
-
-}
 
 void BoatManager::onConnectStatusChanged(int ID, bool isprimary, bool isConnected)
 {

@@ -44,10 +44,10 @@ signals:
     void onboatListModelChanged(DNQmlObjectListModel* model);
     void activeBoatChanged();
     void sendMsgbyID(uint8_t boatID, char topic, QByteArray command);
+    void IPChanged(uint8_t boatID);
 
 public slots:
     void onBoatNameChange(int ID, QString newname);
-    void onIPChanged(int ID, bool primary);
     void onConnectStatusChanged(int ID, bool isprimary, bool isConnected);
     //void onDisonnected(int ID, bool isprimary);
     void onConnectionTypeChanged(int connectiontype);

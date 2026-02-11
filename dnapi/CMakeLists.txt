@@ -66,3 +66,4 @@ target_include_directories(${CMAKE_PROJECT_NAME}
         mavlink/hypex
 )
 
+add_subdirectory(LinkPackage)

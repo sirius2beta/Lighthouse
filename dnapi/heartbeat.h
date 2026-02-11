@@ -19,12 +19,12 @@ public:
 
 signals:
     void sendMsg(QHostAddress addr, char topic, QByteArray command);
+    void sendMsgbyID(const int &ID, char topic, QByteArray command);
 
 public slots:
     void beat();
     void checkAlive();
-    void alive(QString ip, uint8_t ID);
-    void onChangeIP(uint8_t ID, bool isPrimary);
+    void alive(uint8_t ID, const bool& isPrimary);
     void onDeleteBoat(QString boatname);
 
 private:

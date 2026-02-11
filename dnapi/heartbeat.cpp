@@ -21,17 +21,15 @@ HeartBeat::HeartBeat(BoatItem* boat, int port, bool isPrimary, QObject *parent, 
     isHearBeatLoop = false;
     primary = isPrimary;
     this->boat = boat;
-    if(primary){
-        boatIP = boat->PIP();
-    }else{
-        boatIP = boat->SIP();
-    }
+
     heartBeatTimer = new QTimer(this);
     checkAliveTimer = new QTimer(this);
     connect(heartBeatTimer, &QTimer::timeout, this, &HeartBeat::beat);
     connect(checkAliveTimer,&QTimer::timeout, this, &HeartBeat::checkAlive);
     connect(_core->networkManager(), &NetworkManager::AliveResponse, this, &HeartBeat::alive);
     connect(this, &HeartBeat::sendMsg, _core->networkManager(), &NetworkManager::sendMsg);
+    connect(this, &HeartBeat::sendMsgbyID, _core->networkManager(), &NetworkManager::sendMsgbyID);
+
 
     qDebug()<<"HeartBeat: initiated (ID: "<< boat->ID()<<")";
 
@@ -40,26 +38,6 @@ HeartBeat::HeartBeat(BoatItem* boat, int port, bool isPrimary, QObject *parent, 
 HeartBeat::~HeartBeat()
 {
     run = false;
-}
-
-
-
-void HeartBeat::onChangeIP(uint8_t ID, bool isPrimary)
-{
-
-    if(primary == isPrimary){
-        if(primary){
-            boatIP = boat->PIP();
-        }else{
-            boatIP = boat->SIP();
-        }
-        if(!isHearBeatLoop){
-            checkAliveTimer->stop();
-            HeartBeatLoop();
-        }
-    }
-
-
 }
 
 
@@ -74,9 +52,6 @@ void HeartBeat::onDeleteBoat(QString boatname)
 
 void HeartBeat::HeartBeatLoop()
 {
-    //qDebug()<<"HeartBeat::HeartBeatLoop started ("<<boat->name()<<", "<<boatIP<<")";
-
-    //beat();
     heartBeatTimer->start(1000);
     isHearBeatLoop = true;
     isAlive = false;
@@ -88,9 +63,9 @@ void HeartBeat::HeartBeatLoop()
 }
 
 
-void HeartBeat::alive(QString ip, uint8_t ID)
+void HeartBeat::alive(uint8_t ID, const bool &isPrimary)
 {
-    if((ip == boatIP) && (ID == boat->ID())){
+    if(ID == boat->ID() && isPrimary == this->primary){
         //qDebug()<<"get HeartBeat boatname:"<<boat->name();
         if(isHearBeatLoop == false){
 
@@ -104,7 +79,7 @@ void HeartBeat::alive(QString ip, uint8_t ID)
             boat->connect(primary);
             beat(); //boat heart beat may come first, we have to send a heartbeat first to let it know
             //if we are primary
-            emit sendMsg(QHostAddress(ip), _core->configManager()->message("FORMAT"), QString("q").toLocal8Bit());
+            emit sendMsgbyID(ID, _core->configManager()->message("FORMAT"), QString("q").toLocal8Bit());
             qDebug()<<"HeartBeat boatname:"<<boat->name();
 
         }
@@ -117,18 +92,20 @@ void HeartBeat::beat()
 {
     //QString cmd;
     QByteArray cmd_bytes;
+    QString ip;
 
     if(primary){
         cmd_bytes.resize(2);
         cmd_bytes[0] = boat->ID();
         cmd_bytes[1] = 'P';
-
+        ip = boat->PIP();
     }else{
         cmd_bytes.resize(2);
         cmd_bytes[0] = boat->ID();
         cmd_bytes[1] = 'S';
+        ip = boat->SIP();
     }
-    emit sendMsg(QHostAddress(boatIP), _core->configManager()->message("HEARTBEAT"),cmd_bytes);
+    emit sendMsg(QHostAddress(ip), _core->configManager()->message("HEARTBEAT"),cmd_bytes);
 }
 
 void HeartBeat::checkAlive()
