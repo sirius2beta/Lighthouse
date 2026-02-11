@@ -4,6 +4,7 @@
 #include "LinkConfiguration.h"
 #include <QObject>
 #include <memory>
+#include <QHostAddress>
 class LinkManager;
 
 class LinkInterface : public QObject
@@ -26,7 +27,7 @@ public:
     bool mavlinkChannelIsSet() const;
 
 
-    void writeBytesThreadSafe(const char *bytes, int length);
+    void writeBytesThreadSafe(const QHostAddress &addr, const char *bytes, int length);
 signals:
     void bytesReceived(LinkInterface* link, const QByteArray &data);
     void bytesSent(LinkInterface *link, const QByteArray &data);
@@ -41,7 +42,7 @@ protected:
     SharedLinkConfigurationPtr _config;
 private slots:
     /// Not thread safe if called directly, only writeBytesThreadSafe is thread safe
-    virtual void _writeBytes(const QByteArray &bytes) = 0;
+    virtual void _writeBytes(const QHostAddress &addr, const QByteArray &bytes) = 0;
 private:
     virtual bool _connect() = 0;
 

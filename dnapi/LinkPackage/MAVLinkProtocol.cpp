@@ -71,7 +71,7 @@ void MAVLinkProtocol::_forwardtoPixhawk(const mavlink_message_t &message)
 
     uint8_t buf[MAVLINK_MAX_PACKET_LEN]{};
     const uint16_t len = mavlink_msg_to_send_buffer(buf, &message);
-    (void) pixhawkLink->writeBytesThreadSafe(reinterpret_cast<const char*>(buf), len);
+    //(void) pixhawkLink->writeBytesThreadSafe(reinterpret_cast<const char*>(buf), len);
 }
 
 void MAVLinkProtocol::_forward(const mavlink_message_t &message)
@@ -82,7 +82,7 @@ void MAVLinkProtocol::_forward(const mavlink_message_t &message)
     SharedLinkInterfacePtr primaryLink = Bridge::instance()->primaryLink().lock();
 
     if(primaryLink){
-        (void) primaryLink->writeBytesThreadSafe(reinterpret_cast<const char*>(buf), len);
+        //(void) primaryLink->writeBytesThreadSafe(reinterpret_cast<const char*>(buf), len);
     }
 
 }

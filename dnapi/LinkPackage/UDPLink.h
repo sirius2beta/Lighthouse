@@ -95,6 +95,7 @@ private:
 
     QList<std::shared_ptr<UDPClient>> _targetHosts;
     quint16 _localPort = 0;
+
 };
 
 /*===========================================================================*/
@@ -113,7 +114,7 @@ public slots:
     void setupSocket();
     void connectLink();
     void disconnectLink();
-    void writeData(const QByteArray &data);
+    void writeData(const QHostAddress &addr, const QByteArray &data);
 
 signals:
     void connected();
@@ -161,7 +162,7 @@ protected:
     bool _connect() override;
 
 private slots:
-    void _writeBytes(const QByteArray &data) override;
+    void _writeBytes(const QHostAddress &addr, const QByteArray &data) override;
     void _onConnected();
     void _onDisconnected();
     void _onErrorOccurred(const QString &errorString);

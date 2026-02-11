@@ -93,19 +93,17 @@ void HeartBeat::beat()
     //QString cmd;
     QByteArray cmd_bytes;
     QString ip;
-
+    SharedLinkInterfacePtr sharedLink;
     if(primary){
-        cmd_bytes.resize(2);
-        cmd_bytes[0] = boat->ID();
-        cmd_bytes[1] = 'P';
         ip = boat->PIP();
+        sharedLink = LinkManager::instance()->mavlinkPrimaryUDPLink();
     }else{
-        cmd_bytes.resize(2);
-        cmd_bytes[0] = boat->ID();
-        cmd_bytes[1] = 'S';
         ip = boat->SIP();
+        sharedLink = LinkManager::instance()->mavlinkSecondaryUDPLink();
     }
-    emit sendMsg(QHostAddress(ip), _core->configManager()->message("HEARTBEAT"),cmd_bytes);
+
+
+    emit sendMsg(QHostAddress(ip), sharedLink.get(), _core->configManager()->message("HEARTBEAT"), cmd_bytes);
 }
 
 void HeartBeat::checkAlive()

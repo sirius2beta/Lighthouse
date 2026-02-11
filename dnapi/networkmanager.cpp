@@ -56,11 +56,42 @@ void NetworkManager::init()
     connect(MAVLinkProtocol::instance(), &MAVLinkProtocol::messageReceived, this, &NetworkManager::_mavlinkMessageReceived);
 }
 
-void NetworkManager::sendMsg(QHostAddress addr, uint8_t topic, QByteArray command)
+void NetworkManager::sendMsgSelect(QHostAddress addr, bool isPrimary, uint8_t topic, QByteArray command)
 {
 
     mavlink_custom_legacy_wrapper_t wrapper;
+    mavlink_message_t msg;
 
+    // 2. 準備你要發送的原始資料 (範例資料)
+    QByteArray paddedMsg = command.leftJustified(251, 0, true);
+    uint8_t data_len = command.size();
+    uint8_t payload[251];
+    memcpy(payload, paddedMsg.constData(), 251);
+
+    wrapper.length = data_len;
+    mavlink_msg_custom_legacy_wrapper_encode(255, 2, &msg, &wrapper);
+
+    // 5. 將訊息轉換為位元組陣列，以便透過 Serial/UDP 發送
+    uint8_t buf[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buf, &msg);
+    SharedLinkInterfacePtr sharedLink;
+    if(isPrimary){
+        sharedLink = LinkManager::instance()->mavlinkPrimaryUDPLink();
+    }else{
+        sharedLink = LinkManager::instance()->mavlinkSecondaryUDPLink();
+    }
+
+    if (!sharedLink) {
+        qCDebug(NetworkManagerLog) << "requestDataStream: primary link gone!";
+        return;
+    }
+    sharedLink.get()->writeBytesThreadSafe(addr, (const char*)buf, len);
+}
+
+void NetworkManager::sendMsg(QHostAddress addr, LinkInterface* link, uint8_t topic, QByteArray command)
+{
+
+    mavlink_custom_legacy_wrapper_t wrapper;
     mavlink_message_t msg;
 
 
@@ -79,26 +110,27 @@ void NetworkManager::sendMsg(QHostAddress addr, uint8_t topic, QByteArray comman
     // 5. 將訊息轉換為位元組陣列，以便透過 Serial/UDP 發送
     uint8_t buf[MAVLINK_MAX_PACKET_LEN];
     uint16_t len = mavlink_msg_to_send_buffer(buf, &msg);
-    SharedLinkInterfacePtr sharedLink = Bridge::instance()->primaryLink().lock();
-    if (!sharedLink) {
-        qCDebug(NetworkManagerLog) << "requestDataStream: primary link gone!";
+
+    if (!link) {
+        qCDebug(NetworkManagerLog) << "requestDataStream:  link gone!";
         return;
     }
-    sharedLink.get()->writeBytesThreadSafe((const char*)buf, len);
+    link->writeBytesThreadSafe(addr, (const char*)buf, len);
 }
 
 void NetworkManager::sendMsgbyID(uint8_t boatID, uint8_t topic, QByteArray command)
 {
     BoatItem* boat = _core->boatManager()->getBoatbyID(boatID);
     if(boat != 0){
+        SharedLinkInterfacePtr sharedLink = Bridge::instance()->primaryLink().lock();
         command.prepend(boatID);
-        sendMsg(QHostAddress(boat->currentIP()), topic, command);
+        sendMsg(QHostAddress(boat->currentIP()), sharedLink.get(), topic, command);
     }else{
         qDebug()<<"\u001b[38;5;203m"<<"**Fatal error: NetworkManager::sendMsgbyID boatID outof range"<<"\033[0m";
     }
 }
 
-void NetworkManager::onIPChanged(const int &ID)
+void NetworkManager::onIPChanged(const int &ID, bool isPrimary)
 {
     BoatItem* boat = _core->boatManager()->getBoatbyID(ID);
     qCDebug(NetworkManagerLog, "on ip changed");
@@ -106,19 +138,21 @@ void NetworkManager::onIPChanged(const int &ID)
         qCDebug(NetworkManagerLog, "no boat ID");
         return;
     }
+    if(isPrimary){
 
         SharedLinkConfigurationPtr sharedLinConfig = LinkManager::instance()->mavlinkPrimaryUDPLink()->linkConfiguration();
         if(sharedLinConfig){
             UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(sharedLinConfig.get());
             udpConfig->addHost(boat->PIP(), 14560);
         }
+    }else{
 
-        sharedLinConfig = LinkManager::instance()->mavlinkSecondaryUDPLink()->linkConfiguration();
+        SharedLinkConfigurationPtr sharedLinConfig = LinkManager::instance()->mavlinkSecondaryUDPLink()->linkConfiguration();
         if(sharedLinConfig){
             UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(sharedLinConfig.get());
             udpConfig->addHost(boat->SIP(), 14561);
         }
-
+    }
 }
 
 void NetworkManager::parseMsg(const bool &isPrimary, const mavlink_message_t &message)

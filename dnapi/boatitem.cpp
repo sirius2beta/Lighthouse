@@ -64,7 +64,6 @@ void BoatItem::setPIP(QString PIP)
     if(PIP != _PIP){
         _PIP = PIP;
         emit IPChanged(_ID, true);
-        emit PIPChanged(PIP);
     }
 }
 
@@ -73,7 +72,6 @@ void BoatItem::setSIP(QString SIP)
     if(SIP != _SIP){
         _SIP = SIP;
         emit IPChanged(_ID, false);
-        emit SIPChanged(SIP);
     }
 }
 

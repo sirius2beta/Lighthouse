@@ -499,7 +499,7 @@ void SerialLink::_onDataSent(const QByteArray &data)
     emit bytesSent(this, data);
 }
 
-void SerialLink::_writeBytes(const QByteArray &data)
+void SerialLink::_writeBytes(const QHostAddress &addr, const QByteArray &data)
 {
     (void) QMetaObject::invokeMethod(_worker, "writeData", Qt::QueuedConnection, Q_ARG(QByteArray, data));
 }

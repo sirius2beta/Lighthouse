@@ -60,7 +60,7 @@ void BoatManager::init()
             boatItemModel->setItem(current,2,item3);
 
             connect(boat, &BoatItem::nameChanged, this, &BoatManager::onBoatNameChange);
-            connect(this, &BoatManager::IPChanged, _core->networkManager(), &NetworkManager::onIPChanged);
+            connect(boat, &BoatItem::IPChanged, _core->networkManager(), &NetworkManager::onIPChanged);
             connect(boat, &BoatItem::connectStatusChanged, this, &BoatManager::onConnectStatusChanged);
             connect(boat, &BoatItem::restartServiceSignal, this, &BoatManager::onRestartService);
             connect(boat, &BoatItem::rebootSignal, this, &BoatManager::onReboot);
@@ -135,7 +135,7 @@ void BoatManager::addBoat()
     boatItemModel->setItem(current,2,item3);
 
     connect(boat, &BoatItem::nameChanged, this, &BoatManager::onBoatNameChange);
-    connect(this, &BoatManager::IPChanged, _core->networkManager(), &NetworkManager::onIPChanged);
+    connect(boat, &BoatItem::IPChanged, _core->networkManager(), &NetworkManager::onIPChanged);
     connect(boat, &BoatItem::connectStatusChanged, this, &BoatManager::onConnectStatusChanged);
     connect(boat, &BoatItem::restartServiceSignal, this, &BoatManager::onRestartService);
     connect(boat, &BoatItem::rebootSignal, this, &BoatManager::onReboot);
@@ -262,7 +262,6 @@ int BoatManager::size()
 void BoatManager::onBoatNameChange(int ID, QString newname)
 {
     saveSettings();
-    emit IPChanged(ID);
     qDebug()<<"changename! ID:"<<ID;
 }
 
@@ -365,6 +364,7 @@ void BoatManager::saveSettings()
         settings.setValue(root + "/id", boat->ID());
         settings.setValue(root + "/PIP", boat->PIP());
         settings.setValue(root + "/SIP", boat->SIP());
+        qDebug()<<"PIP to save:"<<boat->PIP();
     }
     settings.setValue(settingsRoot() + "/count", trueCount);
 

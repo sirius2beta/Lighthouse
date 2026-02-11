@@ -6,6 +6,7 @@
 
 #include "boatitem.h"
 #include "boatmanager.h"
+#include "LinkInterface.h"
 
 class DNCore;
 class HeartBeat : public QObject
@@ -14,11 +15,11 @@ class HeartBeat : public QObject
 public:
     explicit HeartBeat(QObject *parent = nullptr, DNCore *core= nullptr);
     HeartBeat(BoatItem* boat, int port, bool isPrimary, QObject *parent = nullptr, DNCore *core = nullptr);
-    void HeartBeatLoop(); //工作函数
+    void HeartBeatLoop();
     ~HeartBeat();
 
 signals:
-    void sendMsg(QHostAddress addr, char topic, QByteArray command);
+    void sendMsg(QHostAddress addr, LinkInterface* link, char topic, QByteArray command);
     void sendMsgbyID(const int &ID, char topic, QByteArray command);
 
 public slots:
@@ -28,8 +29,6 @@ public slots:
     void onDeleteBoat(QString boatname);
 
 private:
-    QString boatIP;
-    bool run;
     QTimer *heartBeatTimer;
     QTimer *checkAliveTimer;
     int boatPort;

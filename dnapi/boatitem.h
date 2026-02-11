@@ -62,10 +62,10 @@ public:
     QList<Device> devices;
 signals:
     void nameChanged(int ID, QString name);
-    void PIPChanged(QString IP); // for qml
-    void SIPChanged(QString IP); //for qml
+    void PIPChanged(const QString& IP); // for qml
+    void SIPChanged(const QString& IP); //for qml
     void IDChanged(int ID);
-    void IPChanged(int ID, bool isPrimary);
+    void IPChanged(const int& ID, bool isPrimary);
     void connectStatusChanged(int ID, bool isPrimary, bool connected);
     void primaryConnectedChanged(bool isConnected);
     void secondaryConnectedChanged(bool isConnected);
@@ -78,6 +78,7 @@ signals:
 
 protected slots:
     void onDeviceStatusMsg(uint8_t boatID, QByteArray detectMsg);
+    //void onIPChanged(const QString& IP);
 private:
     DNCore* _core;
     QString _name = QString("null");

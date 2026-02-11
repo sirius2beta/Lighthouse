@@ -120,7 +120,7 @@ void DNVideoManager::onPlay(VideoItem* videoItem)
     QByteArray msg = QByteArray(rawdata,9);
     qDebug()<<"DNVideoManager::onPlay:"+QString::number(videoItem->port())+",send: "+msg;
     //if(msg == QString("")) return;
-    emit sendMsg(ip, _core->configManager()->message("COMMAND"), msg);
+    emit sendMsg(videoItem->boatID(), _core->configManager()->message("COMMAND"), msg);
 
 }
 
@@ -137,7 +137,7 @@ void DNVideoManager::onStop(VideoItem* videoItem)
         return;
     }
     QHostAddress ip = QHostAddress(_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP());
-    emit sendMsg(ip, _core->configManager()->message("QUIT"), videoNo.toLocal8Bit());
+    emit sendMsg(videoItem->boatID(), _core->configManager()->message("QUIT"), videoNo.toLocal8Bit());
 
 }
 
@@ -180,7 +180,7 @@ void DNVideoManager::onRequestFormat(VideoItem* videoItem)
     }
     QHostAddress addr(boat->currentIP());
     qDebug()<<"DNVideoManager::onRequestFormat: currentIP:"<<_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP();
-    emit sendMsg(addr, _core->configManager()->message("FORMAT"), "");
+    emit sendMsg(videoItem->boatID(), _core->configManager()->message("FORMAT"), "");
 }
 
 void DNVideoManager::setVideoFormat(uint8_t ID, QByteArray data)
@@ -242,7 +242,7 @@ void DNVideoManager::onSettingSeagrassCamera(VideoItem* videoItem)
     QByteArray msg = QByteArray(rawdata,8);
     qDebug()<<"DNVideoManager::onPlay:"+QString::number(videoItem->port())+",send: "+msg;
     //if(msg == QString("")) return;
-    emit sendMsg(ip, _core->configManager()->message("SEAGRASS"), msg);
+    emit sendMsg(videoItem->boatID(), _core->configManager()->message("SEAGRASS"), msg);
 
 }
 
@@ -264,7 +264,7 @@ void DNVideoManager::onStartSeagrassCameraRecording(VideoItem* videoItem)
     QByteArray msg = QByteArray(rawdata,1);
     qDebug()<<"DNVideoManager::onStartRecording:"+QString::number(videoItem->port())+",send: "+msg;
     //if(msg == QString("")) return;
-    emit sendMsg(ip, _core->configManager()->message("SEAGRASS"), msg);
+    emit sendMsg(videoItem->boatID(), _core->configManager()->message("SEAGRASS"), msg);
 
 }
 
@@ -286,6 +286,6 @@ void DNVideoManager::onStopSeagrassCameraRecording(VideoItem* videoItem)
     QByteArray msg = QByteArray(rawdata,1);
     qDebug()<<"DNVideoManager::onStopRecording:"+QString::number(videoItem->port())+",send: "+msg;
     //if(msg == QString("")) return;
-    emit sendMsg(ip, _core->configManager()->message("SEAGRASS"), msg);
+    emit sendMsg(videoItem->boatID(), _core->configManager()->message("SEAGRASS"), msg);
 
 }

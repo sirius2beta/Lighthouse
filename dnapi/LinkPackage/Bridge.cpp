@@ -26,13 +26,13 @@ Bridge::Bridge(QObject *parent)
 {
     connect(MAVLinkProtocol::instance(), &MAVLinkProtocol::messageReceived, this, &Bridge::mavlinkMessageReceived);
     (void) connect(_commLostCheckTimer, &QTimer::timeout, this, &Bridge::_commLostCheck);
-    (void) connect(_bridgeHearbeatTimer, &QTimer::timeout, this, &Bridge::_sendGCSHeartbeat);
+    //(void) connect(_bridgeHearbeatTimer, &QTimer::timeout, this, &Bridge::_sendGCSHeartbeat);
 
     _commLostCheckTimer->setSingleShot(false);
     _commLostCheckTimer->setInterval(_commLostCheckTimeoutMSecs);
 
-    _bridgeHearbeatTimer->setSingleShot(false);
-    _bridgeHearbeatTimer->setInterval(_heartbeatTimeoutMSecs);
+    //_bridgeHearbeatTimer->setSingleShot(false);
+    //_bridgeHearbeatTimer->setInterval(_heartbeatTimeoutMSecs);
 }
 
 Bridge* Bridge::instance()
@@ -164,6 +164,7 @@ void Bridge::_commLostCheck()
 
 }
 
+// 待刪
 void Bridge::_sendGCSHeartbeat()
 {
     mavlink_message_t message{};
@@ -181,7 +182,7 @@ void Bridge::_sendGCSHeartbeat()
 
     uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
     const uint16_t len = mavlink_msg_to_send_buffer(buffer, &message);
-    (void) _primaryUdpLink->writeBytesThreadSafe(reinterpret_cast<const char*>(buffer), len);
+    //(void) _primaryUdpLink->writeBytesThreadSafe(reinterpret_cast<const char*>(buffer), len);
 
     (void) mavlink_msg_heartbeat_pack_chan(
         1,
@@ -197,7 +198,7 @@ void Bridge::_sendGCSHeartbeat()
 
     uint8_t buffer2[MAVLINK_MAX_PACKET_LEN];
     const uint16_t len2 = mavlink_msg_to_send_buffer(buffer2, &message);
-    (void) _secondaryUdpLink->writeBytesThreadSafe(reinterpret_cast<const char*>(buffer2), len);
+    //(void) _secondaryUdpLink->writeBytesThreadSafe(reinterpret_cast<const char*>(buffer2), len);
 }
 
 void Bridge::mavlinkMessageToSend(const char &buffer)

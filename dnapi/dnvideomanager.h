@@ -47,7 +47,7 @@ public slots:
     void onStartSeagrassCameraRecording(VideoItem* videoItem);
     void onStopSeagrassCameraRecording(VideoItem* videoItem);
 signals:
-    void sendMsg(QHostAddress addr, char topic, QByteArray command);
+    void sendMsg(qint8 boatID, char topic, QByteArray command);
     void coutChanged(int count);
 
 private:
