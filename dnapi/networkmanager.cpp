@@ -13,8 +13,6 @@ Q_LOGGING_CATEGORY(NetworkManagerLog, "Lighthouse.dnapi.networkmanager")
 // primary port: 14560
 // secondary port: 14561
 
-const quint16 _primaryPort = 14560;
-const quint16 _secondaryPort = 14561;
 
 NetworkManager::NetworkManager(QObject *parent, DNCore *core)
     : QObject{parent}
@@ -37,13 +35,13 @@ void NetworkManager::init()
         qCDebug(NetworkManagerLog, "access boat ok");
         if(boat){
             if(primaryLinkConfig){
-                qobject_cast<UDPConfiguration*>(primaryLinkConfig.get())->addHost(boat->PIP(), _primaryPort);
+                qobject_cast<UDPConfiguration*>(primaryLinkConfig.get())->addHost(boat->PIP(), LinkManager::instance()->primaryUDPPort());
                 qCDebug(NetworkManagerLog, "add primary link host");
             }else{
                 qCDebug(NetworkManagerLog, "failed to add primary link host, priamry link config not ready");
             }
             if(secondaryLinkConfg){
-                qobject_cast<UDPConfiguration*>(secondaryLinkConfg.get())->addHost(boat->SIP(), _secondaryPort);
+                qobject_cast<UDPConfiguration*>(secondaryLinkConfg.get())->addHost(boat->SIP(), LinkManager::instance()->secondaryUDPPort());
                 qCDebug(NetworkManagerLog, "add secondary link host");
             }else{
                 qCDebug(NetworkManagerLog, "failed to add primary link host, priamry link config not ready");

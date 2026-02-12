@@ -61,6 +61,9 @@ public:
     /// Called to signal app shutdown. Disconnects all links while turning off auto-connect.
     Q_INVOKABLE void shutdown();
 
+    quint16 primaryUDPPort(){   return _primaryUDPPort; }
+    quint16 secondaryUDPPort(){    return _secondaryUDPPort; }
+
     QList<SharedLinkInterfacePtr> links() { return _rgLinks; }
     QStringList linkTypeStrings() const;
     bool mavlinkSupportForwardingEnabled() const { return _mavlinkSupportForwardingEnabled; }
@@ -185,6 +188,10 @@ signals:
     void commPortsChanged();
 
 private:
+
+    const quint16 _primaryUDPPort = 14560;
+    const quint16 _secondaryUDPPort = 14561;
+
     bool _isSerialPortConnected() const;
     void _updateSerialPorts();
     bool _allowAutoConnectToBoard(QGCSerialPortInfo::BoardType_t boardType) const;
