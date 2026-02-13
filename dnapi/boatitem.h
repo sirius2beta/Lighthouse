@@ -2,6 +2,7 @@
 #define BOATITEM_H
 
 #include <QObject>
+#include <QElapsedTimer>
 #include "device.h"
 
 class HeartBeat;
@@ -20,8 +21,8 @@ public:
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(QString PIP READ PIP WRITE setPIP NOTIFY PIPChanged)
     Q_PROPERTY(QString SIP READ SIP WRITE setSIP NOTIFY SIPChanged)
-    Q_PROPERTY(bool primaryConnected READ primaryConnected  NOTIFY primaryConnectedChanged)
-    Q_PROPERTY(bool secondaryConnected READ secondaryConnected  NOTIFY secondaryConnectedChanged)
+    Q_PROPERTY(bool primaryConnected READ primaryConnected  NOTIFY connectionStatusChanged)
+    Q_PROPERTY(bool secondaryConnected READ secondaryConnected  NOTIFY connectionStatusChanged)
     Q_PROPERTY(QStringList deviceStatusCode READ deviceStatusCode NOTIFY deviceStatusCodeChanged)
 
 
@@ -44,8 +45,7 @@ public:
     void setSIP(QString SIP);
     void setOS(int OS);
     void setConnectionPriority(int connectionType);
-    void setPrimaryConnected(bool connected){ _primaryConnected = connected; }
-    void setSecondaryConnected(bool connected){ _secondaryConnected = connected; }
+
 
     Device* getDevbyID(int ID);
     Peripheral getPeriperalbyID(int ID);
@@ -66,10 +66,8 @@ signals:
     void SIPChanged(const QString& IP); //for qml
     void IDChanged(int ID);
     void IPChanged(const int& ID, bool isPrimary);
-    void connectStatusChanged(int ID, bool isPrimary, bool connected);
-    void primaryConnectedChanged(bool isConnected);
-    void secondaryConnectedChanged(bool isConnected);
-    void connectionChanged(int ID);
+    void connectionStatusChanged(); // for qml
+    void connectionChanged(int ID); // notify videomanager to switch connection
     void deviceStatusCodeChanged(QStringList model);
     void restartServiceSignal(uint8_t boatID);
     void rebootSignal(uint8_t boatID);
@@ -78,8 +76,15 @@ signals:
 
 protected slots:
     void onDeviceStatusMsg(uint8_t boatID, QByteArray detectMsg);
+    void _commLostCheck();
+
     //void onIPChanged(const QString& IP);
 private:
+
+    static constexpr int _heartbeatTimeoutMSecs = 1000; ///< Check for comm lost once a second
+    static constexpr int _commLostCheckTimeoutMSecs = 1000; ///< Check for comm lost once a second
+    static constexpr int _heartbeatMaxElpasedMSecs = 3500;  ///< No heartbeat for longer than this indicates comm loss
+
     DNCore* _core;
     QString _name = QString("null");
     int _ID;
@@ -97,6 +102,17 @@ private:
 
     HeartBeat* _primaryHeartBeat;
     HeartBeat* _secondaryHeartBeat;
+
+    struct LinkInfo_t {
+        bool commLost = false;
+        QElapsedTimer heartbeatElapsedTimer;
+    };
+    LinkInfo_t _primaryUdpLinkInfo;
+    LinkInfo_t _secondaryUdpLinkInfo;
+
+    QTimer *_commLostCheckTimer = nullptr;
+    bool _updatePrimaryLink();
+
 
 };
 

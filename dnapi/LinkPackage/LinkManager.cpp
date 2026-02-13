@@ -56,8 +56,7 @@ LinkManager *LinkManager::instance()
 void LinkManager::init()
 {
 
-    //(void) connect(_portListTimer, &QTimer::timeout, this, &LinkManager::_updateAutoConnectLinks);
-    //_portListTimer->start(_autoconnectUpdateTimerMSecs); // timeout must be long enough to get past bootloader on second pass
+
     _addUDPAutoConnectLink();
     Bridge::instance()->init();
 
@@ -357,14 +356,14 @@ void LinkManager::_addUDPAutoConnectLink()
     UDPConfiguration* const udpConfig = new UDPConfiguration(_defaultPrimaryUDPLinkName);
     udpConfig->setDynamic(true);
     udpConfig->setAutoConnect(true);
-    udpConfig->setLocalPort(14560);
+    udpConfig->setLocalPort(_primaryUDPPort);
     SharedLinkConfigurationPtr config = addConfiguration(udpConfig);
     createConnectedLink(config);
 
     UDPConfiguration* const udpConfig2= new UDPConfiguration(_defaultSecondaryUDPLinkName);
     udpConfig2->setDynamic(true);
     udpConfig2->setAutoConnect(true);
-    udpConfig2->setLocalPort(14561);
+    udpConfig2->setLocalPort(_secondaryUDPPort);
     SharedLinkConfigurationPtr config2 = addConfiguration(udpConfig2);
     createConnectedLink(config2);
     Bridge::instance()->addUdpLinks(udpConfig->link(), udpConfig2->link());
@@ -397,16 +396,7 @@ void LinkManager::addSecondaryUDPLinkHost(const QString &url)
 
 void _addSecondaryUDPLinkHost(const QString &url);
 
-void LinkManager::_updateAutoConnectLinks()
-{
 
-    if (_connectionsSuspended) {
-        return;
-    }
-    // disable autoconnect link and forward link
-    _addUDPAutoConnectLink();
-
-}
 
 void LinkManager::shutdown()
 {

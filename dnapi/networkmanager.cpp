@@ -3,7 +3,6 @@
 #include <QQmlEngine>
 #include "configmanager.h"
 #include "MAVLinkProtocol.h"
-#include "bridge.h"
 #include "UDPLink.h"
 #include <QNetworkDatagram>
 
@@ -50,7 +49,6 @@ void NetworkManager::init()
     }
 
 
-    //Bridge::instance()->addUdpLinks(linkManager->mavlinkPrimaryUDPLink().get(), linkManager->mavlinkSecondaryUDPLink().get());
     connect(MAVLinkProtocol::instance(), &MAVLinkProtocol::messageReceived, this, &NetworkManager::_mavlinkMessageReceived);
 }
 
@@ -64,6 +62,7 @@ void NetworkManager::sendMsg(QHostAddress addr, LinkInterface* link, mavlink_mes
     }
 
     // 5. 發送
+
     uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
     int len = mavlink_msg_to_send_buffer(buffer, &message);
     link->writeBytesThreadSafe(addr, (const char*)buffer, len);
@@ -73,16 +72,24 @@ void NetworkManager::sendMsgbyID(uint8_t boatID, uint8_t topic, QByteArray comma
 {
     BoatItem* boat = _core->boatManager()->getBoatbyID(boatID);
     if(boat != 0){
-        SharedLinkInterfacePtr sharedLink = Bridge::instance()->primaryLink().lock();
+        SharedLinkInterfacePtr sharedLink;
         command.prepend(boatID);
         if(command.size()>251){
             qCDebug(NetworkManagerLog) << "command too long!";
             return;
         }
+        if(boat->primaryConnected()){
+            sharedLink = LinkManager::instance()->mavlinkPrimaryUDPLink();
+        }else{
+            sharedLink = LinkManager::instance()->mavlinkSecondaryUDPLink();
+        }
+        if(!sharedLink){
+            qCDebug(NetworkManagerLog) << "link loss";
+            return;
+        }
 
         uint8_t payload[251];
         memset(payload, 0, sizeof(payload));
-
         memcpy(payload, command.constData(), command.size());
 
         mavlink_message_t message{};
@@ -182,7 +189,6 @@ void NetworkManager::parseMsg(const bool &isPrimary, const mavlink_message_t &me
 void NetworkManager::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message)
 {
     bool isPrimary = true;
-    SharedLinkInterfacePtr primaryLink =  Bridge::instance()->primaryLink().lock();
     if(link == LinkManager::instance()->mavlinkPrimaryUDPLink().get()){
         isPrimary = true;
     }else{

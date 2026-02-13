@@ -1,6 +1,9 @@
 ﻿#include "boatitem.h"
 #include "dncore.h"
 
+Q_LOGGING_CATEGORY(BoatItemLog, "hypex.comms.bridge")
+
+
 BoatItem::BoatItem(QObject *parent, DNCore* core)
     : QObject{parent},
       _core(core),
@@ -8,10 +11,15 @@ BoatItem::BoatItem(QObject *parent, DNCore* core)
       _primaryConnected(false),
       _secondaryConnected(false),
       _connectionPriority(0),
-      _linkType(0)
+      _linkType(0),
+     _commLostCheckTimer(new QTimer(this))
 {
     QObject::connect(_core->networkManager(), &NetworkManager::deviceStatusMsg, this, &BoatItem::onDeviceStatusMsg);
     _deviceStatusCode = { "0", "0", "0", "0"};
+    (void) QObject::connect(_commLostCheckTimer, &QTimer::timeout, this, &BoatItem::_commLostCheck);
+
+    _commLostCheckTimer->setSingleShot(false);
+    _commLostCheckTimer->setInterval(_commLostCheckTimeoutMSecs);
 
 }
 
@@ -146,15 +154,7 @@ void BoatItem::connect(bool isPrimary)
         }
     }
 
-    if(isPrimary){
-        _primaryConnected = true;
-        emit primaryConnectedChanged(true);
-    }else{
-        _secondaryConnected = true;
-        emit secondaryConnectedChanged(true);
-    }
-    emit connectStatusChanged(_ID, isPrimary, true);
-    qDebug()<<"BoatItem::connect "<<(isPrimary?"Primary":"Secondary")<<" "<<QString::number(_ID);
+
 
 
 
@@ -190,13 +190,7 @@ void BoatItem::disconnect(bool isPrimary)
         }
     }
 
-    qDebug()<<"BoatItem::disconnect "<<(isPrimary?"Primary":"Secondary")<<" "<<QString::number(_ID);
-    if(isPrimary){
-        emit primaryConnectedChanged(false);
-    }else{
-        emit secondaryConnectedChanged(false);
-    }
-    emit connectStatusChanged(_ID, isPrimary, false);
+
 }
 
 Device* BoatItem::getDevbyID(int ID)
@@ -251,4 +245,72 @@ void BoatItem::onDeviceStatusMsg(uint8_t boatID, QByteArray detectMsg)
 
     }
 
+}
+
+void BoatItem::_commLostCheck()
+{
+
+    const int heartbeatTimeout = _heartbeatMaxElpasedMSecs;
+    bool linkStatusChange = false;
+
+    if (!_primaryUdpLinkInfo.commLost &&  (_primaryUdpLinkInfo.heartbeatElapsedTimer.elapsed() > heartbeatTimeout)) {
+        _primaryUdpLinkInfo.commLost = true;
+        linkStatusChange = true;
+
+    }
+    if (!_secondaryUdpLinkInfo.commLost &&  (_secondaryUdpLinkInfo.heartbeatElapsedTimer.elapsed() > heartbeatTimeout)) {
+        _secondaryUdpLinkInfo.commLost = true;
+        linkStatusChange = true;
+
+    }
+
+
+    if (_updatePrimaryLink()) {
+        emit connectionStatusChanged();
+        emit connectionChanged(_ID);
+        qCDebug(BoatItemLog, "update link");
+    }
+
+}
+
+bool BoatItem::_updatePrimaryLink()
+{
+
+    if(_currentIP == _PIP){
+        if(!_primaryUdpLinkInfo.commLost){
+            return false;
+        }else{
+            if(!_secondaryUdpLinkInfo.commLost){ // secondary up!!
+                _currentIP = _SIP;
+                qCDebug(BoatItemLog,"secondary link up");
+                return true;
+            }else{
+                return false;
+            }
+        }
+        return false;
+    }else{
+        if(!_secondaryUdpLinkInfo.commLost){
+            if(!_primaryUdpLinkInfo.commLost){ //primary up !!
+                _currentIP = _PIP;
+                qCDebug(BoatItemLog,"primary link up");
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            if(!_primaryUdpLinkInfo.commLost){
+                _currentIP = _PIP;
+                qCDebug(BoatItemLog,"primary link up");
+                return true;
+            }else{
+                //need backup
+                _currentIP = _PIP;
+                qCDebug(BoatItemLog,"primary link up");
+                return true;
+
+            }
+
+        }
+    }
 }

@@ -3,7 +3,7 @@
 #include <QQmlEngine>
 
 BoatManager::BoatManager(QObject* parent, DNCore *core): QObject(parent),
-    _connectionType(0), _activeBoat(0)
+    _activeBoat(0)
 {
     _core = core;
 
@@ -61,7 +61,6 @@ void BoatManager::init()
 
             connect(boat, &BoatItem::nameChanged, this, &BoatManager::onBoatNameChange);
             connect(boat, &BoatItem::IPChanged, _core->networkManager(), &NetworkManager::onIPChanged);
-            connect(boat, &BoatItem::connectStatusChanged, this, &BoatManager::onConnectStatusChanged);
             connect(boat, &BoatItem::restartServiceSignal, this, &BoatManager::onRestartService);
             connect(boat, &BoatItem::rebootSignal, this, &BoatManager::onReboot);
             connect(boat, &BoatItem::stopServiceSignal, this, &BoatManager::onStopService);
@@ -136,7 +135,6 @@ void BoatManager::addBoat()
 
     connect(boat, &BoatItem::nameChanged, this, &BoatManager::onBoatNameChange);
     connect(boat, &BoatItem::IPChanged, _core->networkManager(), &NetworkManager::onIPChanged);
-    connect(boat, &BoatItem::connectStatusChanged, this, &BoatManager::onConnectStatusChanged);
     connect(boat, &BoatItem::restartServiceSignal, this, &BoatManager::onRestartService);
     connect(boat, &BoatItem::rebootSignal, this, &BoatManager::onReboot);
     connect(boat, &BoatItem::stopServiceSignal, this, &BoatManager::onStopService);
@@ -266,40 +264,6 @@ void BoatManager::onBoatNameChange(int ID, QString newname)
 }
 
 
-void BoatManager::onConnectStatusChanged(int ID, bool isprimary, bool isConnected)
-{
-    if(isConnected){
-        if(isprimary){
-            getBoatbyID(ID)->setPrimaryConnected(true);
-            boatItemModel->item(getIndexbyID(ID),1)->setText("Active");
-            boatItemModel->item(getIndexbyID(ID),1)->setBackground(QBrush(QColor(0,120,0)));
-        }else{
-            getBoatbyID(ID)->setSecondaryConnected(false);
-            boatItemModel->item(getIndexbyID(ID),2)->setText("Active");
-            boatItemModel->item(getIndexbyID(ID),2)->setBackground(QBrush(QColor(0,120,0)));
-        }
-    }else{
-        if(isprimary){
-            getBoatbyID(ID)->setPrimaryConnected(false);
-            boatItemModel->item(getIndexbyID(ID),1)->setText("SB");
-            boatItemModel->item(getIndexbyID(ID),1)->setBackground(QBrush(QColor(120,0,0)));
-        }else{
-            getBoatbyID(ID)->setSecondaryConnected(false);
-            boatItemModel->item(getIndexbyID(ID),2)->setText("SB");
-            boatItemModel->item(getIndexbyID(ID),2)->setBackground(QBrush(QColor(120,0,0)));
-        }
-    }
-
-}
-
-void BoatManager::onConnectionTypeChanged(int connectiontype)
-{
-    _connectionType = connectiontype;
-    for(int i = 0; i< _boatList.size(); i++){
-        _boatList[i]->setConnectionPriority(connectiontype);
-    }
-    emit connectionTypeChanged(connectiontype);
-}
 
 void BoatManager::onRestartService(uint8_t boatID)
 {

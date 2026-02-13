@@ -193,12 +193,7 @@ void DNVideoManager::setVideoFormat(uint8_t ID, QByteArray data)
     }
 }
 
-void DNVideoManager::onConnectionChanged(int connectionType)
-{
-    for(int i = 0; i < videoList.size(); i++){
-        videoList[i]->setConnectionPriority(connectionType);
-    }
-}
+
 
 void DNVideoManager::connectionChanged(uint8_t ID)
 {

@@ -35,11 +35,9 @@ public:
     QString CurrentIP(QString boatname);
     BoatItem* activeBoat() { return _activeBoat; }
 
-    //void setConnectionType(int connectiontype);
     int size();
 signals:
     void boatAdded();
-    void connectionTypeChanged(int connectiontype);
     void connectionChanged(int ID);
     void onboatListModelChanged(DNQmlObjectListModel* model);
     void activeBoatChanged();
@@ -48,9 +46,6 @@ signals:
 
 public slots:
     void onBoatNameChange(int ID, QString newname);
-    void onConnectStatusChanged(int ID, bool isprimary, bool isConnected);
-    //void onDisonnected(int ID, bool isprimary);
-    void onConnectionTypeChanged(int connectiontype);
     void onReboot(uint8_t boatID);
     void onRestartService(uint8_t boatID);
     void onStopService(uint8_t boatID);
@@ -62,7 +57,6 @@ private:
     static QString settingsRoot() { return QStringLiteral("LinkConfigurations"); }
     QStandardItemModel* boatItemModel;
     QList<BoatItem*> _boatList;
-    int _connectionType;
     DNCore* _core;
     DNQmlObjectListModel _boatListModel;
     BoatItem* _activeBoat;
