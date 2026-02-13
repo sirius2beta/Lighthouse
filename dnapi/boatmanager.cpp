@@ -279,7 +279,7 @@ void BoatManager::onBoatNameChange(int ID, QString newname)
     qDebug()<<"++id:"<<ID;
     boatItemModel->item(index, 0)->setText(newname);
     settings->beginGroup(QString("%1").arg(_core->config()));
-    //int size = settings->beginReadArray("boat");
+    int size = settings->beginReadArray("boat");
     settings->setArrayIndex(index);
     settings->setValue("boatname",newname);
 
@@ -312,27 +312,7 @@ void BoatManager::onIPChanged(int ID, bool primary)
 
 void BoatManager::onConnectStatusChanged(int ID, bool isprimary, bool isConnected)
 {
-    if(isConnected){
-        if(isprimary){
-            getBoatbyID(ID)->setPrimaryConnected(true);
-            boatItemModel->item(getIndexbyID(ID),1)->setText("Active");
-            boatItemModel->item(getIndexbyID(ID),1)->setBackground(QBrush(QColor(0,120,0)));
-        }else{
-            getBoatbyID(ID)->setSecondaryConnected(false);
-            boatItemModel->item(getIndexbyID(ID),2)->setText("Active");
-            boatItemModel->item(getIndexbyID(ID),2)->setBackground(QBrush(QColor(0,120,0)));
-        }
-    }else{
-        if(isprimary){
-            getBoatbyID(ID)->setPrimaryConnected(false);
-            boatItemModel->item(getIndexbyID(ID),1)->setText("SB");
-            boatItemModel->item(getIndexbyID(ID),1)->setBackground(QBrush(QColor(120,0,0)));
-        }else{
-            getBoatbyID(ID)->setSecondaryConnected(false);
-            boatItemModel->item(getIndexbyID(ID),2)->setText("SB");
-            boatItemModel->item(getIndexbyID(ID),2)->setBackground(QBrush(QColor(120,0,0)));
-        }
-    }
+
 
 }
 

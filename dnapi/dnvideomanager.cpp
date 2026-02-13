@@ -129,7 +129,7 @@ void DNVideoManager::onPlay(VideoItem* videoItem)
     memcpy(rawdata+4, &port, sizeof(int32_t));
     memcpy(rawdata+8, &aiEnabled, sizeof(int8_t));
     QByteArray msg = QByteArray(rawdata,9);
-    qDebug()<<"DNVideoManager::onPlay:"+QString::number(videoItem->port())+",send: "+msg;
+    qDebug()<<"DNVideoManager::onPlay:"<<QString::number(videoItem->port())<<",send: "<<msg <<", IP:"<<ip;
     //if(msg == QString("")) return;
     emit sendMsg(ip, _core->configManager()->message("COMMAND"), msg);
 

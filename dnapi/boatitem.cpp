@@ -127,6 +127,7 @@ void BoatItem::connect(bool isPrimary)
     }else{
         if(_secondaryConnected){
                 //keep connected
+
         }else{
             if(_primaryConnected){
                 if(isPrimary){
@@ -159,7 +160,6 @@ void BoatItem::connect(bool isPrimary)
     qDebug()<<"BoatItem::connect "<<(isPrimary?"Primary":"Secondary")<<" "<<QString::number(_ID);
 
 
-
 }
 
 void BoatItem::disconnect(bool isPrimary)
@@ -183,6 +183,7 @@ void BoatItem::disconnect(bool isPrimary)
     }else{
         if(_secondaryConnected){
             //keep connected
+
         }else{
             if(_primaryConnected){
                 qDebug()<<"BoatItem:: switch connection";
