@@ -147,16 +147,14 @@ void NetworkManager::parseMsg(const bool &isPrimary, const mavlink_message_t &me
     QByteArray data(reinterpret_cast<const char*>(wrapper.payload), wrapper.length);
     qDebug() << "sysid"<<message.sysid<<","<<topic<<","<<msgType<<", length:"<<wrapper.length;
     quint8 boatID = message.sysid;
+    BoatItem* boat = _core->boatManager()->getBoatbyID(boatID);
+    if( boat != 0){
+        boat->receivedMsg(isPrimary);
+        return;
+    }
     if(msgType == ConfigManager::msg_heartbeat()){
         uint8_t topic = wrapper.topic;
         qDebug() << "get heartbeat";
-        BoatItem* boat = _core->boatManager()->getBoatbyID(boatID);
-
-        if( boat != 0){
-
-            emit AliveResponse(boatID, isPrimary);
-        }
-
 
     }else if(msgType == ConfigManager::msg_format()){
         uint8_t topic = wrapper.topic;

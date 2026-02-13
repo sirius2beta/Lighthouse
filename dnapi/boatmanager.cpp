@@ -67,10 +67,6 @@ void BoatManager::init()
             connect(boat, &BoatItem::updateSignal, this, &BoatManager::onUpdate);
             //connect(boat, &BoatItem::disconnected, this, &BoatManager::onDisonnected);
 
-            HeartBeat* _primaryHeartBeat = new HeartBeat(boat, 50006, true, boat, _core);
-            _primaryHeartBeat->HeartBeatLoop();
-            HeartBeat* _secondaryHeartBeat = new HeartBeat(boat, 50006, false, boat, _core);
-            _secondaryHeartBeat->HeartBeatLoop();
 
             connect(boat, &BoatItem::connectionChanged, this, &BoatManager::connectionChanged);
 
@@ -140,11 +136,6 @@ void BoatManager::addBoat()
     connect(boat, &BoatItem::stopServiceSignal, this, &BoatManager::onStopService);
     connect(boat, &BoatItem::updateSignal, this, &BoatManager::onUpdate);
     //connect(boat, &BoatItem::disconnected, this, &BoatManager::onDisonnected);
-
-    HeartBeat* primaryHeartBeat = new HeartBeat(boat, 50006, true, boat, _core);
-    primaryHeartBeat->HeartBeatLoop();
-    HeartBeat* secondaryHeartBeat = new HeartBeat(boat, 50006, false, boat, _core);
-    secondaryHeartBeat->HeartBeatLoop();
 
     connect(boat, &BoatItem::connectionChanged, this, &BoatManager::connectionChanged);
 

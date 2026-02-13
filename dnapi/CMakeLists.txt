@@ -28,8 +28,6 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     dnvalue.h
     dnvideomanager.cpp
     dnvideomanager.h
-    heartbeat.cpp
-    heartbeat.h
     networkmanager.cpp
     networkmanager.h
     sensorgroup.cpp

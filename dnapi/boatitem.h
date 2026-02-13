@@ -5,7 +5,6 @@
 #include <QElapsedTimer>
 #include "device.h"
 
-class HeartBeat;
 class DNCore;
 class BoatItem : public QObject
 {
@@ -60,6 +59,7 @@ public:
     Q_INVOKABLE void update();
     QList<Peripheral> peripherals;
     QList<Device> devices;
+    void receivedMsg(bool isPrimary);
 signals:
     void nameChanged(int ID, QString name);
     void PIPChanged(const QString& IP); // for qml
@@ -100,8 +100,6 @@ private:
 
 
 
-    HeartBeat* _primaryHeartBeat;
-    HeartBeat* _secondaryHeartBeat;
 
     struct LinkInfo_t {
         bool commLost = false;

@@ -44,8 +44,6 @@ const BoatItem& BoatItem::operator=(const BoatItem& other)
     _linkType = other._linkType;
 
 
-    _primaryHeartBeat = other._primaryHeartBeat;
-    _secondaryHeartBeat = other._secondaryHeartBeat;
     return *this;
 
 }
@@ -229,6 +227,8 @@ void BoatItem::update()
     emit updateSignal(_ID);
 }
 
+
+
 void BoatItem::onDeviceStatusMsg(uint8_t boatID, QByteArray detectMsg)
 {
     if(boatID == _ID){
@@ -311,6 +311,24 @@ bool BoatItem::_updatePrimaryLink()
 
             }
 
+        }
+    }
+}
+
+void BoatItem::receivedMsg(bool isPrimary)
+{
+    if(isPrimary){
+        _primaryUdpLinkInfo.heartbeatElapsedTimer.restart();
+        if(_primaryUdpLinkInfo.commLost){
+            _primaryUdpLinkInfo.commLost = false;
+            _updatePrimaryLink();
+        }
+
+    }else{
+        _secondaryUdpLinkInfo.heartbeatElapsedTimer.restart();
+        if(_secondaryUdpLinkInfo.commLost){
+            _secondaryUdpLinkInfo.commLost = false;
+            _updatePrimaryLink();
         }
     }
 }
