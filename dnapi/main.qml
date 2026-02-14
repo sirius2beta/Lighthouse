@@ -20,7 +20,7 @@ Window {
     width: 1280
     height: 720
     visible: true
-    title: "LightHouse v5.3 (GPlayer v5 47aa2c4)"
+    title: "LightHouse v5.3 (GPlayer v1 stable 9cb8cf1)"
     property DNValue dnvalue: DNValue{}
 
     property real lon: parseFloat(DeNovoViewer.sensorManager.mav1Model.get(1).displayValue)/10000000
