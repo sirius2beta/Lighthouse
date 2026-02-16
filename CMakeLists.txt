@@ -50,7 +50,6 @@ qt_standard_project_setup(REQUIRES 6.5)
 list(APPEND QGC_RESOURCES
         ${CMAKE_SOURCE_DIR}/dnapi/DeNovo.qrc
         ${CMAKE_SOURCE_DIR}/dnapi/DNImage.qrc
-        ${CMAKE_SOURCE_DIR}/DenovoUI/DenovoUI.qrc
 )
 
 

@@ -2,6 +2,8 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>main2.qml</file>
+        <file>qtquickcontrols2.conf</file>
+
     </qresource>
     <qresource prefix="/qml">
         <file alias="DeNovoViewer/Display/qmldir">ui/DeNovoViewer/Display/qmldir</file>
@@ -24,6 +26,21 @@
         <file alias="DeNovoViewer/Display/BoatSetting.qml">ui/BoatSetting.qml</file>
         <file alias="DeNovoViewer/Display/VideoSetting.qml">ui/VideoSetting.qml</file>
         <file alias="DeNovoViewer/Display/SystemOverviewPanel.qml">ui/SystemOverviewPanel.qml</file>
+        <file alias="DeNovoViewer/Display/HUD.qml">ui/HUD.qml</file>
+        <file alias="DeNovoViewer/Display/AlarmSettings.qml">ui/AlarmSettings.qml</file>
+        <file alias="DeNovoViewer/Display/SlidingScale.qml">ui/SlidingScale.qml</file>
+        <file alias="DeNovoViewer/Display/Constants.qml">ui/Constants.qml</file>
+        <file alias="DeNovoViewer/Display/ControlView.qml">ui/ControlView.qml</file>
+        <file alias="DeNovoViewer/Display/ControlMenu.qml">ui/ControlMenu.qml</file>
+        <file alias="DeNovoViewer/Display/DataPanel.qml">ui/DataPanel.qml</file>
+        <file alias="DeNovoViewer/Display/PumpControl.qml">ui/PumpControl.qml</file>
+        <file alias="DeNovoViewer/Display/WinchControl.qml">ui/WinchControl.qml</file>
+        <file alias="DeNovoViewer/Display/DeviceControl.qml">ui/DeviceControl.qml</file>
+        <file alias="DeNovoViewer/Display/MenuButton.qml">ui/MenuButton.qml</file>
+        <file alias="DeNovoViewer/Display/DNButton.qml">ui/DNButton.qml</file>
+        <file alias="DeNovoViewer/Display/DNValueEdit.qml">ui/DNValueEdit.qml</file>
+        <file alias="DeNovoViewer/Display/VideoView.qml">ui/VideoView.qml</file>
+
     </qresource>
     <qresource prefix="/res">
         <file alias="boatManager.png">res/boatManager.png</file>
@@ -50,6 +67,15 @@
         <file alias="sail_boat.png">res/sail_boat.png</file>
         <file alias="close.png">res/close.png</file>
         <file alias="overview.png">res/overview.png</file>
+        <file alias="pump.png">res/pump.png</file>
+        <file alias="tune.png">res/tune.png</file>
+        <file alias="winch.png">res/winch.png</file>
+        <file alias="checklist.png">res/checklist.png</file>
+        <file alias="up.png">res/up.png</file>
+        <file alias="down.png">res/down.png</file>
+        <file alias="construction.png">res/construction.png</file>
+        <file alias="indicator1.png">res/indicator1.png</file>
+        <file alias="indicator2.png">res/indicator2.png</file>
     </qresource>
     <qresource prefix="/fonts">
         <file alias="Roboto-Regular.ttf">res/fonts/Roboto-Regular.ttf</file>

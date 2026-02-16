@@ -11,7 +11,6 @@ import DeNovoViewer.Boat 1.0
 import DeNovoViewer.Display 1.0
 
 
-import DenovoUI 1.0
 
 
 
@@ -77,7 +76,7 @@ Window {
 
         onOpenControlView:{
             //_controlView.hide = _controlView.hide?false:true
-            right_block.source = "qrc:/imports/DenovoUI/ControlView.qml"
+            right_block.source = "qrc:/qml/DeNovoViewer/Display/ControlView.qml"
 
             right_block.item.totalBatteryPercentage = Qt.binding(function(){ return parseInt(DeNovoViewer.sensorManager.mav0Model.get(3).displayValue)})
             right_block.item.totalBatteryVoltage=  Qt.binding(function(){ return parseInt(DeNovoViewer.sensorManager.mav0Model.get(1).displayValue)})

@@ -6,7 +6,6 @@ import QtQuick.Controls.Material 2.15
 import DeNovoViewer 1.0
 import DeNovoViewer.Boat 1.0
 
-import DenovoUI 1.0
 
 import QtQml.Models
 import org.freedesktop.gstreamer.Qt6GLVideoItem
@@ -182,14 +181,15 @@ Item {
     Rectangle{
         id: radar
         visible: isFull
-        width:150
-        height: 150
+        width:parent.height/5
+        height: parent.height/5
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.margins: 10
         color: "#333333"
         border.color: "#555555"
         radius:width/2
+        opacity: 0.5
         clip: true
         Image {
             anchors.fill: parent
