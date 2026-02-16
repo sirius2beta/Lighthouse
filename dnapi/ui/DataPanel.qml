@@ -8,8 +8,7 @@ import DeNovoViewer.Display 1.0
 
 Item {
     width: 300
-    height: 700
-
+    implicitHeight:400
     TabBar{
         id: tabBar
         anchors.top: parent.top
@@ -51,9 +50,7 @@ Item {
                         AquaUI{
                             Layout.fillWidth: true
                         }
-                        BoatStatusView{
-                            Layout.fillWidth: true
-                        }
+
 
                     }
                 }
@@ -65,7 +62,38 @@ Item {
             Rectangle{
                 anchors.fill: parent
                 color: "#222222"
+                ColumnLayout{
+                    anchors.fill: parent
+                    spacing: 0
+                    AquaDataGraph{
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 150 // 讓圖表自動填滿剩餘的所有高度
+
+                        Rectangle {
+                                anchors.fill: parent
+                                color: "transparent"
+                                border.color: "red"
+                                border.width: 1
+                            }
+                    }
+                    AquaDataGraph{
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 150 // 讓圖表自動填滿剩餘的所有高度
+                    }
+                    AquaDataGraph{
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 150 // 讓圖表自動填滿剩餘的所有高度
+                    }
+                    Rectangle{
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        color: "#00000000"
+                    }
+                }
+
+
             }
+
         }
 
     }

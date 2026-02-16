@@ -17,6 +17,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     dncontrol.h
     dncore.cpp
     dncore.h
+    aquagraph.h
 
     dnmetadata.cpp
     dnmetadata.h
@@ -44,6 +45,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     videoitem.h
     winchcontrol.cpp
     winchcontrol.h
+    aquagraph.cpp
+
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}

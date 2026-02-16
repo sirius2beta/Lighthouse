@@ -32,6 +32,12 @@ Window {
         anchors.fill:parent
     }
 
+
+
+
+
+
+
     HUD{
         id: hud
         visible: true
@@ -163,12 +169,9 @@ Window {
     }
 
 
-    Component.onCompleted: {
-        DeNovoViewer.controlManager.controls.get(0).setField(0,1000)
-        console.log("the value is:"+DeNovoViewer.controlManager.controls.get(0).getField(0).toInt());
-        //console.log(DeNovoViewer.controlManager.controls.get(0).maxSpeed)
 
-        //console.log(parseInt(DeNovoViewer.sensorManager.mav1Model.get(0).displayValue))
+
+    Component.onCompleted: {
 
     }
 }

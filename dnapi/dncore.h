@@ -10,6 +10,7 @@
 #include "configmanager.h"
 #include "dnqmlglobal.h"
 #include "controlmanager.h"
+#include "aquagraph.h"
 
 class DNCore : public QObject
 {
@@ -26,6 +27,7 @@ public:
     SensorManager* sensorManager() { return _sensorManager; }
     ConfigManager* configManager() { return _configManager; }
     ControlManager* controlManager() { return _controlManager; }
+    AquaGraph* aquaGraph(){ return _aquaGraph; }
     QString config() {return _config;}
 
 
@@ -38,6 +40,7 @@ private:
     SensorManager* _sensorManager;
     ConfigManager* _configManager;
     ControlManager* _controlManager;
+    AquaGraph* _aquaGraph;
 
 };
 

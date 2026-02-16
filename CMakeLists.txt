@@ -42,7 +42,7 @@ if(CMAKE_CROSSCOMPILING)
     endif()
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Network Qml QuickControls2 Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Network Qml QuickControls2 Widgets Graphs)
 
 
 qt_standard_project_setup(REQUIRES 6.5)
@@ -71,6 +71,7 @@ qt_add_executable(${CMAKE_PROJECT_NAME}
     dnapplication.cpp
     dnapplication.h
     ${QGC_RESOURCES}
+
 )
 
 
@@ -83,6 +84,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         Qt6::Qml
         Qt6::Quick
         Qt6::QuickControls2
+        Qt6::Graphs
         gstqml6gl
 
     PUBLIC

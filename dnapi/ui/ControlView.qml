@@ -2,6 +2,7 @@
 import QtQuick.Controls 2.15
 import QtQuick.Controls 2.15
 import DeNovoViewer.Display 1.0
+import QtQuick.Layouts 1.15
 
 
 
@@ -82,17 +83,28 @@ Item {
             }
         }
     }
-
-
-    ControlMenu{
-        height: parent.height/2
-        id: controlMenu
+    SplitView{
         anchors.top:  _title.bottom
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.left: parent.left
+        orientation: Qt.Vertical
 
+        ControlMenu {
+                id: controlMenu
+                // 設定初始高度比例
+                SplitView.preferredHeight: parent.height * 0.5
+                SplitView.minimumHeight: 150 // 設定最小值，避免選單被壓到看不見
+            }
+
+            DataPanel {
+                // 設定為填充剩餘空間
+                SplitView.fillHeight: true
+                SplitView.minimumHeight: 100 // 確保水質圖表有足夠顯示空間
+            }
     }
-    DataPanel{
-        anchors.top:controlMenu.bottom
-    }
+
+
 
     onHideChanged: {
         hide?width=0:width=300

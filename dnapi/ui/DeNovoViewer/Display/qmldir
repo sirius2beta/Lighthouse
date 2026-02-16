@@ -30,3 +30,4 @@ MenuButton 1.0 MenuButton.qml
 DNButton 1.0 DNButton.qml
 DNValueEdit 1.0 DNValueEdit.qml
 VideoView 1.0 VideoView.qml
+AquaDataGraph 1.0 AquaDataGraph.qml

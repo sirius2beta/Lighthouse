@@ -8,6 +8,7 @@
 #include "dnvideomanager.h"
 #include "sensormanager.h"
 #include "controlmanager.h"
+#include "aquagraph.h"
 class DNCore;
 
 class DNQmlGlobal : public QObject
@@ -27,6 +28,7 @@ public:
     Q_PROPERTY(DNVideoManager* videoManager READ videoManager CONSTANT);
     Q_PROPERTY(SensorManager* sensorManager READ sensorManager CONSTANT);
     Q_PROPERTY(ControlManager* controlManager READ controlManager CONSTANT);
+    Q_PROPERTY(AquaGraph* aquaGraph READ aquaGraph CONSTANT);
     Q_PROPERTY(int boatListmodel READ boatListmodel CONSTANT)
 
     NetworkManager* networkManager() { return _networkManager; }
@@ -34,6 +36,7 @@ public:
     DNVideoManager* videoManager() { return _videoManager; }
     SensorManager* sensorManager() {return _sensorManager;}
     ControlManager* controlManager() { return _controlManager;}
+    AquaGraph* aquaGraph(){ return _aquaGraph; }
     int boatListmodel() const {return 0;}
 signals:
 private:
@@ -43,6 +46,7 @@ private:
     DNVideoManager* _videoManager = nullptr;
     SensorManager* _sensorManager = nullptr;
     ControlManager* _controlManager = nullptr;
+    AquaGraph* _aquaGraph = nullptr;
     QString _programName ;
 };
 
