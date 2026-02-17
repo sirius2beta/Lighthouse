@@ -9,21 +9,34 @@ import QtGraphs
 
 
 Item {
+    id: root
+    property string sensorName: "數據"
+    property string dataKey: "value" // 預設抓 "value" 欄位
+    property color lineColor: "#00FFCC"
     Rectangle{
         color: "#111111"
         anchors.fill:parent
         anchors.margins: 0
 
+        Text {
+                    text: sensorName
+                    color: "white"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.top: parent.top
+                    anchors.topMargin: 5
+                    z: 10
+                }
+
         GraphsView {
                 id: chartView
                 anchors.fill: parent
                 anchors.margins: 0
-                anchors.leftMargin: -15
-                anchors.bottomMargin: -15
+                marginLeft: 5
+                marginBottom: 5
 
 
-                axisX: ValueAxis { id: axisX; min: 0; max: 100; titleVisible: false }
-                axisY: ValueAxis { id: axisY; min: 0; max: 100; titleVisible: false }
+                axisX: ValueAxis { id: axisX; min: 0; max: 1000; titleVisible: false; tickInterval: (max - min) / 4 }
+                axisY: ValueAxis { id: axisY; min: 0; max: 100; titleVisible: false; tickInterval: (max - min) / 5 }
 
                 LineSeries {
                     id: waterSeries
@@ -40,12 +53,12 @@ Item {
                         if (!data || data.length === 0) return;
 
                         let points = [];
-                        let minY = data[0].value;
-                        let maxY = data[0].value;
+                        let minY = data[0][root.dataKey];
+                        let maxY = data[0][root.dataKey];
 
                         // 2. 遍歷數據
                         for (let i = 0; i < data.length; i++) {
-                            let val = data[i].value;
+                            let val = data[i][root.dataKey];
                             points.push(Qt.point(data[i].time, val));
                             if (val < minY) minY = val;
                             if (val > maxY) maxY = val;
@@ -54,7 +67,7 @@ Item {
 
                         // 3. 更新 X 軸
                         axisX.max = data[data.length - 1].time;
-                        axisX.min = axisX.max - 50;
+                        axisX.min = axisX.max - 300;
 
                         // 4. 更新 Y 軸（核心修正處）
                         if (minY === maxY) {

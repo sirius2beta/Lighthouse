@@ -25,13 +25,17 @@ void AquaGraph::refreshData() {
     if(_core->sensorManager()->aquaModel()){
         SensorItem* sensor = qobject_cast<SensorItem*>(_core->sensorManager()->aquaModel()->get(3));
         point["depth"] = sensor->value().toFloat();
+        sensor = qobject_cast<SensorItem*>(_core->sensorManager()->aquaModel()->get(0));
+        point["temp"] = sensor->value().toFloat();
+        sensor = qobject_cast<SensorItem*>(_core->sensorManager()->aquaModel()->get(16));
+        point["DO2"] = sensor->value().toFloat();
     }
 
 
     m_currentData.append(point);
 
     // 3. (選配) 為了不讓記憶體爆炸，只保留最近的 50 筆資料
-    if (m_currentData.length() > 100) {
+    if (m_currentData.length() > 300) {
         m_currentData.removeFirst();
     }
 

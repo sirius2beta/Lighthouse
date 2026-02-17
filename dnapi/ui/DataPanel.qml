@@ -59,40 +59,58 @@ Item {
             }
         }
         Item{
-            Rectangle{
-                anchors.fill: parent
-                color: "#222222"
-                ColumnLayout{
+            ScrollView{
+                anchors.fill:parent
+                contentWidth: parent.width
+                contentHeight: 1600
+                Rectangle{
                     anchors.fill: parent
-                    spacing: 0
-                    AquaDataGraph{
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 150 // 讓圖表自動填滿剩餘的所有高度
+                    color: "#222222"
+                    ColumnLayout{
+                        anchors.fill: parent
+                        spacing: 0
+                        AquaDataGraph {
+                            sensorName: "測試 (m)"
+                            dataKey: "value"
+                            lineColor: "#00BCFF"
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            Layout.minimumHeight: 15
+                            Layout.maximumHeight: 150
 
-                        Rectangle {
-                                anchors.fill: parent
-                                color: "transparent"
-                                border.color: "red"
-                                border.width: 1
-                            }
+                        }
+                        AquaDataGraph {
+                            sensorName: "水深 (m)"
+                            dataKey: "depth"
+                            lineColor: "#00BCFF"
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            Layout.minimumHeight: 15
+                            Layout.maximumHeight: 150
+
+                        }
+                        AquaDataGraph {
+                            sensorName: "溫度 (C)"
+                            dataKey: "temp"
+                            lineColor: "#00BCFF"
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            Layout.minimumHeight: 15
+                            Layout.maximumHeight: 150
+
+                        }
+
+                        Item { Layout.fillHeight: true
+                            Layout.minimumHeight: 10
+
+                        }
                     }
-                    AquaDataGraph{
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 150 // 讓圖表自動填滿剩餘的所有高度
-                    }
-                    AquaDataGraph{
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 150 // 讓圖表自動填滿剩餘的所有高度
-                    }
-                    Rectangle{
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        color: "#00000000"
-                    }
+
+
                 }
-
-
             }
+
+
 
         }
 
