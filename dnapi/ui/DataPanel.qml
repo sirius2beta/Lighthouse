@@ -19,7 +19,7 @@ Item {
             font.family: "roboto"
         }
         TabButton {
-            text: qsTr("System")
+            text: qsTr("Graph")
             font.family: "roboto"
         }
         onCurrentIndexChanged: {

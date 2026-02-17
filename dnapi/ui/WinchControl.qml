@@ -22,7 +22,7 @@ Item {
     }
     Rectangle{
         id: titleBar
-        height:60
+        height:40
 
         color: "#333333"
         anchors.left: parent.left
@@ -43,7 +43,7 @@ Item {
 
             text:"home"
             anchors.right: parent.right
-            height:60
+            height:40
             onClicked: {
                 root.parent.source = ""
             }
@@ -86,7 +86,7 @@ Item {
                     Text {
                         anchors.fill: parent
                         color: "#ffffff"
-                        text: DeNovoViewer.controlManager.controls.get(0).steps.toString()
+                        text: DeNovoViewer.controlManager.controls.get(0).steps.toString() + "\n(" + DeNovoViewer.sensorManager.aquaModel.get(0).displayValue+ " m)"
                         font.pixelSize: 18
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
