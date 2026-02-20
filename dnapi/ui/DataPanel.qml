@@ -69,9 +69,10 @@ Item {
                     ColumnLayout{
                         anchors.fill: parent
                         spacing: 0
+
                         AquaDataGraph {
-                            sensorName: "測試 (m)"
-                            dataKey: "value"
+                            sensorName: "水深 (m)"
+                            dataKey: "depth"
                             lineColor: "#00BCFF"
                             Layout.fillWidth: true
                             Layout.fillHeight: true
@@ -80,8 +81,8 @@ Item {
 
                         }
                         AquaDataGraph {
-                            sensorName: "水深 (m)"
-                            dataKey: "depth"
+                            sensorName: "DO2 (%)"
+                            dataKey: "DO2"
                             lineColor: "#00BCFF"
                             Layout.fillWidth: true
                             Layout.fillHeight: true

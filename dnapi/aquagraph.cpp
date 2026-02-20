@@ -23,7 +23,7 @@ void AquaGraph::refreshData() {
     point["time"] = m_tickCount++;;
     point["value"] = QRandomGenerator::global()->bounded(100,300);
     if(_core->sensorManager()->aquaModel()){
-        SensorItem* sensor = qobject_cast<SensorItem*>(_core->sensorManager()->aquaModel()->get(3));
+        SensorItem* sensor = qobject_cast<SensorItem*>(_core->sensorManager()->aquaModel()->get(2));
         point["depth"] = sensor->value().toFloat();
         sensor = qobject_cast<SensorItem*>(_core->sensorManager()->aquaModel()->get(0));
         point["temp"] = sensor->value().toFloat();

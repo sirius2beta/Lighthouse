@@ -86,7 +86,7 @@ Item {
                     Text {
                         anchors.fill: parent
                         color: "#ffffff"
-                        text: DeNovoViewer.controlManager.controls.get(0).steps.toString() + "\n(" + DeNovoViewer.sensorManager.aquaModel.get(0).displayValue+ " m)"
+                        text: DeNovoViewer.controlManager.controls.get(0).steps.toString() + "\n(" + DeNovoViewer.sensorManager.aquaModel.get(2).displayValue+ " m)"
                         font.pixelSize: 18
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
