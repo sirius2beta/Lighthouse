@@ -34,7 +34,6 @@ void AquaGraph::refreshData() {
 
     m_currentData.append(point);
 
-    // 3. (選配) 為了不讓記憶體爆炸，只保留最近的 50 筆資料
     if (m_currentData.length() > 300) {
         m_currentData.removeFirst();
     }

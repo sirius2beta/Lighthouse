@@ -33,6 +33,7 @@ Item {
         _videoItem = DeNovoViewer.videoManager.getVideoItem(index)
         _videoItem.setBoatID(DeNovoViewer.boatManager.getIDbyInex(0))
         _videoNo.currentIndex = _videoItem.videoIndex
+        _qualityNo.currentIndex = _videoItem.qualityIndex
         console.log("current videoIndex", _videoItem.videoIndex)
         console.log("init listview index:",index)
     }
@@ -424,8 +425,17 @@ Item {
             }
         }
     }
-    Component.onCompleted: {
+    Connections{
+        target:_videoItem
+        function onVideoNoListModelChanged(list){
+            _videoNo.currentIndex = _videoItem.videoIndex
+            _qualityNo.currentIndex = _videoItem.qualityIndex
+            console.log("+++++++++++++++");
 
+        }
+    }
+
+    Component.onCompleted: {
     }
 }
 

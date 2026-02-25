@@ -210,6 +210,12 @@ void VideoItem::setVideoFormat(QByteArray data)
     _requestFormat = false;
     QString currentvideoNo = QString();
     qDebug()<<" VideoItem::setVideoNo: got videoFormat";
+    int preVideoIndexListSize = _videoNoListModel.size();
+    int preVideoIndex = _videoIndex;
+    int preQualityIndex = _qualityIndex;
+    _videoNoListModel.clear();
+    _formatListModel.clear();
+    _formatStringListModel.clear();
     _videoFormatList.clear();
     int videoNo;
     int qualityIndex;
@@ -227,13 +233,19 @@ void VideoItem::setVideoFormat(QByteArray data)
     QMap<int, QList<int>>::const_iterator h = _videoFormatList.constBegin();
     while(h != _videoFormatList.constEnd()){
         _videoNoListModel<<QString::number(h.key());
-        emit videoNoListModelChanged(_videoNoListModel);
+
         ++h;
     }
 
-    if(_videoNoListModel.size() >0){
+    if(_videoNoListModel.size() == preVideoIndexListSize && preVideoIndex != -1){
+        qDebug()<<preVideoIndex<<" !";
+        setVideoIndex(preVideoIndex);
+        setQualityIndex(preQualityIndex);
+    }else{
+        qDebug()<<preVideoIndexListSize<<","<<_videoNoListModel.size()<<"  set 0";
         setVideoIndex(0);
     }
+    emit videoNoListModelChanged(_videoNoListModel);
 }
 
 void VideoItem::setQualityIndex(int no)
@@ -319,11 +331,8 @@ void VideoItem::setAIEnabled(bool enabled)
 
 void VideoItem::update()
 {
-    stop();
     //new list model
-    _videoNoListModel.clear();
-    _formatListModel.clear();
-    _formatStringListModel.clear();
+
     emit videoNoListModelChanged(_videoNoListModel);
     emit qualityListModelChanged(_formatListModel);
     emit formatListStringModelChanged(_formatStringListModel);
