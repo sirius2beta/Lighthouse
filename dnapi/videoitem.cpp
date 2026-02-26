@@ -163,7 +163,7 @@ void VideoItem::setIndex(int index)
 
 void VideoItem::setVideoIndex(int index)
 {
-    if(index >= _videoNoListModel.size()){
+    if(index >= _videoNoListModel.size() || index < 0){
         qDebug()<<"**Fatal:: VideoItem::setVideoNo: index out of range";
         return;
     }
@@ -250,7 +250,7 @@ void VideoItem::setVideoFormat(QByteArray data)
 
 void VideoItem::setQualityIndex(int no)
 {
-    if(no >= _formatListModel.size()){
+    if(no >= _formatListModel.size() || no < 0){
         qDebug()<<"**Fatal:: VideoItem::setQualityIndex: index out of range";
         return;
     }
