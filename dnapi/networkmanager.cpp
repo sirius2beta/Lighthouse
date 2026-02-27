@@ -56,6 +56,7 @@ void NetworkManager::init()
 
 void NetworkManager::sendMsg(QHostAddress addr, LinkInterface* link, mavlink_message_t message)
 {
+
     if (!link) {
         qCDebug(NetworkManagerLog) << "sendMsg: link gone!";
         return;
@@ -107,7 +108,7 @@ void NetworkManager::sendMsgbyID(uint8_t boatID, uint8_t topic, QByteArray comma
 
         sendMsg(QHostAddress(boat->currentIP()), sharedLink.get(), message);
     }else{
-        qDebug()<<"\u001b[38;5;203m"<<"**Fatal error: NetworkManager::sendMsgbyID boatID outof range"<<"\033[0m";
+        qDebug()<<"\u001b[38;5;203m"<<"**Fatal error: NetworkManager::sendMsgbyID boatID outof range:"<<"\033[0m";
     }
 }
 
@@ -150,7 +151,6 @@ void NetworkManager::parseMsg(const bool &isPrimary, const mavlink_message_t &me
     BoatItem* boat = _core->boatManager()->getBoatbyID(boatID);
     if( boat != 0){
         boat->receivedMsg(isPrimary);
-        return;
     }
     if(msgType == ConfigManager::msg_heartbeat()){
         uint8_t topic = wrapper.topic;

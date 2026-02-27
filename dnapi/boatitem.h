@@ -34,8 +34,8 @@ public:
     };
     int OS(void) {    return _OS;   };
     int linkType() { return _linkType; }
-    bool primaryConnected() { return _primaryConnected;}
-    bool secondaryConnected() { return _secondaryConnected;}
+    bool primaryConnected() { return !_primaryUdpLinkInfo.commLost;}
+    bool secondaryConnected() { return !_secondaryUdpLinkInfo.commLost;}
 
 
     void setName(QString name);

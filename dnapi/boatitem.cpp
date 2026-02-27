@@ -20,6 +20,12 @@ BoatItem::BoatItem(QObject *parent, DNCore* core)
 
     _commLostCheckTimer->setSingleShot(false);
     _commLostCheckTimer->setInterval(_commLostCheckTimeoutMSecs);
+    _primaryUdpLinkInfo.heartbeatElapsedTimer.start();
+    _secondaryUdpLinkInfo.heartbeatElapsedTimer.start();
+    _primaryUdpLinkInfo.commLost = true;
+    _secondaryUdpLinkInfo.commLost = true;
+    _commLostCheckTimer->start();
+
 
 }
 
@@ -43,9 +49,7 @@ const BoatItem& BoatItem::operator=(const BoatItem& other)
     _connectionPriority = other._connectionPriority;
     _linkType = other._linkType;
 
-
     return *this;
-
 }
 
 BoatItem::~BoatItem()
@@ -255,18 +259,21 @@ void BoatItem::_commLostCheck()
 
     if (!_primaryUdpLinkInfo.commLost &&  (_primaryUdpLinkInfo.heartbeatElapsedTimer.elapsed() > heartbeatTimeout)) {
         _primaryUdpLinkInfo.commLost = true;
+        emit connectionStatusChanged();
         linkStatusChange = true;
 
     }
     if (!_secondaryUdpLinkInfo.commLost &&  (_secondaryUdpLinkInfo.heartbeatElapsedTimer.elapsed() > heartbeatTimeout)) {
         _secondaryUdpLinkInfo.commLost = true;
+        emit connectionStatusChanged();
         linkStatusChange = true;
 
     }
+    qCDebug(BoatItemLog) << "primary link heartbeat elapsed time:" << _primaryUdpLinkInfo.heartbeatElapsedTimer.elapsed() << "ms, commLost:" << _primaryUdpLinkInfo.commLost;
+    qCDebug(BoatItemLog) << "secondary link heartbeat elapsed time:" << _secondaryUdpLinkInfo.heartbeatElapsedTimer.elapsed() << "ms, commLost:" << _secondaryUdpLinkInfo.commLost;
 
 
     if (_updatePrimaryLink()) {
-        emit connectionStatusChanged();
         emit connectionChanged(_ID);
         qCDebug(BoatItemLog, "update link");
     }
@@ -278,13 +285,16 @@ bool BoatItem::_updatePrimaryLink()
 
     if(_currentIP == _PIP){
         if(!_primaryUdpLinkInfo.commLost){
+            qDebug()<<"1";
             return false;
         }else{
             if(!_secondaryUdpLinkInfo.commLost){ // secondary up!!
+                qDebug()<<"2";
                 _currentIP = _SIP;
                 qCDebug(BoatItemLog,"secondary link up");
                 return true;
             }else{
+                qDebug()<<"3";
                 return false;
             }
         }
@@ -292,21 +302,26 @@ bool BoatItem::_updatePrimaryLink()
     }else{
         if(!_secondaryUdpLinkInfo.commLost){
             if(!_primaryUdpLinkInfo.commLost){ //primary up !!
+                qDebug()<<"4";
                 _currentIP = _PIP;
                 qCDebug(BoatItemLog,"primary link up");
                 return true;
             }else{
+                qDebug()<<"5";
+                qDebug()<<secondaryConnected();
                 return false;
             }
         }else{
             if(!_primaryUdpLinkInfo.commLost){
                 _currentIP = _PIP;
                 qCDebug(BoatItemLog,"primary link up");
+                qDebug()<<"6";
                 return true;
             }else{
                 //need backup
                 _currentIP = _PIP;
                 qCDebug(BoatItemLog,"primary link up");
+                qDebug()<<"7";
                 return true;
 
             }
@@ -321,14 +336,14 @@ void BoatItem::receivedMsg(bool isPrimary)
         _primaryUdpLinkInfo.heartbeatElapsedTimer.restart();
         if(_primaryUdpLinkInfo.commLost){
             _primaryUdpLinkInfo.commLost = false;
-            _updatePrimaryLink();
+            emit connectionStatusChanged();
         }
 
     }else{
         _secondaryUdpLinkInfo.heartbeatElapsedTimer.restart();
         if(_secondaryUdpLinkInfo.commLost){
             _secondaryUdpLinkInfo.commLost = false;
-            _updatePrimaryLink();
+            emit connectionStatusChanged();
         }
     }
 }

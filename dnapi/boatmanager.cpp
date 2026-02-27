@@ -1,9 +1,11 @@
 ﻿#include "boatmanager.h"
 #include "dncore.h"
 #include <QQmlEngine>
+#include <QTimer>
 
 BoatManager::BoatManager(QObject* parent, DNCore *core): QObject(parent),
-    _activeBoat(0)
+    _activeBoat(0),
+    _GCSHearbeatTimer(new QTimer(this))
 {
     _core = core;
 
@@ -11,6 +13,13 @@ BoatManager::BoatManager(QObject* parent, DNCore *core): QObject(parent),
     QStringList label = {"name", "Primary", "Secondary"};
     boatItemModel->setHorizontalHeaderLabels(label);
     init();
+
+    (void) connect(_GCSHearbeatTimer, &QTimer::timeout, this, &BoatManager::_sendGCSHeartbeat);
+
+    _GCSHearbeatTimer->setSingleShot(false);
+    _GCSHearbeatTimer->setInterval(_heartbeatTimeoutMSecs);
+
+
 
 }
 
@@ -83,6 +92,7 @@ void BoatManager::init()
     if(_boatList.size() > 0){
         _activeBoat = _boatList[0];
     }
+    _GCSHearbeatTimer->start();
     qDebug()<<"BoatManager::init(): Initiate complete";
 }
 
@@ -324,4 +334,49 @@ void BoatManager::saveSettings()
     settings.setValue(settingsRoot() + "/count", trueCount);
 
     qDebug() << "Settings saved, boat count:" << trueCount;
+}
+
+void BoatManager::_sendGCSHeartbeat()
+{
+
+    // 獲取 Link 指標（建議先檢查，避免在迴圈內反覆調用單例獲取函數）
+    auto linkMgr = LinkManager::instance();
+    SharedLinkInterfacePtr primaryLink = linkMgr->mavlinkPrimaryUDPLink();
+    SharedLinkInterfacePtr secondaryLink = linkMgr->mavlinkSecondaryUDPLink();
+
+    uint8_t payload[251];
+    memset(payload, 0, sizeof(payload));
+
+    for (BoatItem* boat : _boatList) {
+        if (!boat) continue;
+        mavlink_message_t message{};
+
+        // --- 處理 Primary Link ---
+        if (primaryLink) {
+            mavlink_msg_custom_legacy_wrapper_pack_chan(
+                1, 2, primaryLink->mavlinkChannel(), &message,
+                1, 1, 0, 0, payload
+                );
+
+            QString pIP = boat->PIP();
+            if (!pIP.isEmpty()) {
+                emit sendMsg(QHostAddress(pIP), primaryLink.get(), message);
+            }
+        }
+
+        // --- 處理 Secondary Link ---
+        if (secondaryLink) {
+            // 如果內容沒變，且 Channel 相同，甚至不需要重新 pack
+            // 但如果 Channel 不同，MAVLink 的序列號(Sequence)會不正確，所以建議重新 pack
+            mavlink_msg_custom_legacy_wrapper_pack_chan(
+                1, 2, secondaryLink->mavlinkChannel(), &message,
+                1, 1, 0, 0, payload
+                );
+
+            QString sIP = boat->SIP();
+            if (!sIP.isEmpty()) {
+                emit sendMsg(QHostAddress(sIP), secondaryLink.get(), message);
+            }
+        }
+    }
 }

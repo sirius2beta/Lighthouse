@@ -9,7 +9,10 @@
 #include <QMetaType>
 #include <QObject>
 #include <QQmlListProperty>
+#include <QHostAddress>
 #include "dnqmlobjectlistmodel.h"
+#include "LinkInterface.h"
+#include "MAVLinkLib.h"
 
 class DNCore;
 class BoatManager: public QObject
@@ -43,6 +46,7 @@ signals:
     void activeBoatChanged();
     void sendMsgbyID(uint8_t boatID, char topic, QByteArray command);
     void IPChanged(uint8_t boatID);
+    void sendMsg(QHostAddress addr, LinkInterface* link, mavlink_message_t message);
 
 public slots:
     void onBoatNameChange(int ID, QString newname);
@@ -54,6 +58,12 @@ public slots:
 
 
 private:
+    static constexpr int _heartbeatTimeoutMSecs = 1000; ///< Check for comm lost once a second
+
+    QTimer *_GCSHearbeatTimer = nullptr;
+    void _sendGCSHeartbeat();
+
+
     static QString settingsRoot() { return QStringLiteral("LinkConfigurations"); }
     QStandardItemModel* boatItemModel;
     QList<BoatItem*> _boatList;
