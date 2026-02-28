@@ -63,7 +63,7 @@ void MAVLinkProtocol::_forwardtoPixhawk(const mavlink_message_t &message)
 
 
 
-    SharedLinkInterfacePtr pixhawkLink = LinkManager::instance()->mavlinkPixhawkLink();
+    SharedLinkInterfacePtr pixhawkLink = LinkManager::instance()->mavlinkForwardingLink();
     if (!pixhawkLink) {
         return;
     }

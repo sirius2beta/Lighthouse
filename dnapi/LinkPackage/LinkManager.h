@@ -190,6 +190,7 @@ private:
 
     const quint16 _primaryUDPPort = 14560;
     const quint16 _secondaryUDPPort = 14561;
+    const quint16 _forwardUDPPort = 14570;
 
     bool _isSerialPortConnected() const;
     void _updateSerialPorts();

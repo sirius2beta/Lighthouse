@@ -74,6 +74,7 @@ public:
     Q_INVOKABLE void addHost(const QString &host, quint16 port);
     Q_INVOKABLE void removeHost(const QString &host);
     Q_INVOKABLE void removeHost(const QString &host, quint16 port);
+    Q_INVOKABLE void removeAllHost();
 
     LinkType type() const override { return LinkConfiguration::TypeUdp; }
     void copyFrom(const LinkConfiguration *source) override;

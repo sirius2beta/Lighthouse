@@ -13,6 +13,19 @@ Q_LOGGING_CATEGORY(NetworkManagerLog, "Lighthouse.dnapi.networkmanager")
 // secondary port: 14561
 
 
+uint8_t getTargetSystemId(const mavlink_message_t* msg) {
+    // 獲取該訊息的定義（需要確認你的 MAVLink 庫有生成預定義的訊息表）
+    const mavlink_msg_entry_t* entry = mavlink_get_msg_entry(msg->msgid);
+
+    if (entry && entry->target_system_ofs != 255) {
+        // 如果這個訊息有定義 target_system 的偏移量
+        return _MAV_PAYLOAD(msg)[entry->target_system_ofs];
+    }
+
+    // 如果是廣播訊息 (如 Heartbeat) 或未知訊息，回傳 0
+    return 0;
+}
+
 NetworkManager::NetworkManager(QObject *parent, DNCore *core)
     : QObject{parent}
 {
@@ -28,6 +41,7 @@ void NetworkManager::init()
 
     SharedLinkConfigurationPtr primaryLinkConfig = linkManager->mavlinkPrimaryUDPLink()->linkConfiguration();
     SharedLinkConfigurationPtr secondaryLinkConfg = linkManager->mavlinkSecondaryUDPLink()->linkConfiguration();
+    SharedLinkConfigurationPtr forwardLinkConfig = linkManager->mavlinkForwardingLink()->linkConfiguration();
     for(int i = 0; i<_core->boatManager()->boatListModel()->count(); i++){
         qCDebug(NetworkManagerLog, "access boat");
         BoatItem* boat = qobject_cast<BoatItem*>(_core->boatManager()->boatListModel()->get(i));
@@ -47,7 +61,7 @@ void NetworkManager::init()
             }
         }
     }
-
+    qobject_cast<UDPConfiguration*>(forwardLinkConfig.get())->addHost("127.0.0.1", 14450);
 
     connect(MAVLinkProtocol::instance(), &MAVLinkProtocol::messageReceived, this, &NetworkManager::_mavlinkMessageReceived);
 }
@@ -125,6 +139,7 @@ void NetworkManager::onIPChanged(const int &ID, bool isPrimary)
         SharedLinkConfigurationPtr sharedLinConfig = LinkManager::instance()->mavlinkPrimaryUDPLink()->linkConfiguration();
         if(sharedLinConfig){
             UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(sharedLinConfig.get());
+            udpConfig->removeAllHost();
             udpConfig->addHost(boat->PIP(), 14560);
         }
     }else{
@@ -132,6 +147,7 @@ void NetworkManager::onIPChanged(const int &ID, bool isPrimary)
         SharedLinkConfigurationPtr sharedLinConfig = LinkManager::instance()->mavlinkSecondaryUDPLink()->linkConfiguration();
         if(sharedLinConfig){
             UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(sharedLinConfig.get());
+            udpConfig->removeAllHost();
             udpConfig->addHost(boat->SIP(), 14561);
         }
     }
@@ -151,6 +167,19 @@ void NetworkManager::parseMsg(const bool &isPrimary, const mavlink_message_t &me
     BoatItem* boat = _core->boatManager()->getBoatbyID(boatID);
     if( boat != 0){
         boat->receivedMsg(isPrimary);
+        SharedLinkInterfacePtr sharedLink;
+
+        if(boat->primaryConnected()){
+            sharedLink = LinkManager::instance()->mavlinkPrimaryUDPLink();
+        }else{
+            sharedLink = LinkManager::instance()->mavlinkSecondaryUDPLink();
+        }
+        if(!sharedLink){
+            qCDebug(NetworkManagerLog) << "link loss";
+            return;
+        }
+        sendMsg(QHostAddress(boat->currentIP()), sharedLink.get(), message);
+
     }
     if(msgType == ConfigManager::msg_heartbeat()){
         uint8_t topic = wrapper.topic;
@@ -186,17 +215,43 @@ void NetworkManager::parseMsg(const bool &isPrimary, const mavlink_message_t &me
 
 void NetworkManager::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message)
 {
+    uint8_t systemID = message.sysid;
     bool isPrimary = true;
+    if(link == LinkManager::instance()->mavlinkForwardingLink().get()){
+        systemID = getTargetSystemId(&message);
+        BoatItem* boat = _core->boatManager()->getBoatbyID(systemID);
+        if(boat){
+            SharedLinkInterfacePtr sharedLink;
+
+            if(boat->primaryConnected()){
+                sharedLink = LinkManager::instance()->mavlinkPrimaryUDPLink();
+            }else{
+                sharedLink = LinkManager::instance()->mavlinkSecondaryUDPLink();
+            }
+            if(!sharedLink){
+                qCDebug(NetworkManagerLog) << "link loss";
+                return;
+            }
+
+            sendMsg(QHostAddress(boat->currentIP()), sharedLink.get(), message);
+        }
+        return;
+    }
     if(link == LinkManager::instance()->mavlinkPrimaryUDPLink().get()){
         isPrimary = true;
     }else{
         isPrimary = false;
     }
+    SharedLinkInterfacePtr sharedLink = LinkManager::instance()->mavlinkForwardingLink();
+    if(!sharedLink){
+        qCDebug(NetworkManagerLog) << "forward link loss";
+    }else{
+        sendMsg(QHostAddress::AnyIPv4, sharedLink.get(), message);
+    }
 
 
     mavlink_status_t status;
-    uint8_t systemID;
-            systemID = message.sysid;
+
             switch (message.msgid) {
             case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
                 qDebug() << "QGC 請求參數列表，正在回覆結束標記...";

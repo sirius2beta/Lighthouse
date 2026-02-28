@@ -199,7 +199,10 @@ void UDPConfiguration::removeHost(const QString &host, quint16 port)
     }
 }
 
-
+void UDPConfiguration::removeAllHost()
+{
+    _targetHosts.clear();
+}
 
 QString UDPConfiguration::_getIpAddress(const QString &address)
 {
@@ -356,9 +359,20 @@ void UDPWorker::writeData(const QHostAddress &addr, const QByteArray &data)
 
 
     QMutexLocker locker(&_sessionTargetsMutex);
+    if(addr == QHostAddress::AnyIPv4){
+        int count = _udpConfig->targetHosts().size();
+        for (const std::shared_ptr<UDPClient> &target : _udpConfig->targetHosts()) {
 
-    if (_socket->writeDatagram(data, addr, _udpConfig->localPort()) < 0){
-        qCWarning(UDPLinkLog) << "Could Not Send Data - Write Failed! addr:"<<addr<<", port"<<_udpConfig->localPort();
+            if (_socket->writeDatagram(data, target->address, target->port) < 0) {
+                qCWarning(UDPLinkLog) << "Could Not Send Data - Write Failed!";
+            }
+
+        }
+    }else{
+
+        if (_socket->writeDatagram(data, addr, _udpConfig->localPort()) < 0){
+            qCWarning(UDPLinkLog) << "Could Not Send Data - Write Failed! addr:"<<addr<<", port"<<_udpConfig->localPort();
+        }
     }
 
     // Send to all manually targeted systems

@@ -366,6 +366,14 @@ void LinkManager::_addUDPAutoConnectLink()
     udpConfig2->setLocalPort(_secondaryUDPPort);
     SharedLinkConfigurationPtr config2 = addConfiguration(udpConfig2);
     createConnectedLink(config2);
+
+    UDPConfiguration* const udpConfig3= new UDPConfiguration(_mavlinkForwardingLinkName);
+    udpConfig3->setDynamic(true);
+    udpConfig3->setAutoConnect(true);
+    udpConfig3->setLocalPort(_forwardUDPPort);
+    SharedLinkConfigurationPtr config3 = addConfiguration(udpConfig3);
+    createConnectedLink(config3);
+
     Bridge::instance()->addUdpLinks(udpConfig->link(), udpConfig2->link());
 
 
