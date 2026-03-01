@@ -61,7 +61,9 @@ void NetworkManager::init()
             }
         }
     }
+    // add forward client of MP(14550) and QGC(14450)
     qobject_cast<UDPConfiguration*>(forwardLinkConfig.get())->addHost("127.0.0.1", 14450);
+    qobject_cast<UDPConfiguration*>(forwardLinkConfig.get())->addHost("127.0.0.1", 14550);
 
     connect(MAVLinkProtocol::instance(), &MAVLinkProtocol::messageReceived, this, &NetworkManager::_mavlinkMessageReceived);
 }
@@ -80,15 +82,15 @@ void NetworkManager::sendMsg(QHostAddress addr, LinkInterface* link, mavlink_mes
 
     uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
     int len = mavlink_msg_to_send_buffer(buffer, &message);
-    link->writeBytesThreadSafe(addr, (const char*)buffer, len);
+    link->writeBytesThreadSafe(addr, 0, (const char*)buffer, len);
 }
 
 void NetworkManager::sendMsgbyID(uint8_t boatID, uint8_t topic, QByteArray command)
 {
     BoatItem* boat = _core->boatManager()->getBoatbyID(boatID);
+    qDebug()<<"topic: "<<topic<<", "<<"cmd: "<<command;
     if(boat != 0){
         SharedLinkInterfacePtr sharedLink;
-        command.prepend(boatID);
         if(command.size()>251){
             qCDebug(NetworkManagerLog) << "command too long!";
             return;
@@ -121,6 +123,7 @@ void NetworkManager::sendMsgbyID(uint8_t boatID, uint8_t topic, QByteArray comma
             );
 
         sendMsg(QHostAddress(boat->currentIP()), sharedLink.get(), message);
+
     }else{
         qDebug()<<"\u001b[38;5;203m"<<"**Fatal error: NetworkManager::sendMsgbyID boatID outof range:"<<"\033[0m";
     }
@@ -143,7 +146,6 @@ void NetworkManager::onIPChanged(const int &ID, bool isPrimary)
             udpConfig->addHost(boat->PIP(), 14560);
         }
     }else{
-
         SharedLinkConfigurationPtr sharedLinConfig = LinkManager::instance()->mavlinkSecondaryUDPLink()->linkConfiguration();
         if(sharedLinConfig){
             UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(sharedLinConfig.get());
@@ -162,7 +164,7 @@ void NetworkManager::parseMsg(const bool &isPrimary, const mavlink_message_t &me
 
     QString msgType = _core->configManager()->messageChar(topic);
     QByteArray data(reinterpret_cast<const char*>(wrapper.payload), wrapper.length);
-    qDebug() << "sysid"<<message.sysid<<","<<topic<<","<<msgType<<", length:"<<wrapper.length;
+    //qDebug() << "sysid"<<message.sysid<<","<<topic<<","<<msgType<<", length:"<<wrapper.length;
     quint8 boatID = message.sysid;
     BoatItem* boat = _core->boatManager()->getBoatbyID(boatID);
     if( boat != 0){
@@ -178,12 +180,11 @@ void NetworkManager::parseMsg(const bool &isPrimary, const mavlink_message_t &me
             qCDebug(NetworkManagerLog) << "link loss";
             return;
         }
-        sendMsg(QHostAddress(boat->currentIP()), sharedLink.get(), message);
 
     }
     if(msgType == ConfigManager::msg_heartbeat()){
         uint8_t topic = wrapper.topic;
-        qDebug() << "get heartbeat";
+        //qDebug() << "get heartbeat";
 
     }else if(msgType == ConfigManager::msg_format()){
         uint8_t topic = wrapper.topic;
@@ -215,101 +216,76 @@ void NetworkManager::parseMsg(const bool &isPrimary, const mavlink_message_t &me
 
 void NetworkManager::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message)
 {
-    uint8_t systemID = message.sysid;
-    bool isPrimary = true;
-    if(link == LinkManager::instance()->mavlinkForwardingLink().get()){
-        systemID = getTargetSystemId(&message);
-        BoatItem* boat = _core->boatManager()->getBoatbyID(systemID);
-        if(boat){
-            SharedLinkInterfacePtr sharedLink;
+    auto linkMgr = LinkManager::instance();
+    SharedLinkInterfacePtr forwardLink = linkMgr->mavlinkForwardingLink();
+    SharedLinkInterfacePtr primaryLink = linkMgr->mavlinkPrimaryUDPLink();
+    SharedLinkInterfacePtr secondaryLink = linkMgr->mavlinkSecondaryUDPLink();
 
-            if(boat->primaryConnected()){
-                sharedLink = LinkManager::instance()->mavlinkPrimaryUDPLink();
-            }else{
-                sharedLink = LinkManager::instance()->mavlinkSecondaryUDPLink();
-            }
-            if(!sharedLink){
-                qCDebug(NetworkManagerLog) << "link loss";
-                return;
-            }
-
-            sendMsg(QHostAddress(boat->currentIP()), sharedLink.get(), message);
-        }
+    // 1. 處理 GCS -> Boat (指令下行)
+    if (forwardLink && link == forwardLink.get()) {
+        _forwardMessageToBoat(message);
         return;
     }
-    if(link == LinkManager::instance()->mavlinkPrimaryUDPLink().get()){
-        isPrimary = true;
-    }else{
-        isPrimary = false;
-    }
-    SharedLinkInterfacePtr sharedLink = LinkManager::instance()->mavlinkForwardingLink();
-    if(!sharedLink){
-        qCDebug(NetworkManagerLog) << "forward link loss";
-    }else{
-        sendMsg(QHostAddress::AnyIPv4, sharedLink.get(), message);
+
+    // 2. 處理 Boat -> GCS (遙測上行)
+    if (!forwardLink) {
+        qCDebug(NetworkManagerLog) << "Forward link unavailable";
+    } else {
+        // 注意：這裡應填入 GCS 的實際 IP，或確保 sendMsg 內部會處理 Link 的目標地址
+        // 如果 forwardLink 是對應到 127.0.0.1，這裡建議明確指定
+        //sendMsg(QHostAddress::AnyIPv4, forwardLink.get(), message);
     }
 
+    // 3. 判斷來源並更新船隻狀態
+    bool isPrimary = (link == primaryLink.get());
+    bool isSecondary = (link == secondaryLink.get());
 
-    mavlink_status_t status;
+    if (isPrimary || isSecondary) {
+        // 透過 sysid 讓對應的 BoatItem 知道自己在哪條 Link 收到包，藉此更新連線狀態
+        if (message.msgid == MAVLINK_MSG_ID_CUSTOM_LEGACY_WRAPPER) {
+            //qDebug() << "Received Wrapper from System ID:" << message.sysid;
+            parseMsg(isPrimary, message);
+        }
+    }
+}
 
-            switch (message.msgid) {
-            case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
-                qDebug() << "QGC 請求參數列表，正在回覆結束標記...";
-                //sendAllParameters();
-                break;
+void NetworkManager::_forwardMessageToBoat(mavlink_message_t message)
+{
+    uint8_t targetSysID = getTargetSystemId(&message);
 
-            case MAVLINK_MSG_ID_COMMAND_LONG: {
-                mavlink_command_long_t cmd;
-                mavlink_msg_command_long_decode(&message, &cmd);
+    // 取得所有需要發送的目標船隻
+    QList<BoatItem*> targetBoats;
+    if (targetSysID == 0) {
+        // 廣播：加入所有船
+        for (int i = 0; i < _core->boatManager()->size(); ++i) {
+            targetBoats.append(_core->boatManager()->getBoatbyIndex(i));
+        }
+    } else {
+        // 定向：只加入特定 ID 的船
+        BoatItem* boat = _core->boatManager()->getBoatbyID(targetSysID);
+        if (boat) targetBoats.append(boat);
+    }
 
-                qDebug() << "收到 COMMAND_LONG, 指令編號:" << cmd.command;
+    // 統一發送處理
+    for (BoatItem* boat : targetBoats) {
+        if (!boat) continue;
 
-                // 常見的初始指令：
-                // 520: MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES (詢問飛控能力)
-                // 511: MAV_CMD_REQUEST_MESSAGE (詢問特定訊息)
+        // 決定使用哪條 Link
+        SharedLinkInterfacePtr sharedLink;
+        if (boat->primaryConnected()) {
+            sharedLink = LinkManager::instance()->mavlinkPrimaryUDPLink();
+        } else if (boat->secondaryConnected()) {
+            sharedLink = LinkManager::instance()->mavlinkSecondaryUDPLink();
+        }
 
-                // 無論收到什麼指令，先回覆一個「我收到了」的確認 (ACK)
-                if (cmd.command == MAV_CMD_REQUEST_MESSAGE) {
-                    float requestedMsgId = cmd.param1;
-                    qDebug() << "QGC 請求特定訊息，ID =" << requestedMsgId;
-                    if (requestedMsgId == MAVLINK_MSG_ID_AUTOPILOT_VERSION) {
-                        //sendAutopilotVersion();
-                    }else if (requestedMsgId == MAVLINK_MSG_ID_HOME_POSITION) {
-                        //sendHomePosition();
-                    }else if (requestedMsgId == 280) {
-                        //sendResultAck(msg.sysid, msg.compid, cmd.command, MAV_RESULT_ACCEPTED);
-                        // 這裡可以主動發送一次當前的 Radio Status
-                        //sendRadioStatus();
-                    }
-                }
-                //sendResultAck(msg.sysid, msg.compid, cmd.command);
-                break;
-            }
-            case MAVLINK_MSG_ID_REQUEST_DATA_STREAM: { //66
-                mavlink_request_data_stream_t req;
-                mavlink_msg_request_data_stream_decode(&message, &req);
+        if (!sharedLink) {
+            qCDebug(NetworkManagerLog) << "Boat" << boat->ID() << "has no active link";
+            continue; // 繼續處理下一艘船，不要 return
+        }
 
-                qDebug() << "收到資料流請求！"
-                         << "Stream ID:" << req.req_stream_id
-                         << "期望頻率:" << req.req_message_rate << "Hz"
-                         << "開啟狀態:" << (req.start_stop ? "Start" : "Stop");
-
-                // 通常我們不需要給予特定的 ACK，但你可以根據這個請求來啟動或調整你的發送 Timer
-                // 如果你已經在發送了，只需在日誌紀錄即可。
-                break;
-            }
-            case MAVLINK_MSG_ID_HEARTBEAT:{
-                // 收到 QGC 的心跳
-                break;
-            }case MAVLINK_MSG_ID_CUSTOM_LEGACY_WRAPPER:{
-                qDebug() << "收到CUSTOM_LEGACY_WRAPPER！";
-                mavlink_custom_legacy_wrapper_t wrapper;
-                mavlink_msg_custom_legacy_wrapper_decode(&message, &wrapper);
-                parseMsg(isPrimary, message);
-                break;
-            }
-
-            }
-
-
+        QString ip = boat->currentIP();
+        if (!ip.isEmpty()) {
+            sendMsg(QHostAddress(ip), sharedLink.get(), message);
+        }
+    }
 }

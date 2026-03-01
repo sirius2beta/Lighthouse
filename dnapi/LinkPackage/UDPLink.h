@@ -115,7 +115,7 @@ public slots:
     void setupSocket();
     void connectLink();
     void disconnectLink();
-    void writeData(const QHostAddress &addr, const QByteArray &data);
+    void writeData(const QHostAddress &addr, const QByteArray &data, const quint16 targetPort);
 
 signals:
     void connected();
@@ -163,7 +163,7 @@ protected:
     bool _connect() override;
 
 private slots:
-    void _writeBytes(const QHostAddress &addr, const QByteArray &data) override;
+    void _writeBytes(const QHostAddress &addr, const uint16_t port, const QByteArray& bytes) override;
     void _onConnected();
     void _onDisconnected();
     void _onErrorOccurred(const QString &errorString);

@@ -37,6 +37,7 @@ protected slots:
     void _mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message);
 
 private:
+    void _forwardMessageToBoat(mavlink_message_t message);
     DNCore* _core;
 };
 

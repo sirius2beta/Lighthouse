@@ -350,7 +350,7 @@ void UDPWorker::disconnectLink()
     _sessionTargets.clear();
 }
 
-void UDPWorker::writeData(const QHostAddress &addr, const QByteArray &data)
+void UDPWorker::writeData(const QHostAddress &addr, const QByteArray &data, const quint16 targetPort)
 {
     if (!isConnected()) {
         emit errorOccurred(tr("Could Not Send Data - Link is Disconnected!"));
@@ -374,24 +374,6 @@ void UDPWorker::writeData(const QHostAddress &addr, const QByteArray &data)
             qCWarning(UDPLinkLog) << "Could Not Send Data - Write Failed! addr:"<<addr<<", port"<<_udpConfig->localPort();
         }
     }
-
-    // Send to all manually targeted systems
-    /*
-    for (const std::shared_ptr<UDPClient> &target : _udpConfig->targetHosts()) {
-        if (!containsTarget(_sessionTargets, target->address, target->port)) {
-            if (_socket->writeDatagram(data, target->address, target->port) < 0) {
-                qCWarning(UDPLinkLog) << "Could Not Send Data - Write Failed!";
-            }
-        }
-    }
-
-    // Send to all connected systems
-    for (const std::shared_ptr<UDPClient> &target: _sessionTargets) {
-        if (_socket->writeDatagram(data, target->address, target->port) < 0) {
-            qCWarning(UDPLinkLog) << "Could Not Send Data - Write Failed!";
-        }
-    }
-    */
 
     locker.unlock();
 
@@ -548,8 +530,8 @@ void UDPLink::_onDataSent(const QByteArray &data)
     emit bytesSent(this, data);
 }
 
-void UDPLink::_writeBytes(const QHostAddress &addr, const QByteArray& bytes)
+void UDPLink::_writeBytes(const QHostAddress &addr, const uint16_t port, const QByteArray& bytes)
 {
-    (void) QMetaObject::invokeMethod(_worker, "writeData", Qt::QueuedConnection, Q_ARG(QHostAddress, addr),Q_ARG( QByteArray, bytes));
+    (void) QMetaObject::invokeMethod(_worker, "writeData", Qt::QueuedConnection, Q_ARG(QHostAddress, addr),Q_ARG( QByteArray, bytes), Q_ARG( uint16_t, port));
 }
 

@@ -61,11 +61,11 @@ void LinkInterface::_freeMavlinkChannel()
     _mavlinkChannel = LinkManager::invalidMavlinkChannel();
 }
 
-void LinkInterface::writeBytesThreadSafe(const QHostAddress &addr, const char *bytes, int length)
+void LinkInterface::writeBytesThreadSafe(const QHostAddress &addr, const uint16_t port, const char *bytes, int length)
 {
     const QByteArray data(bytes, length);
 
-    (void) QMetaObject::invokeMethod(this, [this, data, addr] {
-        _writeBytes(addr, data);
+    (void) QMetaObject::invokeMethod(this, [this, data, port, addr] {
+        _writeBytes(addr, port, data);
     }, Qt::AutoConnection);
 }

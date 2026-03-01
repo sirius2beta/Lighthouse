@@ -23,6 +23,7 @@ DNCore::DNCore(QObject *parent, QString config)
     connect(_boatManager, &BoatManager::sendMsg, _networkManager, &NetworkManager::sendMsg);
     connect(_networkManager, &NetworkManager::sensorMsg, _sensorManager, &SensorManager::onSensorMsg);
     connect(_networkManager, &NetworkManager::controlMsg, _controlManager, &ControlManager::onControlMsg);
+    connect(_videoManager, &DNVideoManager::sendMsgbyID, _networkManager, &NetworkManager::sendMsgbyID);
 
     init();
 }
