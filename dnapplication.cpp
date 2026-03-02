@@ -13,7 +13,7 @@
 #include "dnapi/controlmanager.h"
 #include "dnapi/controlitem.h"
 #include "dnapi/dnvalue.h"
-
+#include "dnapi/aquagraph.h"
 
 
 
@@ -73,6 +73,7 @@ void DNApplication::_init(int &argc, char *argv[])
 
 
     _app = this;
+    qmlRegisterUncreatableType<AquaGraph>("DeNovoViewer.Boat", 1, 0, "AquaGraph", "reference only");
     _qmlEngine = new QQmlApplicationEngine(this);
 
     _core = new DNCore(this, QString("config1"));

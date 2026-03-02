@@ -13,6 +13,7 @@ DNCore::DNCore(QObject *parent, QString config)
     _videoManager = new DNVideoManager(this, this);
     _sensorManager = new SensorManager(this, this);
     _controlManager = new ControlManager(this, this);
+    _aquaGraph = new AquaGraph(this, this);
 
 
     connect(_networkManager, &NetworkManager::setFormat, _videoManager, &DNVideoManager::setVideoFormat);

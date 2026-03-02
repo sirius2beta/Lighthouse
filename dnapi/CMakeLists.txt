@@ -42,6 +42,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     videoitem.h
     winchcontrol.cpp
     winchcontrol.h
+    aquagraph.cpp
+    aquagraph.h
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
