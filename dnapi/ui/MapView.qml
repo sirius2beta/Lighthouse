@@ -8,8 +8,6 @@ import QtLocation 5.15
 import DeNovoViewer 1.0
 import DeNovoViewer.Boat 1.0
 
-import DenovoUI 1.0
-
 
 Item {
     id: _root
