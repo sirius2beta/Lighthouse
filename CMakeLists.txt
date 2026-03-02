@@ -42,7 +42,7 @@ if(CMAKE_CROSSCOMPILING)
     endif()
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Network Qml QuickControls2 SerialPort Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Network Qml QuickControls2 SerialPort Widgets Graphs)
 
 
 qt_standard_project_setup(REQUIRES 6.5)
@@ -50,7 +50,6 @@ qt_standard_project_setup(REQUIRES 6.5)
 list(APPEND QGC_RESOURCES
         ${CMAKE_SOURCE_DIR}/dnapi/DeNovo.qrc
         ${CMAKE_SOURCE_DIR}/dnapi/DNImage.qrc
-        ${CMAKE_SOURCE_DIR}/DenovoUI/DenovoUI.qrc
 )
 
 
@@ -85,6 +84,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         Qt6::Quick
         Qt6::QuickControls2
         Qt6::SerialPort
+        Qt6::Graphs
         gstqml6gl
 
     PUBLIC

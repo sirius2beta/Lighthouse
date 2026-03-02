@@ -11,16 +11,15 @@ import DeNovoViewer.Boat 1.0
 import DeNovoViewer.Display 1.0
 
 
-import DenovoUI 1.0
 
 
 
-Window {  
+Window {
     id: dnMainWindow
     width: 1280
     height: 720
     visible: true
-    title: "LightHouse v5.3 (GPlayer v5 47aa2c4)"
+    title: "LightHouse v5.3 (GPlayer v1 stable 9cb8cf1)"
     property DNValue dnvalue: DNValue{}
 
     property real lon: parseFloat(DeNovoViewer.sensorManager.mav1Model.get(1).displayValue)/10000000
@@ -32,6 +31,12 @@ Window {
         color: "#111111"
         anchors.fill:parent
     }
+
+
+
+
+
+
 
     HUD{
         id: hud
@@ -77,7 +82,7 @@ Window {
 
         onOpenControlView:{
             //_controlView.hide = _controlView.hide?false:true
-            right_block.source = "qrc:/imports/DenovoUI/ControlView.qml"
+            right_block.source = "qrc:/qml/DeNovoViewer/Display/ControlView.qml"
 
             right_block.item.totalBatteryPercentage = Qt.binding(function(){ return parseInt(DeNovoViewer.sensorManager.mav0Model.get(3).displayValue)})
             right_block.item.totalBatteryVoltage=  Qt.binding(function(){ return parseInt(DeNovoViewer.sensorManager.mav0Model.get(1).displayValue)})
@@ -164,12 +169,9 @@ Window {
     }
 
 
-    Component.onCompleted: {
-        DeNovoViewer.controlManager.controls.get(0).setField(0,1000)
-        console.log("the value is:"+DeNovoViewer.controlManager.controls.get(0).getField(0).toInt());
-        //console.log(DeNovoViewer.controlManager.controls.get(0).maxSpeed)
 
-        //console.log(parseInt(DeNovoViewer.sensorManager.mav1Model.get(0).displayValue))
+
+    Component.onCompleted: {
 
     }
 }
