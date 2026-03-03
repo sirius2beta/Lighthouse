@@ -233,7 +233,7 @@ void NetworkManager::_mavlinkMessageReceived(LinkInterface* link, mavlink_messag
     } else {
         // 注意：這裡應填入 GCS 的實際 IP，或確保 sendMsg 內部會處理 Link 的目標地址
         // 如果 forwardLink 是對應到 127.0.0.1，這裡建議明確指定
-        //sendMsg(QHostAddress::AnyIPv4, forwardLink.get(), message);
+        sendMsg(QHostAddress::AnyIPv4, forwardLink.get(), message);
     }
 
     // 3. 判斷來源並更新船隻狀態
@@ -276,11 +276,13 @@ void NetworkManager::_forwardMessageToBoat(mavlink_message_t message)
             sharedLink = LinkManager::instance()->mavlinkPrimaryUDPLink();
         } else if (boat->secondaryConnected()) {
             sharedLink = LinkManager::instance()->mavlinkSecondaryUDPLink();
+        }else{
+            continue;
         }
 
         if (!sharedLink) {
             qCDebug(NetworkManagerLog) << "Boat" << boat->ID() << "has no active link";
-            continue; // 繼續處理下一艘船，不要 return
+            continue;
         }
 
         QString ip = boat->currentIP();
