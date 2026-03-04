@@ -36,6 +36,7 @@ public:
     Q_INVOKABLE DNQmlObjectListModel* getSensorModel(int index);
 
     enum dataType{ int_type = 0, float_type = 1};
+    void setValue(int sensorGroupIndex, int sensorIndex, const DNValue& value);
 
 
 signals:

@@ -43,6 +43,18 @@ DNQmlObjectListModel* SensorManager::getSensorModel(int index)
     }
 }
 
+void SensorManager::setValue(int sensorGroupIndex, int sensorIndex, const DNValue& value)
+{
+    DNQmlObjectListModel* sensorGroupModel;
+    if(_sensorGroupListModel.size() < sensorGroupIndex){
+        qDebug()<<"**Fatal: sensorManager:: onSensorMsg: incoming sensorGroup index out of range";
+        return;
+    }else{
+        sensorGroupModel = _sensorGroupListModel[sensorGroupIndex];
+    }
+    SensorItem* sensor = qobject_cast<SensorItem*> (sensorGroupModel->get(sensorIndex));
+    sensor->setValue(value);
+}
 
 void SensorManager::onSensorMsg(uint8_t ID, QByteArray data)
 {
