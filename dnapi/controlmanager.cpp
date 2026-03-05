@@ -7,7 +7,7 @@
 #include "dncore.h"
 ControlManager::ControlManager(QObject *parent, DNCore *core)
     : QObject{parent},
-      _boatID(0)
+      _boatID(1)
 {
     _core = core;
 }
@@ -24,7 +24,7 @@ void ControlManager::init()
             WinchControl* winchControl = new WinchControl(this);
             winchControl->init(&controls[i]);
             //ControlItem* newControl = new ControlItem(controls[i],this);
-            winchControl->setBoatID(0);
+            //we set default boat ID to 1
             connect(winchControl, &ControlItem::sendMsgbyID, _core->networkManager(), &NetworkManager::sendMsgbyID);
             _controls.append(winchControl);
         }else if(controls[i].controlType() == 2){
@@ -49,7 +49,7 @@ void ControlManager::setBoatID(int boatID)
 void ControlManager::onControlMsg(uint8_t boatID, QByteArray command)
 {
     if(boatID != _boatID){
-        //qDebug()<<"id"<<boatID<<","<<_boatID;
+        qDebug()<<"id"<<boatID<<","<<_boatID;
         return;
     }
     int8_t index;

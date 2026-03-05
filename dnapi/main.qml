@@ -95,7 +95,7 @@ Window {
         }
         onOpenVideoSetting:{
             right_block.source = "qrc:/qml/DeNovoViewer/Display/VideoSetting.qml"
-            right_block.item.setBoatID(0)
+            right_block.item.setBoatID(1)
             right_drawer.open()
         }
     }

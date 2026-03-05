@@ -188,14 +188,15 @@ void NetworkManager::parseMsg(const bool &isPrimary, const mavlink_message_t &me
 
     }else if(msgType == ConfigManager::msg_format()){
         uint8_t topic = wrapper.topic;
-        emit setFormat(topic, data);
+        emit setFormat(boatID, data);
     }else if(msgType == ConfigManager::msg_sensor()){
         //qDebug()<<"NetworkManager:: on sensor msg";
         uint8_t topic = wrapper.topic;
-        emit sensorMsg(topic, data);
+        emit sensorMsg(boatID, data);
     }else if(topic == ConfigManager::msg_control){
         uint8_t topic = wrapper.topic;
-        emit controlMsg(topic,data);
+        emit controlMsg(boatID,data);
+        qDebug()<<"NetworkManager:: on control msg";
     }else if(topic == ConfigManager::msg_detect){
         uint8_t topic =wrapper.topic;
         emit detectMsg(topic,data);
