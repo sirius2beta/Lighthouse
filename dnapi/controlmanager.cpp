@@ -25,6 +25,7 @@ void ControlManager::init()
             winchControl->init(&controls[i]);
             //ControlItem* newControl = new ControlItem(controls[i],this);
             //we set default boat ID to 1
+            winchControl->setBoatID(1);
             connect(winchControl, &ControlItem::sendMsgbyID, _core->networkManager(), &NetworkManager::sendMsgbyID);
             _controls.append(winchControl);
         }else if(controls[i].controlType() == 2){

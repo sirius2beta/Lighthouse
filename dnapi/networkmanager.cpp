@@ -196,10 +196,6 @@ void NetworkManager::parseMsg(const bool &isPrimary, const mavlink_message_t &me
     }else if(topic == ConfigManager::msg_control){
         uint8_t topic = wrapper.topic;
         emit controlMsg(boatID,data);
-        qDebug()<<"NetworkManager:: on control msg";
-    }else if(topic == ConfigManager::msg_detect){
-        uint8_t topic =wrapper.topic;
-        emit detectMsg(topic,data);
     }else if(topic == ConfigManager::msg_detect){
         uint8_t topic = wrapper.topic;
         emit detectMsg(topic,data);

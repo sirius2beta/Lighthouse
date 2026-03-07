@@ -317,13 +317,23 @@ void BoatManager::onUpdate(uint8_t boatID)
 void BoatManager::saveSettings()
 {
     QSettings settings;
+
+    qDebug() << "Current Organization Name:" << QCoreApplication::organizationName();
+    qDebug() << "Current Application Name:" << QCoreApplication::applicationName();
+    // 如果你想看實際存檔的路徑（非常有用）
+    qDebug() << "Settings file path:" << settings.fileName();
     settings.remove(settingsRoot());
+
 
     int trueCount = 0;
     for (int i = 0; i < _boatList.count(); i++) {
         BoatItem* boat = _boatList[i];
         if (!boat) continue;
-
+        qDebug() << QString("Link %1 Data:").arg(trueCount)
+                 << "Name:" << boat->name()
+                 << "ID:" << boat->ID()
+                 << "PIP:" << boat->PIP()
+                 << "SIP:" << boat->SIP();
         const QString root = settingsRoot() + QStringLiteral("/Link%1").arg(trueCount++);
         settings.setValue(root + "/name", boat->name());
         settings.setValue(root + "/id", boat->ID());
@@ -334,6 +344,7 @@ void BoatManager::saveSettings()
     settings.setValue(settingsRoot() + "/count", trueCount);
 
     qDebug() << "Settings saved, boat count:" << trueCount;
+
 }
 
 void BoatManager::_sendGCSHeartbeat()

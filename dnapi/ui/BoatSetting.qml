@@ -154,9 +154,10 @@ Item {
                 Button{
                     text: "save"
                     onClicked: {
-                        DeNovoViewer.boatManager.getBoatbyIndex(boatNo).name = boat_name_edit.text
+
                         DeNovoViewer.boatManager.getBoatbyIndex(boatNo).PIP = boat_PIP_edit.text
                         DeNovoViewer.boatManager.getBoatbyIndex(boatNo).SIP = boat_SIP_edit.text
+                        DeNovoViewer.boatManager.getBoatbyIndex(boatNo).name = boat_name_edit.text
 
                     }
                 }
