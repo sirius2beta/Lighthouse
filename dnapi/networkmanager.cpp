@@ -229,7 +229,7 @@ void NetworkManager::_mavlinkMessageReceived(LinkInterface* link, mavlink_messag
         qCDebug(NetworkManagerLog) << "Forward link unavailable";
     } else {
         // 注意：這裡應填入 GCS 的實際 IP，或確保 sendMsg 內部會處理 Link 的目標地址
-        // 如果 forwardLink 是對應到 127.0.0.1，這裡建議明確指定
+        // 如果 forwardLink 是對應到 127.0.0.1，這裡建議明確指定        
         sendMsg(QHostAddress::AnyIPv4, forwardLink.get(), message);
     }
 
@@ -248,20 +248,30 @@ void NetworkManager::_mavlinkMessageReceived(LinkInterface* link, mavlink_messag
 
 void NetworkManager::_forwardMessageToBoat(mavlink_message_t message)
 {
-    uint8_t targetSysID = getTargetSystemId(&message);
-
-    // 取得所有需要發送的目標船隻
     QList<BoatItem*> targetBoats;
-    if (targetSysID == 0) {
-        // 廣播：加入所有船
-        for (int i = 0; i < _core->boatManager()->size(); ++i) {
-            targetBoats.append(_core->boatManager()->getBoatbyIndex(i));
+    if (message.msgid == 233) {
+            for (int i = 0; i < _core->boatManager()->size(); ++i) {
+                targetBoats.append(_core->boatManager()->getBoatbyIndex(i));
+            }
+            // 如果這裡印出的頻率比 receiveBytes 慢，那就是 Signal/Slot 傳遞丟包
+            // 如果這裡印出頻率很快，但下面 "good 233" 慢，那就是 ID 過濾邏輯錯了
+    }else{
+        uint8_t targetSysID = getTargetSystemId(&message);
+
+        // 取得所有需要發送的目標船隻
+
+        if (targetSysID == 0) {
+            // 廣播：加入所有船
+            for (int i = 0; i < _core->boatManager()->size(); ++i) {
+                targetBoats.append(_core->boatManager()->getBoatbyIndex(i));
+            }
+        } else {
+            // 定向：只加入特定 ID 的船
+            BoatItem* boat = _core->boatManager()->getBoatbyID(targetSysID);
+            if (boat) targetBoats.append(boat);
         }
-    } else {
-        // 定向：只加入特定 ID 的船
-        BoatItem* boat = _core->boatManager()->getBoatbyID(targetSysID);
-        if (boat) targetBoats.append(boat);
     }
+
 
     // 統一發送處理
     for (BoatItem* boat : targetBoats) {
@@ -284,6 +294,7 @@ void NetworkManager::_forwardMessageToBoat(mavlink_message_t message)
 
         QString ip = boat->currentIP();
         if (!ip.isEmpty()) {
+
             sendMsg(QHostAddress(ip), sharedLink.get(), message);
         }
     }

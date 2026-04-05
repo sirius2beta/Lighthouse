@@ -44,7 +44,6 @@ if(CMAKE_CROSSCOMPILING)
         message(FATAL_ERROR "You need to set QT_HOST_PATH to cross compile Qt.")
     endif()
 endif()
-
 if(LINUX)
     set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE "${CMAKE_BINARY_DIR}/AppDir/usr")
 else()

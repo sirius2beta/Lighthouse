@@ -207,6 +207,11 @@ void DNVideoManager::connectionChanged(uint8_t ID)
 {
 
     qDebug()<<"DNVideoManager::connectionChanged: "<<ID;
+    for(int i = 0; i < videoList.size(); i++){
+        if(videoList[i]->boatID() == ID){
+            videoList[i]->update();
+        }
+    }
     /* 先不使用
     for(int i = 0; i < videoList.size(); i++){
         if(videoList[i]->boatID() == ID){

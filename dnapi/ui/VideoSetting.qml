@@ -43,6 +43,9 @@ Item {
 
     function setBoatID(id){
         boatNo=id
+        if(_videoItem0){
+            _videoItem0.update()
+        }
     }
 
     Rectangle{

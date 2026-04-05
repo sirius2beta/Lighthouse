@@ -206,7 +206,7 @@ void VideoItem::getVideoFormatByIndex(int index)
 
 void VideoItem::setVideoFormat(QByteArray data)
 {
-    if(!_requestFormat) return;
+    //if(!_requestFormat) return;
     _requestFormat = false;
     QString currentvideoNo = QString();
     qDebug()<<" VideoItem::setVideoNo: got videoFormat";

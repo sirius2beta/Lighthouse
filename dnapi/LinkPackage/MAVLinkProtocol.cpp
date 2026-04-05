@@ -1,4 +1,4 @@
-#include "MAVLinkProtocol.h"
+﻿#include "MAVLinkProtocol.h"
 #include "LinkManager.h"
 #include "Bridge.h"
 
@@ -42,16 +42,17 @@ void MAVLinkProtocol::receiveBytes(LinkInterface *link, const QByteArray &data)
         qCDebug(MAVLinkProtocolLog) << "receiveBytes: link gone!" << data.size() << "bytes arrived too late";
         return;
     }
-
+    mavlink_message_t message{};
+    mavlink_status_t status{};
     for(const uint8_t &byte: data){
         const uint8_t mavlinkChannel = link->mavlinkChannel();
-        mavlink_message_t message{};
-        mavlink_status_t status{};
+
 
         if (mavlink_parse_char(mavlinkChannel, byte, &message, &status) != MAVLINK_FRAMING_OK) {
             continue;
         }
-        qCDebug(MAVLinkProtocolLog) << "received message id:" << message.msgid;
+
+
 
         emit messageReceived(link, message);
         continue;
