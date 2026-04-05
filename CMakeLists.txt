@@ -1,4 +1,4 @@
-##
+﻿##
 cmake_minimum_required(VERSION 3.25)
 
 list(APPEND CMAKE_MODULE_PATH
@@ -7,7 +7,7 @@ list(APPEND CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/find-modules
 )
 
-set(QGC_WINDOWS_ICON_PATH "${CMAKE_SOURCE_DIR}/deploy/windows/logo.ico" CACHE FILEPATH "Windows Icon Path")
+set(QGC_WINDOWS_ICON_PATH "${CMAKE_SOURCE_DIR}/deploy/windows/logo2.ico" CACHE FILEPATH "Windows Icon Path")
 
 option(QGC_ENABLE_GST_VIDEOSTREAMING "Enable GStreamer Video Backend" ON)
 
@@ -15,6 +15,9 @@ include(FetchContent)
 include(CMakePrintHelpers)
 include(CustomOptions)
 include(CPM)
+
+
+
 
 ##
 
@@ -42,6 +45,12 @@ if(CMAKE_CROSSCOMPILING)
     endif()
 endif()
 
+if(LINUX)
+    set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE "${CMAKE_BINARY_DIR}/AppDir/usr")
+else()
+    set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE "${CMAKE_BINARY_DIR}/staging")
+endif()
+
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Network Qml QuickControls2 SerialPort Widgets Graphs)
 
 
@@ -52,26 +61,42 @@ list(APPEND QGC_RESOURCES
         ${CMAKE_SOURCE_DIR}/dnapi/DNImage.qrc
 )
 
-
-
-
-# windows installer files shared with core and custom
- set(DEPLOY_WIN_FILES
-     "${CMAKE_SOURCE_DIR}/deploy/windows/driver.msi"
-     "${CMAKE_SOURCE_DIR}/deploy/windows/nullsoft_installer.nsi"
-     "${CMAKE_SOURCE_DIR}/deploy/windows/QGroundControl.rc"
-     "${QGC_WINDOWS_INSTALL_HEADER_PATH}"
-     "${QGC_WINDOWS_ICON_PATH}"
- )
-
-
-
 qt_add_executable(${CMAKE_PROJECT_NAME}
     main.cpp
     dnapplication.cpp
     dnapplication.h
     ${QGC_RESOURCES}
 )
+
+if(WIN32)
+# windows installer files shared with core and custom
+     set(DEPLOY_WIN_FILES
+         "${CMAKE_SOURCE_DIR}/deploy/windows/driver.msi"
+         "${CMAKE_SOURCE_DIR}/deploy/windows/nullsoft_installer.nsi"
+         "${CMAKE_SOURCE_DIR}/deploy/windows/QGroundControl.rc"
+         "${QGC_WINDOWS_INSTALL_HEADER_PATH}"
+         "${QGC_WINDOWS_ICON_PATH}"
+     )
+    set(QGC_INSTALLER_SOURCE_WIN "${CMAKE_BINARY_DIR}/deploy/windows")
+    file(MAKE_DIRECTORY ${QGC_INSTALLER_SOURCE_WIN})
+    foreach(FILE ${DEPLOY_WIN_FILES})
+        # filename without the path
+        get_filename_component(FILE_NAME ${FILE} NAME)
+        # re-copy the file if it changes
+        add_custom_command(
+            OUTPUT "${QGC_INSTALLER_SOURCE_WIN}/${FILE_NAME}"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${FILE}" "${QGC_INSTALLER_SOURCE_WIN}/${FILE_NAME}"
+            DEPENDS "${FILE}"  # Depend on the source file so that it re-copies when it changes
+        )
+        list(APPEND QGC_INSTALLER_SOURCE_WIN_FILES "${QGC_INSTALLER_SOURCE_WIN}/${FILE_NAME}")
+    endforeach()
+
+    target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${QGC_INSTALLER_SOURCE_WIN_FILES})
+
+
+endif()
+
+
 
 
 
@@ -106,22 +131,8 @@ set_target_properties(${APP_NAME} PROPERTIES
 
 
 
-# Destination directory where files will be copied
-set(QGC_INSTALLER_SOURCE_WIN "${CMAKE_BINARY_DIR}/deploy/windows")
-file(MAKE_DIRECTORY ${QGC_INSTALLER_SOURCE_WIN})
-foreach(FILE ${DEPLOY_WIN_FILES})
-    # filename without the path
-    get_filename_component(FILE_NAME ${FILE} NAME)
-    # re-copy the file if it changes
-    add_custom_command(
-        OUTPUT "${QGC_INSTALLER_SOURCE_WIN}/${FILE_NAME}"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${FILE}" "${QGC_INSTALLER_SOURCE_WIN}/${FILE_NAME}"
-        DEPENDS "${FILE}"  # Depend on the source file so that it re-copies when it changes
-    )
-    list(APPEND QGC_INSTALLER_SOURCE_WIN_FILES "${QGC_INSTALLER_SOURCE_WIN}/${FILE_NAME}")
-endforeach()
 
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${QGC_INSTALLER_SOURCE_WIN_FILES})
+
 set_target_properties(${CMAKE_PROJECT_NAME}
     PROPERTIES
         WIN32_EXECUTABLE TRUE

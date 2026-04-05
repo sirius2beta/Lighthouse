@@ -1,9 +1,9 @@
-message(STATUS "Creating Win Installer")
+﻿message(STATUS "Creating Win Installer")
 
 include(CMakePrintHelpers)
 
 file(TO_NATIVE_PATH "${CMAKE_BINARY_DIR}/deploy/windows" QGC_INSTALLER_SOURCE)
-file(TO_NATIVE_PATH "${QGC_INSTALLER_SOURCE}/logo.ico" QGC_INSTALLER_ICON)
+file(TO_NATIVE_PATH "${QGC_INSTALLER_SOURCE}/logo2.ico" QGC_INSTALLER_ICON)
 file(TO_NATIVE_PATH "${QGC_INSTALLER_SOURCE}/installheader.bmp" QGC_INSTALLER_HEADER_BITMAP)
 file(TO_NATIVE_PATH "${QGC_INSTALLER_SOURCE}/driver.msi" QGC_INSTALLER_DRIVER_MSI)
 file(TO_NATIVE_PATH "${CMAKE_BINARY_DIR}/Lighthouse-installer.exe" QGC_INSTALLER_OUT)

@@ -104,14 +104,14 @@ void DNVideoManager::onPlay(VideoItem* videoItem)
     char rawdata[9];
 
     uint8_t operation = 1;
-    uint8_t videoInexraw = videoItem->videoNo();
+    uint8_t videoNoraw = videoItem->videoNo();
     uint8_t formatIndexraw = videoItem->formatIndex();
     uint8_t encoder = videoItem->encoder() == QString("h264")? 0:1;
     int32_t port = videoItem->port();
     uint8_t aiEnabled = videoItem->AIEnabled();
 
     memcpy(rawdata, &operation, sizeof(uint8_t));
-    memcpy(rawdata+1, &videoInexraw, sizeof(uint8_t));
+    memcpy(rawdata+1, &videoNoraw, sizeof(uint8_t));
     memcpy(rawdata+2, &formatIndexraw, sizeof(uint8_t));
     memcpy(rawdata+3, &encoder, sizeof(uint8_t));
 
@@ -132,12 +132,20 @@ void DNVideoManager::onStop(VideoItem* videoItem)
     }
 
     QString videoNo = QString("video")+QString::number(videoItem->videoNo());
+    uint8_t operation = 2;
+    uint8_t videoNoraw = videoItem->videoNo();
+
+    char rawdata[2];
+    memcpy(rawdata, &operation, sizeof(uint8_t));
+    memcpy(rawdata+1, &videoNoraw, sizeof(uint8_t));
+    QByteArray msg = QByteArray(rawdata,2);
+
     if(_core->boatManager()->getBoatbyID(videoItem->boatID()) == 0){
         qDebug()<<"\u001b[38;5;203m"<<"Fatal:: DNVideoManager::onStop, boat ID:"<< videoItem->boatID()<<" not exist"<<"\033[0m";
         return;
     }
     QHostAddress ip = QHostAddress(_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP());
-    emit sendMsgbyID(videoItem->boatID(), _core->configManager()->message("QUIT"), videoNo.toLocal8Bit());
+    emit sendMsgbyID(videoItem->boatID(), _core->configManager()->message("COMMAND"), msg);
 
 }
 
@@ -222,7 +230,7 @@ void DNVideoManager::onSettingSeagrassCamera(VideoItem* videoItem)
     }
     QHostAddress ip = QHostAddress(_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP());
     char rawdata[8];
-    uint8_t operation = 0;
+    uint8_t operation = 3;
     uint8_t videoInexraw = videoItem->videoNo();
     uint8_t formatIndexraw = videoItem->formatIndex();
     uint8_t encoder = videoItem->encoder() == QString("h264")? 0:1;
@@ -237,7 +245,7 @@ void DNVideoManager::onSettingSeagrassCamera(VideoItem* videoItem)
     QByteArray msg = QByteArray(rawdata,8);
     qDebug()<<"DNVideoManager::onPlay:"+QString::number(videoItem->port())+",send: "+msg;
     //if(msg == QString("")) return;
-    emit sendMsgbyID(videoItem->boatID(), _core->configManager()->message("SEAGRASS"), msg);
+    emit sendMsgbyID(videoItem->boatID(), _core->configManager()->message("COMMAND"), msg);
 
 }
 
@@ -250,16 +258,13 @@ void DNVideoManager::onStartSeagrassCameraRecording(VideoItem* videoItem)
     }
     QHostAddress ip = QHostAddress(_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP());
     char rawdata[1];
-    uint8_t operation = 1;
-
+    uint8_t operation = 5;
 
     memcpy(rawdata, &operation, sizeof(uint8_t));
 
-
     QByteArray msg = QByteArray(rawdata,1);
-    qDebug()<<"DNVideoManager::onStartRecording:"+QString::number(videoItem->port())+",send: "+msg;
-    //if(msg == QString("")) return;
-    emit sendMsgbyID(videoItem->boatID(), _core->configManager()->message("SEAGRASS"), msg);
+    qDebug()<<"DNVideoManager::onPlay:"+QString::number(videoItem->port())+",send: "+msg;
+    emit sendMsgbyID(videoItem->boatID(), _core->configManager()->message("COMMAND"), msg);
 
 }
 
@@ -272,15 +277,12 @@ void DNVideoManager::onStopSeagrassCameraRecording(VideoItem* videoItem)
     }
     QHostAddress ip = QHostAddress(_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP());
     char rawdata[1];
-    uint8_t operation = 2;
-
+    uint8_t operation = 6;
 
     memcpy(rawdata, &operation, sizeof(uint8_t));
 
-
     QByteArray msg = QByteArray(rawdata,1);
-    qDebug()<<"DNVideoManager::onStopRecording:"+QString::number(videoItem->port())+",send: "+msg;
-    //if(msg == QString("")) return;
-    emit sendMsgbyID(videoItem->boatID(), _core->configManager()->message("SEAGRASS"), msg);
+    qDebug()<<"DNVideoManager::onPlay:"+QString::number(videoItem->port())+",send: "+msg;
+    emit sendMsgbyID(videoItem->boatID(), _core->configManager()->message("COMMAND"), msg);
 
 }
