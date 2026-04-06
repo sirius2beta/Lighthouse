@@ -1,4 +1,4 @@
-/****************************************************************************
+﻿/****************************************************************************
  *
  * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
  *
@@ -37,6 +37,7 @@ public:
         BoardTypeSiKRadio,
         BoardTypeOpenPilot,
         BoardTypeRTKGPS,
+        BoardTypeSuperTaira,
         BoardTypeUnknown
     };
 

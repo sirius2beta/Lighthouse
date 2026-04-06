@@ -225,13 +225,7 @@ void NetworkManager::_mavlinkMessageReceived(LinkInterface* link, mavlink_messag
     }
 
     // 2. 處理 Boat -> GCS (遙測上行)
-    if (!forwardLink) {
-        qCDebug(NetworkManagerLog) << "Forward link unavailable";
-    } else {
-        // 注意：這裡應填入 GCS 的實際 IP，或確保 sendMsg 內部會處理 Link 的目標地址
-        // 如果 forwardLink 是對應到 127.0.0.1，這裡建議明確指定        
-        sendMsg(QHostAddress::AnyIPv4, forwardLink.get(), message);
-    }
+
 
     // 3. 判斷來源並更新船隻狀態
     bool isPrimary = (link == primaryLink.get());
@@ -242,6 +236,14 @@ void NetworkManager::_mavlinkMessageReceived(LinkInterface* link, mavlink_messag
         if (message.msgid == MAVLINK_MSG_ID_CUSTOM_LEGACY_WRAPPER) {
             //qDebug() << "Received Wrapper from System ID:" << message.sysid;
             parseMsg(isPrimary, message);
+        }else{
+            if (!forwardLink) {
+                qCDebug(NetworkManagerLog) << "Forward link unavailable";
+            } else {
+                // 注意：這裡應填入 GCS 的實際 IP，或確保 sendMsg 內部會處理 Link 的目標地址
+                // 如果 forwardLink 是對應到 127.0.0.1，這裡建議明確指定
+                sendMsg(QHostAddress::AnyIPv4, forwardLink.get(), message);
+            }
         }
     }
 }
@@ -249,12 +251,15 @@ void NetworkManager::_mavlinkMessageReceived(LinkInterface* link, mavlink_messag
 void NetworkManager::_forwardMessageToBoat(mavlink_message_t message)
 {
     QList<BoatItem*> targetBoats;
-    if (message.msgid == 233) {
-            for (int i = 0; i < _core->boatManager()->size(); ++i) {
-                targetBoats.append(_core->boatManager()->getBoatbyIndex(i));
-            }
-            // 如果這裡印出的頻率比 receiveBytes 慢，那就是 Signal/Slot 傳遞丟包
-            // 如果這裡印出頻率很快，但下面 "good 233" 慢，那就是 ID 過濾邏輯錯了
+    bool isBroadcast = (message.msgid == MAVLINK_MSG_ID_HEARTBEAT ||
+                            message.msgid == MAVLINK_MSG_ID_GPS_RTCM_DATA ||
+                            message.msgid == MAVLINK_MSG_ID_GPS_INJECT_DATA ||
+                            message.msgid == MAVLINK_MSG_ID_STATUSTEXT);
+
+    if (isBroadcast) {
+        for (int i = 0; i < _core->boatManager()->size(); ++i) {
+            targetBoats.append(_core->boatManager()->getBoatbyIndex(i));
+        }
     }else{
         uint8_t targetSysID = getTargetSystemId(&message);
 

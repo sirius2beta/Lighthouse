@@ -1,4 +1,4 @@
-{
+﻿{
     "comment":  "AutoConnect usb board info",
     "version":  1,
     "fileType": "USBBoardInfo",
@@ -66,7 +66,10 @@
         { "vendorID": 8352, "productID": 16733,     "boardClass": "OpenPilot",  "name": "OpenPilot CC3D" },
         { "vendorID": 8352, "productID": 16734,     "boardClass": "OpenPilot",  "name": "OpenPilot Revolution" },
         { "vendorID": 8352, "productID": 16848,     "boardClass": "OpenPilot",  "name": "Taulabs Sparky2" },
-        { "vendorID": 13891, "productID": 5600,     "boardClass": "Pixhawk",    "name": "ZeroOne X6" }
+        { "vendorID": 13891, "productID": 5600,     "boardClass": "Pixhawk",    "name": "ZeroOne X6" },
+        { "venderID": 1659, "productID":9123,       "boardClass": "SuperTaira", "name": "SuperTaira"},
+        { "venderID": 1659, "productID":8963,       "boardClass": "SuperTaira", "name": "SuperTaira"},
+
     ],
 
     "boardDescriptionFallback": [

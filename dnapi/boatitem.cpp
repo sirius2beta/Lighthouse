@@ -303,7 +303,6 @@ bool BoatItem::_updatePrimaryLink()
                 qCDebug(BoatItemLog,"primary link up");
                 return true;
             }else{
-                qDebug()<<secondaryConnected();
                 return false;
             }
         }else{

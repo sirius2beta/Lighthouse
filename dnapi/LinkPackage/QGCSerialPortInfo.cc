@@ -1,4 +1,4 @@
-/****************************************************************************
+﻿/****************************************************************************
  *
  * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
  *
@@ -170,6 +170,7 @@ QGCSerialPortInfo::BoardType_t QGCSerialPortInfo::_boardClassStringToType(const 
         { _boardTypeToString(BoardTypeRTKGPS), BoardTypeRTKGPS },
         { _boardTypeToString(BoardTypeSiKRadio), BoardTypeSiKRadio },
         { _boardTypeToString(BoardTypeOpenPilot), BoardTypeOpenPilot },
+        { _boardTypeToString(BoardTypeSuperTaira), BoardTypeSuperTaira}
     };
 
     for (const BoardClassString2BoardType_t &board : rgBoardClass2BoardType) {
@@ -243,6 +244,8 @@ QString QGCSerialPortInfo::_boardTypeToString(BoardType_t boardType)
         return QStringLiteral("OpenPilot");
     case BoardTypeRTKGPS:
         return QStringLiteral("RTK GPS");
+    case BoardTypeSuperTaira:
+        return QStringLiteral("SuperTaira");
     case BoardTypeUnknown:
     default:
         return QStringLiteral("Unknown");
