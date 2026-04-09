@@ -29,14 +29,17 @@ Item {
 
 
     function setVideoItemNo(index){ //set video item index
+
+        _index = index
+        _videoItem = DeNovoViewer.videoManager.getVideoItem(index)
+
+
+        _videoNo.currentIndex = _videoItem.videoIndex
+        _qualityNo.currentIndex = _videoItem.qualityIndex
+        _AIType.currentIndex = _videoItem.AIType
         if(_videoItem){
             _videoItem.update()
         }
-        _index = index
-        _videoItem = DeNovoViewer.videoManager.getVideoItem(index)
-        _videoItem.setBoatID(DeNovoViewer.boatManager.getIDbyInex(0))
-        _videoNo.currentIndex = _videoItem.videoIndex
-        _qualityNo.currentIndex = _videoItem.qualityIndex
         console.log("current videoIndex", _videoItem.videoIndex)
         console.log("init listview index:",index)
     }
@@ -44,7 +47,10 @@ Item {
     function setBoatID(id){
         boatNo=id
         if(_videoItem0){
-            _videoItem0.update()
+            _videoItem0.setBoatID(id)
+        }
+        if(_videoItem1){
+            _videoItem1.setBoatID(id)
         }
     }
 
@@ -284,6 +290,7 @@ Item {
                     Connections{
                         function onActivated(index) {
                             _videoItem.getVideoFormatByIndex(index)
+                            _videoItem.getVideoFormatFromVideoNo(index)
                             console.log("set videoIndex: ", _videoItem.videoIndex)
                         }
                     }
@@ -317,11 +324,28 @@ Item {
                     }
                 }
             }
-            Switch {
-                    text: qsTr("AI detect")
-                    checked: _videoItem?_videoItem.AIEnabled:0
-                    onClicked: _videoItem.setAIEnabled(checked)
+            Row{
+                Text {
+                    verticalAlignment: Text.AlignVCenter
+                    height:40
+                    width: 80
+                    leftPadding: 10
+                    text: "AI model"
+                    font.pointSize: 10
+                    color: "white"
+                    font.family: "Segoe UI"
+                }
+                ComboBox{
+                    height:40
+
+                    id: _AIType
+                    font.family: "Segoe UI"
+                    model: ["None", "Yolov8", "Seagrass"]
+
+
+                }
             }
+
             RowLayout{
                 Layout.fillWidth: true
                 spacing:5
@@ -352,17 +376,7 @@ Item {
                 color:"#ffffff"
                 font.pixelSize: 14
             }
-            Button{
-                id: _seagrassDetectButton
-                font.family: "Segoe UI"
-                text: "設定為Seagrass Camera"
-                Layout.alignment: Qt.AlignRight
-                onClicked: {
-                    if(_videoItem){
-                        _videoItem.setAsSeagrassCamera(_videoNo.currentIndex, _qualityNo.currentIndex)
-                    }
-                }
-            }
+
 
             RowLayout{
                 Layout.fillWidth: true
@@ -417,7 +431,7 @@ Item {
                     text: "Play"
                     onClicked: {
                         if(_videoItem){
-                            _videoItem.play(_videoNo.currentIndex, _qualityNo.currentIndex)
+                            _videoItem.play(_videoNo.currentIndex, _qualityNo.currentIndex, _AIType.currentIndex)
                         }
                     }
                 }
@@ -436,6 +450,19 @@ Item {
         function onVideoNoListModelChanged(list){
             _videoNo.currentIndex = _videoItem.videoIndex
             _qualityNo.currentIndex = _videoItem.qualityIndex
+            _AIType.currentIndex =_videoItem.AIType
+        }
+    }
+    Connections{
+        target:_videoItem
+        function onQualityIndexChanged(index){
+            _qualityNo.currentIndex = index
+        }
+    }
+    Connections{
+        target:_videoItem
+        function onAiTypeChanged(type){
+            _AIType.currentIndex = type
         }
     }
 

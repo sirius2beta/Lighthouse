@@ -42,7 +42,7 @@ void DNVideoManager::init()
 
         int PCPort = 5201+i;
 
-        addVideoItem(i, title, -1, -1, -1, PCPort);
+        addVideoItem(i, title, 1, 0, 0, PCPort);
 
     }
 
@@ -94,7 +94,7 @@ void DNVideoManager::addVideoItem(int index, QString title, int boatID, int vide
     connect(newvideoitem, &VideoItem::setAsSeagrassCameraSignal, this, &DNVideoManager::onSettingSeagrassCamera);
     connect(newvideoitem, &VideoItem::startSeagrassCameraRecordingSignal, this, &DNVideoManager::onStartSeagrassCameraRecording);
     connect(newvideoitem, &VideoItem::stopSeagrassCameraRecordingSignal, this, &DNVideoManager::onStopSeagrassCameraRecording);
-    //connect(newvideoitem, &VideoItem::sendMsg, _core->networkManager(), &NetworkManager::sendMsgbyID);
+    connect(newvideoitem, &VideoItem::sendMsg, _core->networkManager(), &NetworkManager::sendMsgbyID);
 
 }
 
@@ -108,7 +108,7 @@ void DNVideoManager::onPlay(VideoItem* videoItem)
     uint8_t formatIndexraw = videoItem->formatIndex();
     uint8_t encoder = videoItem->encoder() == QString("h264")? 0:1;
     int32_t port = videoItem->port();
-    uint8_t aiEnabled = videoItem->AIEnabled();
+    uint8_t aiType = videoItem->AIType();
 
     memcpy(rawdata, &operation, sizeof(uint8_t));
     memcpy(rawdata+1, &videoNoraw, sizeof(uint8_t));
@@ -116,7 +116,7 @@ void DNVideoManager::onPlay(VideoItem* videoItem)
     memcpy(rawdata+3, &encoder, sizeof(uint8_t));
 
     memcpy(rawdata+4, &port, sizeof(int32_t));
-    memcpy(rawdata+8, &aiEnabled, sizeof(int8_t));
+    memcpy(rawdata+8, &aiType, sizeof(int8_t));
     QByteArray msg = QByteArray(rawdata,9);
     qDebug()<<"DNVideoManager::onPlay:"+QString::number(videoItem->port())+",send: "+msg;
     //if(msg == QString("")) return;
@@ -193,12 +193,24 @@ void DNVideoManager::onRequestFormat(VideoItem* videoItem)
 
 void DNVideoManager::setVideoFormat(uint8_t ID, QByteArray data)
 {
-    for(int i = 0; i < videoList.size(); i++){
-        if(videoList[i]->boatID() == ID){
-            qDebug()<<"set format, index:"<<_core->boatManager()->getIndexbyID(ID);
-            videoList[i]->setVideoFormat(data);
+    if(data[0] == 0){
+        data.removeFirst();
+        for(int i = 0; i < videoList.size(); i++){
+            if(videoList[i]->boatID() == ID){
+                qDebug()<<"set format, index:"<<_core->boatManager()->getIndexbyID(ID);
+                videoList[i]->setVideoFormat(data);
+            }
+        }
+    }else if(data[0] == 1){
+        qDebug()<<"DNVideoManager: get video status";
+        if(data.length() == 6){
+            int videoItemIndex = data[1];
+            if(videoList.size() > videoItemIndex){
+                videoList[videoItemIndex]->setVideoStatus(data);
+            }
         }
     }
+
 }
 
 

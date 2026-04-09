@@ -26,7 +26,8 @@ VideoItem::VideoItem(QObject *parent, DNCore* core, int index, QString title, in
     _requestFormat(true),
     _isPlaying(false),
     _isVideoInfo(false),
-    _AIEnabled(false)
+    _AIEnabled(false),
+    _AIType(0)
 {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
     connect(_core->networkManager(), &NetworkManager::cameraMsg, this, &VideoItem::onCameraMsg);
@@ -150,7 +151,7 @@ void VideoItem::setBoatID(int ID)
         _requestFormat = true;
         _prePlayingVideoIndex = -1;
         _currentPlayingVideoIndex = -1;
-        emit requestFormat(this);
+        //emit requestFormat(this);
 
     }
 }
@@ -196,6 +197,7 @@ void VideoItem::getVideoFormatByIndex(int index)
     for(int i = 0; i< h.size(); i++){
         _formatListModel<<QString::number(h[i]);
         _formatStringListModel<<_core->configManager()->videoFormatString(h[i]);
+
     }
     if(_formatListModel.size() > 0){
         _qualityIndex = 0;
@@ -207,6 +209,7 @@ void VideoItem::getVideoFormatByIndex(int index)
 void VideoItem::setVideoFormat(QByteArray data)
 {
     //if(!_requestFormat) return;
+
     _requestFormat = false;
     QString currentvideoNo = QString();
     qDebug()<<" VideoItem::setVideoNo: got videoFormat";
@@ -220,6 +223,13 @@ void VideoItem::setVideoFormat(QByteArray data)
     int videoNo;
     int qualityIndex;
     int readorder = 0;
+    int videoNo_occupied = 0;
+    if(_index >=0){
+        videoNo_occupied = int(data[_index]);
+    }
+    int videoIndex_occupied = 0;
+
+    data.remove(0,2);
     if(data.size()%2 != 0 || data.size()/2 == 0){
         qDebug()<<"**Fatal::VideoItem::setVideoNo: wrong format message:"<<data.size();
         return;
@@ -237,15 +247,29 @@ void VideoItem::setVideoFormat(QByteArray data)
         ++h;
     }
 
-    if(_videoNoListModel.size() == preVideoIndexListSize && preVideoIndex != -1){
-        qDebug()<<preVideoIndex<<" !";
-        setVideoIndex(preVideoIndex);
-        setQualityIndex(preQualityIndex);
-    }else{
-        qDebug()<<preVideoIndexListSize<<","<<_videoNoListModel.size()<<"  set 0";
-        setVideoIndex(0);
+    for(int i = 0; i < _videoNoListModel.length(); i ++){
+        if(_videoNoListModel.at(i).toInt() == videoNo_occupied){
+            videoIndex_occupied = i;
+            break;
+        }
     }
+
+
+    setVideoIndex(videoIndex_occupied);
+
     emit videoNoListModelChanged(_videoNoListModel);
+}
+
+void VideoItem::setVideoStatus(QByteArray data)
+{
+        _AIType = int(data[4]);
+        emit qualityIndexChanged(int(data[3]));
+        emit aiTypeChanged(_AIType);
+        qDebug()<<"VideoItem::get VideoStatus";
+
+
+
+
 }
 
 void VideoItem::setQualityIndex(int no)
@@ -272,14 +296,14 @@ void VideoItem::setConnectionPriority(int connectionType)
         if(_isPlaying){
             qDebug()<<"VideoItem:: connectionTypeChanged:STOP & PLAY";
             stop();
-            play(_currentPlayingVideoIndex, _qualityIndex);
+            play(_currentPlayingVideoIndex, _qualityIndex, _AIType);
         }else{
         }
     }
 
 }
 
-void VideoItem::play(int videoIndex, int qualityIndex)
+void VideoItem::play(int videoIndex, int qualityIndex, uint8_t aitype)
 {
     //QSound::play(":/imports/DenovoUI/images/79.wav");
     qDebug()<<"VideoItem::play, videoIndex:"<<videoIndex<<", qualityIndex:"<<qualityIndex;
@@ -294,6 +318,7 @@ void VideoItem::play(int videoIndex, int qualityIndex)
     }
     _videoIndex = videoIndex;
     _qualityIndex = qualityIndex;
+    _AIType = aitype;
     int tempIndex = _videoIndex;
     if(_isPlaying && _prePlayingVideoIndex!=-1){
         _prePlayingVideoIndex = _currentPlayingVideoIndex;
@@ -316,17 +341,13 @@ void VideoItem::stop()
 
 void VideoItem::setAIEnabled(bool enabled)
 {
-    qDebug()<<"setAIEnabled:"<<enabled;
-    QByteArray bt;
-    //uint8_t video_no = _videoIndex;
-    //bt.append(boatID());
-    uint8_t cmd_ID = 0;
-    bt.append(cmd_ID);
-    bt.append(uint8_t(_videoIndex));
-    bt.append(enabled);
-    bt.append(uint8_t(_qualityIndex));
+
     _AIEnabled = enabled;
-    //emit sendMsg(boatID(), 6, bt);
+}
+
+void VideoItem::setAIType(uint8_t type)
+{
+    _AIType = type;
 }
 
 void VideoItem::update()
@@ -340,6 +361,7 @@ void VideoItem::update()
     _requestFormat = true;
     _prePlayingVideoIndex = -1;
     emit requestFormat(this);
+    getVideoFormatFromVideoNo(_videoIndex);
 }
 
 void VideoItem::setAsSeagrassCamera(int videoIndex, int qualityIndex)
@@ -463,4 +485,21 @@ void VideoItem::onCameraMsg(uint8_t boatID, QByteArray msg)
 
 
     }
+}
+
+void VideoItem::getVideoFormatFromVideoNo(uint8_t videoIndex)
+{
+    char rawdata[3];
+
+    uint8_t operation = 7;
+
+
+    memcpy(rawdata, &operation, sizeof(uint8_t));
+    memcpy(rawdata+1, &_index, sizeof(uint8_t));
+    memcpy(rawdata+2, &videoIndex, sizeof(uint8_t));
+
+    QByteArray msg = QByteArray(rawdata,3);
+    qDebug()<<"DNVideoManager::on get videoformat";
+    //if(msg == QString("")) return;
+    emit sendMsg(_boatID, _core->configManager()->message("COMMAND"), msg);
 }

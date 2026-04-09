@@ -30,19 +30,22 @@ public:
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(int PCPort READ PCPort NOTIFY PCPortChanged)
     Q_PROPERTY(bool AIEnabled READ AIEnabled CONSTANT)
+    Q_PROPERTY(uint8_t AIType READ AIType NOTIFY aiTypeChanged)
     Q_PROPERTY(int blockID READ blockID CONSTANT)
     //Q_PROPERTY(QString port READ port NOTIFY IPChanged)
     //Q_PROPERTY(bool primaryConnected READ primaryConnected  NOTIFY connectStatusChanged)
     //Q_PROPERTY(bool secondaryConnected READ secondaryConnected  NOTIFY connectStatusChanged)
 
 
-    Q_INVOKABLE void play(int videoIndex, int qualityIndex);
+    Q_INVOKABLE void play(int videoIndex, int qualityIndex, uint8_t aitype);
     Q_INVOKABLE void stop();
     Q_INVOKABLE void setAIEnabled(bool enabled);
+    Q_INVOKABLE void setAIType(uint8_t type);
     Q_INVOKABLE void update(); // update camera info
     Q_INVOKABLE void setAsSeagrassCamera(int videoIndex, int qualityIndex);
     Q_INVOKABLE void startSeagrassCameraRecording();
     Q_INVOKABLE void stopSeagrassCameraRecording();
+    Q_INVOKABLE void getVideoFormatFromVideoNo(uint8_t videoIndex);
 
     Q_INVOKABLE void setProxy(bool isProxy);
     Q_INVOKABLE void setEncoder(QString encoder);
@@ -59,6 +62,7 @@ public:
     void initVideo(QQuickItem *widget);
     void setDisplay(WId xwinid);
     void setVideoFormat(QByteArray data);
+    void setVideoStatus(QByteArray data);
     void setWID(WId wid){_xwinid = wid;}
     void setConnectionPriority(int connectionType);
     void setVideoInfo(bool i) { _isVideoInfo = i; }
@@ -83,6 +87,7 @@ public:
     int connectionPriority() { return _connectionPriority;}
     bool videoInfo() { return _isVideoInfo; }
     bool AIEnabled() { return _AIEnabled;}
+    uint8_t AIType() {  return _AIType;}
     QStringList videoNoListModel() { return _videoNoListModel; }
     QStringList qualityListModel() { return _formatListModel; }
     QStringList formatListStringModel() {return _formatStringListModel; }
@@ -102,6 +107,7 @@ signals:
     void titleChanged(QString title);
     void indexChanged(int index);
     void qualityIndexChanged(int qualityIndex);
+    void aiTypeChanged(int type);
     void videoPlayed(VideoItem* v);
     void videoStoped(VideoItem* v);
     void videoNoListModelChanged(QStringList model);
@@ -133,6 +139,7 @@ private:
     bool _proxy;
     bool _requestFormat;
     bool _AIEnabled;
+    uint8_t _AIType;
     QQuickItem* _videoWidget;
 
     GstElement *_pipeline;

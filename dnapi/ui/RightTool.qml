@@ -1,4 +1,4 @@
-import QtQuick 2.15
+﻿import QtQuick 2.15
 import QtQuick.Layouts
 import QtQuick.Controls
 
@@ -16,18 +16,11 @@ Item {
 
     function setIndex(index){ //set video item index
         _index = index
-        _videoItem = DeNovoViewer.videoManager.getVideoItem(index)
-        _videoItem.setBoatID(DeNovoViewer.boatManager.getIDbyInex(_boatNo.currentIndex))
+
         console.log("init listview index:",_boatNo.currentIndex)
     }
 
-    function setVideoItem(videoItem){
-        _videoItem = videoItem
-        _boatNo.currentIndex = videoItem.boatID
-        _videoNo.currentIndex = videoItem.videoNo
-        _qualityNo.currentIndex = videoItem.formatNo
 
-    }
 
     signal openBoatSetting()
     signal openVideoSetting()
@@ -271,7 +264,7 @@ Item {
                     font.family: "Segoe UI"
                     Connections {
                         function onActivated(index) {
-                            _videoItem.setBoatID(DeNovoViewer.boatManager.getIDbyInex(index))
+                            //_videoItem.setBoatID(DeNovoViewer.boatManager.getIDbyInex(index))
                             console.log("listview index:",_boatNo.currentIndex)
                         }
 
@@ -354,11 +347,7 @@ Item {
                     }
                 }
             }
-            Switch {
-                    text: qsTr("AI detect")
-                    checked: _videoItem.AIEnabled
-                    onClicked: _videoItem.setAIEnabled(checked)
-            }
+
             Row{
                 spacing:5
                 Button{
