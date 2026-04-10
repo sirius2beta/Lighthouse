@@ -262,14 +262,32 @@ void VideoItem::setVideoFormat(QByteArray data)
 
 void VideoItem::setVideoStatus(QByteArray data)
 {
-        _AIType = int(data[4]);
         emit qualityIndexChanged(int(data[3]));
-        emit aiTypeChanged(_AIType);
-        qDebug()<<"VideoItem::get VideoStatus";
+        emit aiTypeChanged(int(data[4]));
+        _status = int(data[5]);
+        _recording = int(data[6]);
+        emit statusChanged(int(data[5]));
+        emit recordingChanged(int(data[6]));
+        qDebug()<<"VideoItem::get VideoStatus, state:"<<_status;
 
+}
 
-
-
+void VideoItem::setCurrentVideoStatus(QByteArray data)
+{
+    if(_videoIndex == int(data[1])){
+        emit qualityIndexChanged(int(data[2]));
+        emit aiTypeChanged(int(data[3]));
+        _status = int(data[4]);
+        if(_status == 0){
+            _isPlaying = false;
+        }else{
+            _isPlaying = true;
+        }
+        _recording = int(data[5]);
+        emit statusChanged(int(data[4]));
+        emit recordingChanged(int(data[5]));
+        qDebug()<<"VideoItem::get current VideoStatus";
+    }
 }
 
 void VideoItem::setQualityIndex(int no)
@@ -334,9 +352,10 @@ void VideoItem::stop()
 {
     if(_isPlaying){
         _isPlaying = false;
-        emit videoStoped(this);
-    }
 
+    }
+    qDebug()<<"stop:"<<_videoIndex;
+    emit videoStoped(this);
 }
 
 void VideoItem::setAIEnabled(bool enabled)

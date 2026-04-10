@@ -127,9 +127,6 @@ void DNVideoManager::onPlay(VideoItem* videoItem)
 void DNVideoManager::onStop(VideoItem* videoItem)
 {
 
-    if(videoItem->currentPlayingVideoIndex() == -1){
-        return;
-    }
 
     QString videoNo = QString("video")+QString::number(videoItem->videoNo());
     uint8_t operation = 2;
@@ -202,12 +199,22 @@ void DNVideoManager::setVideoFormat(uint8_t ID, QByteArray data)
             }
         }
     }else if(data[0] == 1){
-        qDebug()<<"DNVideoManager: get video status";
-        if(data.length() == 6){
+        qDebug()<<"DNVideoManager: get video status ";
+        if(data.length() == 7){
             int videoItemIndex = data[1];
             if(videoList.size() > videoItemIndex){
+                qDebug()<<"DNVideoManager: set video status:"<<videoItemIndex;
                 videoList[videoItemIndex]->setVideoStatus(data);
             }
+        }
+    }else if(data[0] == 2){
+        qDebug()<<"DNVideoManager: get video status ";
+        if(data.length() == 6){
+            for(int i = 0; i < videoList.size(); i++){
+                videoList[i]->setCurrentVideoStatus(data);
+            }
+        }else{
+            qDebug()<<"NVideoManager: 1-1 command size error:"<<data.length();
         }
     }
 
@@ -274,12 +281,14 @@ void DNVideoManager::onStartSeagrassCameraRecording(VideoItem* videoItem)
         return;
     }
     QHostAddress ip = QHostAddress(_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP());
-    char rawdata[1];
+    char rawdata[2];
     uint8_t operation = 5;
+    uint8_t videoNo = videoItem->videoNo();
 
     memcpy(rawdata, &operation, sizeof(uint8_t));
+    memcpy(rawdata+1, &videoNo, sizeof(uint8_t));
 
-    QByteArray msg = QByteArray(rawdata,1);
+    QByteArray msg = QByteArray(rawdata,2);
     qDebug()<<"DNVideoManager::onPlay:"+QString::number(videoItem->port())+",send: "+msg;
     emit sendMsgbyID(videoItem->boatID(), _core->configManager()->message("COMMAND"), msg);
 
@@ -293,12 +302,13 @@ void DNVideoManager::onStopSeagrassCameraRecording(VideoItem* videoItem)
         return;
     }
     QHostAddress ip = QHostAddress(_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP());
-    char rawdata[1];
+    char rawdata[2];
     uint8_t operation = 6;
+    uint8_t videoNo = videoItem->videoNo();
 
     memcpy(rawdata, &operation, sizeof(uint8_t));
-
-    QByteArray msg = QByteArray(rawdata,1);
+    memcpy(rawdata+1, &videoNo, sizeof(uint8_t));
+    QByteArray msg = QByteArray(rawdata,2);
     qDebug()<<"DNVideoManager::onPlay:"+QString::number(videoItem->port())+",send: "+msg;
     emit sendMsgbyID(videoItem->boatID(), _core->configManager()->message("COMMAND"), msg);
 

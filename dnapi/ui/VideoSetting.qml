@@ -270,6 +270,51 @@ Item {
                 }
 
             }
+            RowLayout{
+                Layout.fillWidth: true
+
+
+                Text{
+                    text: "相機狀態: "
+                    color:"#ffffff"
+                    font.pixelSize: 14
+                }
+
+
+                Rectangle{
+                    id:_status_indicator
+                    height:10
+                    width:10
+                    color: "#888888"
+                }
+                Text{
+                    id:_status_text
+                    text:"Idle"
+                    color:"#ffffff"
+                    font.pixelSize: 14
+                }
+                Rectangle{
+                    id:_recording_indicator
+                    height:10
+                    width:10
+                    radius: 5
+                    color: "#999999"
+                }
+                Text{
+                    id:_recording_text
+                    Layout.fillWidth: true
+                    text:"recording"
+                    color:"#ffffff"
+                    font.pixelSize: 14
+                }
+                Rectangle{
+                    Layout.fillWidth: true
+                }
+
+
+            }
+
+
 
             Row{
                 Text {
@@ -299,6 +344,7 @@ Item {
             }
 
             Row{
+
                 Text {
                     verticalAlignment: Text.AlignVCenter
                     height:40
@@ -370,21 +416,13 @@ Item {
 
 
             }
-            Text{
-                Layout.fillWidth: true
-                text:"seagrass camera"
-                color:"#ffffff"
-                font.pixelSize: 14
-            }
-
-
             RowLayout{
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignRight
                 Button{
 
 
-                    id: _startSeagrassRecordingButton
+                    id: _startRecordingButton
                     font.family: "Segoe UI"
                     text: "開始錄製"
                     onClicked: {
@@ -395,7 +433,7 @@ Item {
                 }
 
                 Button{
-                    id: _stopSeagrassRecordingButton
+                    id: _stopRecordingButton
                     //height: _videoIndex.height
                     font.family: "Segoe UI"
                     text: "停止錄製"
@@ -463,6 +501,43 @@ Item {
         target:_videoItem
         function onAiTypeChanged(type){
             _AIType.currentIndex = type
+        }
+    }
+    Connections{
+        target:_videoItem
+        function onStatusChanged(status){
+            console.log("videosetting: on status")
+            if(status == 0){
+                _playButton.enabled = 1
+                _stopButton.enabled = 0
+                _status_indicator.color = "#bbbbbb"
+                _status_text.text = "Stopped"
+            }else if(status == 1){
+                _playButton.enabled = 0
+                _stopButton.enabled = 1
+                _status_indicator.color = "#00ff00"
+                _status_text.text = "Playing"
+            }else if(status == 2){
+                _playButton.enabled = 0
+                _stopButton.enabled = 1
+                _status_indicator.color = "#ffaa00"
+                _status_text.text = "Retrying"
+            }else{
+                _playButton.enabled = 0
+                _stopButton.enabled = 1
+                _status_indicator.color = "#ff0000"
+                _status_text.text = "Error"
+            }
+        }
+    }
+    Connections{
+        target:_videoItem
+        function onRecordingChanged(recording){
+            if(recording == 0){
+                _recording_indicator.color = "#999999"
+            }else{
+                _recording_indicator.color = "#ff0000"
+            }
         }
     }
 

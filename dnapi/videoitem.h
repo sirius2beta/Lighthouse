@@ -31,6 +31,8 @@ public:
     Q_PROPERTY(int PCPort READ PCPort NOTIFY PCPortChanged)
     Q_PROPERTY(bool AIEnabled READ AIEnabled CONSTANT)
     Q_PROPERTY(uint8_t AIType READ AIType NOTIFY aiTypeChanged)
+    Q_PROPERTY(uint8_t status READ status NOTIFY statusChanged)
+    Q_PROPERTY(uint8_t recording READ recording NOTIFY recordingChanged)
     Q_PROPERTY(int blockID READ blockID CONSTANT)
     //Q_PROPERTY(QString port READ port NOTIFY IPChanged)
     //Q_PROPERTY(bool primaryConnected READ primaryConnected  NOTIFY connectStatusChanged)
@@ -63,6 +65,7 @@ public:
     void setDisplay(WId xwinid);
     void setVideoFormat(QByteArray data);
     void setVideoStatus(QByteArray data);
+    void setCurrentVideoStatus(QByteArray data);
     void setWID(WId wid){_xwinid = wid;}
     void setConnectionPriority(int connectionType);
     void setVideoInfo(bool i) { _isVideoInfo = i; }
@@ -88,6 +91,8 @@ public:
     bool videoInfo() { return _isVideoInfo; }
     bool AIEnabled() { return _AIEnabled;}
     uint8_t AIType() {  return _AIType;}
+    uint8_t status() {  return _status;}
+    uint8_t recording() {   return _recording;}
     QStringList videoNoListModel() { return _videoNoListModel; }
     QStringList qualityListModel() { return _formatListModel; }
     QStringList formatListStringModel() {return _formatStringListModel; }
@@ -117,6 +122,8 @@ signals:
     void setAsSeagrassCameraSignal(VideoItem* v);
     void startSeagrassCameraRecordingSignal(VideoItem* v);
     void stopSeagrassCameraRecordingSignal(VideoItem* v);
+    void statusChanged(uint8_t status);
+    void recordingChanged(uint8_t recording);
 
 protected slots:
     void onCameraMsg(uint8_t boatID, QByteArray msg);
@@ -140,6 +147,8 @@ private:
     bool _requestFormat;
     bool _AIEnabled;
     uint8_t _AIType;
+    uint8_t _recording;
+    uint8_t _status;
     QQuickItem* _videoWidget;
 
     GstElement *_pipeline;
