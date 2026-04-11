@@ -72,6 +72,8 @@ void NetworkManager::init()
 
 void NetworkManager::sendMsg(QHostAddress addr, LinkInterface* link, mavlink_message_t message)
 {
+    BoatItem* boat = _core->boatManager()->getBoatbyID(1);
+
 
     if (!link) {
         qCDebug(NetworkManagerLog) << "sendMsg: link gone!";
@@ -88,7 +90,8 @@ void NetworkManager::sendMsg(QHostAddress addr, LinkInterface* link, mavlink_mes
 void NetworkManager::sendMsgbyID(uint8_t boatID, uint8_t topic, QByteArray command)
 {
     BoatItem* boat = _core->boatManager()->getBoatbyID(boatID);
-    qDebug()<<"topic: "<<topic<<", "<<"cmd: "<<command;
+
+    qDebug()<<"boatID:"<<boat->ID()<<", addr:"<< boat->currentIP()<<", topic: "<<topic<<", "<<"cmd: "<<command;
     if(boat != 0){
         SharedLinkInterfacePtr sharedLink;
         if(command.size()>251){

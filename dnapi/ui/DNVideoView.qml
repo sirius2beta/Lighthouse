@@ -239,7 +239,7 @@ Item {
                 _root.w_resolution = 640
                 _root.h_resolution = 480
             }
-            console.log("format no changed", _root.ratio)
+
         }
     }
 

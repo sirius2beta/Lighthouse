@@ -71,6 +71,9 @@ void BoatItem::setID(int ID)
 
 void BoatItem::setPIP(QString PIP)
 {
+    if(_currentIP == ""){
+        _currentIP = PIP;
+    }
     if(PIP != _PIP){
         _PIP = PIP;
         emit IPChanged(_ID, true);

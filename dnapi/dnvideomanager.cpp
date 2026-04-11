@@ -118,15 +118,12 @@ void DNVideoManager::onPlay(VideoItem* videoItem)
     memcpy(rawdata+4, &port, sizeof(int32_t));
     memcpy(rawdata+8, &aiType, sizeof(int8_t));
     QByteArray msg = QByteArray(rawdata,9);
-    qDebug()<<"DNVideoManager::onPlay:"+QString::number(videoItem->port())+",send: "+msg;
-    //if(msg == QString("")) return;
     emit sendMsgbyID(videoItem->boatID(), _core->configManager()->message("COMMAND"), msg);
 
 }
 
 void DNVideoManager::onStop(VideoItem* videoItem)
 {
-
 
     QString videoNo = QString("video")+QString::number(videoItem->videoNo());
     uint8_t operation = 2;
@@ -183,38 +180,42 @@ void DNVideoManager::onRequestFormat(VideoItem* videoItem)
         qDebug()<<"**Fatal: DNVideoManager::onRequestFormat: boatID "<<videoItem->boatID()<<" not exist!";
         return;
     }
+    uint8_t operation = 0;
+    uint8_t viewport = videoItem->index();
+
+    char rawdata[2];
+    memcpy(rawdata, &operation, sizeof(uint8_t));
+    memcpy(rawdata+1, &viewport, sizeof(uint8_t));
+    QByteArray msg = QByteArray(rawdata,2);
+
+
     QHostAddress addr(boat->currentIP());
-    qDebug()<<"DNVideoManager::onRequestFormat: currentIP:"<<_core->boatManager()->getBoatbyID(videoItem->boatID())->currentIP();
-    emit sendMsgbyID(videoItem->boatID(), 1, "");
+    emit sendMsgbyID(videoItem->boatID(), _core->configManager()->message("COMMAND"), msg);
 }
 
 void DNVideoManager::setVideoFormat(uint8_t ID, QByteArray data)
 {
+    qDebug()<<"DNVideoManager [videomessage]: topic:"<<int(data[0]);
     if(data[0] == 0){
-        data.removeFirst();
-        for(int i = 0; i < videoList.size(); i++){
-            if(videoList[i]->boatID() == ID){
-                qDebug()<<"set format, index:"<<_core->boatManager()->getIndexbyID(ID);
-                videoList[i]->setVideoFormat(data);
-            }
-        }
+        int viewport = int(data[1]);
+        videoList[viewport]->setVideoFormat(data);
+
     }else if(data[0] == 1){
-        qDebug()<<"DNVideoManager: get video status ";
         if(data.length() == 7){
             int videoItemIndex = data[1];
             if(videoList.size() > videoItemIndex){
-                qDebug()<<"DNVideoManager: set video status:"<<videoItemIndex;
                 videoList[videoItemIndex]->setVideoStatus(data);
             }
+        }else{
+            qDebug()<<"DNVideoManager: command size error:"<<data.length();
         }
     }else if(data[0] == 2){
-        qDebug()<<"DNVideoManager: get video status ";
         if(data.length() == 6){
             for(int i = 0; i < videoList.size(); i++){
                 videoList[i]->setCurrentVideoStatus(data);
             }
         }else{
-            qDebug()<<"NVideoManager: 1-1 command size error:"<<data.length();
+            qDebug()<<"DNVideoManager: command size error:"<<data.length();
         }
     }
 
@@ -226,11 +227,7 @@ void DNVideoManager::connectionChanged(uint8_t ID)
 {
 
     qDebug()<<"DNVideoManager::connectionChanged: "<<ID;
-    for(int i = 0; i < videoList.size(); i++){
-        if(videoList[i]->boatID() == ID){
-            videoList[i]->update();
-        }
-    }
+
     /* 先不使用
     for(int i = 0; i < videoList.size(); i++){
         if(videoList[i]->boatID() == ID){

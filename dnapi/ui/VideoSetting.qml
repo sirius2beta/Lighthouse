@@ -34,14 +34,10 @@ Item {
         _videoItem = DeNovoViewer.videoManager.getVideoItem(index)
 
 
-        _videoNo.currentIndex = _videoItem.videoIndex
-        _qualityNo.currentIndex = _videoItem.qualityIndex
-        _AIType.currentIndex = _videoItem.AIType
         if(_videoItem){
             _videoItem.update()
         }
-        console.log("current videoIndex", _videoItem.videoIndex)
-        console.log("init listview index:",index)
+
     }
 
     function setBoatID(id){
@@ -334,8 +330,7 @@ Item {
                     model: _videoItem?_videoItem.videoNoListModel:0
                     Connections{
                         function onActivated(index) {
-                            _videoItem.getVideoFormatByIndex(index)
-                            _videoItem.getVideoFormatFromVideoNo(index)
+                            _videoItem.getVideoStatus(index)
                             console.log("set videoIndex: ", _videoItem.videoIndex)
                         }
                     }
@@ -493,6 +488,14 @@ Item {
     }
     Connections{
         target:_videoItem
+        function onVideoIndexChanged(index){
+            _videoNo.currentIndex = index
+            _videoItem.getVideoStatus(index)
+        }
+    }
+
+    Connections{
+        target:_videoItem
         function onQualityIndexChanged(index){
             _qualityNo.currentIndex = index
         }
@@ -506,7 +509,6 @@ Item {
     Connections{
         target:_videoItem
         function onStatusChanged(status){
-            console.log("videosetting: on status")
             if(status == 0){
                 _playButton.enabled = 1
                 _stopButton.enabled = 0

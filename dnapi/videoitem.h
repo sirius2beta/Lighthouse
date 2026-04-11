@@ -24,7 +24,7 @@ public:
     Q_PROPERTY(QList<int> detectionMatrixModel READ detectionMatrixModel NOTIFY detectionMatrixModelChanged)
 
     Q_PROPERTY(int boatID READ boatID NOTIFY boatIDChanged )
-    Q_PROPERTY(int videoIndex READ videoIndex CONSTANT)
+    Q_PROPERTY(int videoIndex READ videoIndex NOTIFY videoIndexChanged)
     Q_PROPERTY(int videoNo READ videoNo CONSTANT)
     Q_PROPERTY(int qualityIndex READ qualityIndex NOTIFY qualityIndexChanged)
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
@@ -47,7 +47,7 @@ public:
     Q_INVOKABLE void setAsSeagrassCamera(int videoIndex, int qualityIndex);
     Q_INVOKABLE void startSeagrassCameraRecording();
     Q_INVOKABLE void stopSeagrassCameraRecording();
-    Q_INVOKABLE void getVideoFormatFromVideoNo(uint8_t videoIndex);
+    Q_INVOKABLE void getVideoStatus(uint8_t videoIndex);
 
     Q_INVOKABLE void setProxy(bool isProxy);
     Q_INVOKABLE void setEncoder(QString encoder);
@@ -122,6 +122,7 @@ signals:
     void setAsSeagrassCameraSignal(VideoItem* v);
     void startSeagrassCameraRecordingSignal(VideoItem* v);
     void stopSeagrassCameraRecordingSignal(VideoItem* v);
+    void videoIndexChanged(uint8_t index);
     void statusChanged(uint8_t status);
     void recordingChanged(uint8_t recording);
 

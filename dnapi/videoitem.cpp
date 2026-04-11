@@ -180,8 +180,13 @@ void VideoItem::setVideoIndex(int index)
     if(_formatListModel.size() > 0){
         _qualityIndex = 0;
     }
+    emit videoNoListModelChanged(_videoNoListModel);
     emit qualityListModelChanged(_formatListModel);
     emit formatListStringModelChanged(_formatStringListModel);
+    emit videoIndexChanged(index);
+    qDebug()<<"========videoIndex:"<<videoIndex();
+
+
 }
 
 void VideoItem::getVideoFormatByIndex(int index)
@@ -212,24 +217,22 @@ void VideoItem::setVideoFormat(QByteArray data)
 
     _requestFormat = false;
     QString currentvideoNo = QString();
-    qDebug()<<" VideoItem::setVideoNo: got videoFormat";
-    int preVideoIndexListSize = _videoNoListModel.size();
-    int preVideoIndex = _videoIndex;
-    int preQualityIndex = _qualityIndex;
+    qDebug()<<"VideoItem:"<<_index<<" [setvideoformat]";
+    qDebug()<<"operation:"<<int(data[0]);
+    qDebug()<<"viewport:"<<int(data[1]);
+    qDebug()<<"videoIndex:"<<int(data[2]);
+
+
+
     _videoNoListModel.clear();
     _formatListModel.clear();
     _formatStringListModel.clear();
     _videoFormatList.clear();
     int videoNo;
     int qualityIndex;
-    int readorder = 0;
-    int videoNo_occupied = 0;
-    if(_index >=0){
-        videoNo_occupied = int(data[_index]);
-    }
-    int videoIndex_occupied = 0;
+    int videoIndex_occupied = int(data[2]);
 
-    data.remove(0,2);
+    data.remove(0,3);
     if(data.size()%2 != 0 || data.size()/2 == 0){
         qDebug()<<"**Fatal::VideoItem::setVideoNo: wrong format message:"<<data.size();
         return;
@@ -243,32 +246,20 @@ void VideoItem::setVideoFormat(QByteArray data)
     QMap<int, QList<int>>::const_iterator h = _videoFormatList.constBegin();
     while(h != _videoFormatList.constEnd()){
         _videoNoListModel<<QString::number(h.key());
-
         ++h;
     }
-
-    for(int i = 0; i < _videoNoListModel.length(); i ++){
-        if(_videoNoListModel.at(i).toInt() == videoNo_occupied){
-            videoIndex_occupied = i;
-            break;
-        }
-    }
-
-
     setVideoIndex(videoIndex_occupied);
 
-    emit videoNoListModelChanged(_videoNoListModel);
+    //emit videoNoListModelChanged(_videoNoListModel);
 }
 
 void VideoItem::setVideoStatus(QByteArray data)
 {
         emit qualityIndexChanged(int(data[3]));
         emit aiTypeChanged(int(data[4]));
-        _status = int(data[5]);
-        _recording = int(data[6]);
         emit statusChanged(int(data[5]));
         emit recordingChanged(int(data[6]));
-        qDebug()<<"VideoItem::get VideoStatus, state:"<<_status;
+        qDebug()<<"VideoItem:"<<_index<<" [getVideoStatus] status:"<<_status;
 
 }
 
@@ -286,7 +277,7 @@ void VideoItem::setCurrentVideoStatus(QByteArray data)
         _recording = int(data[5]);
         emit statusChanged(int(data[4]));
         emit recordingChanged(int(data[5]));
-        qDebug()<<"VideoItem::get current VideoStatus";
+        qDebug()<<"VideoItem:"<<_index<<" [update current VideoStatus] status:"<<_status;
     }
 }
 
@@ -372,15 +363,8 @@ void VideoItem::setAIType(uint8_t type)
 void VideoItem::update()
 {
     //new list model
-
-    emit videoNoListModelChanged(_videoNoListModel);
-    emit qualityListModelChanged(_formatListModel);
-    emit formatListStringModelChanged(_formatStringListModel);
-
-    _requestFormat = true;
-    _prePlayingVideoIndex = -1;
     emit requestFormat(this);
-    getVideoFormatFromVideoNo(_videoIndex);
+
 }
 
 void VideoItem::setAsSeagrassCamera(int videoIndex, int qualityIndex)
@@ -506,7 +490,7 @@ void VideoItem::onCameraMsg(uint8_t boatID, QByteArray msg)
     }
 }
 
-void VideoItem::getVideoFormatFromVideoNo(uint8_t videoIndex)
+void VideoItem::getVideoStatus(uint8_t videoIndex)
 {
     char rawdata[3];
 
