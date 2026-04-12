@@ -17,8 +17,8 @@ Item {
     property bool isFull: videoPipState.state === videoPipState.fullState
     property string videoObjectName //required, bind to C++ gstreamer g_object_set
     property int display_no: 0
-    property int h_resolution: 480
-    property int w_resolution: 640
+    property int h_resolution: 1080
+    property int w_resolution: 1920
     property real ratio: w_resolution/h_resolution
 
     PipState {
@@ -95,7 +95,7 @@ Item {
         id: detection_box
         model: detect_model
         delegate: Rectangle {
-            visible: isFull
+            visible: isFull && (videoItem.AIType == 1)
             x: model.x
             y: model.y
             width: model.width
@@ -228,17 +228,23 @@ Item {
 
     Connections {
         target: videoItem
-        function onQualityListModelChanged(no){
-            if(no === 0){
+        function onVideoPlayed(){
+            console.log("play")
+            if(videoItem.qualityIndex === 0){
                 _root.w_resolution = 1920
                 _root.h_resolution = 1080
-            }else if(no === 1){
+            }else if(videoItem.qualityIndex === 1){
                 _root.w_resolution = 1280
                 _root.h_resolution = 720
-            }else if(no === 2){
+            }else if(videoItem.qualityIndex === 2){
                 _root.w_resolution = 640
                 _root.h_resolution = 480
+            }else if(videoItem.qualityIndex === 2){
+                _root.w_resolution = 320
+                _root.h_resolution = 240
             }
+
+
 
         }
     }
@@ -266,7 +272,6 @@ Item {
                 dy = (background.height - (background.width / _root.ratio)) / 2
                 dx = 0
             }
-
             detect_model.clear()
             for(var i = 0; i < count; i++){
                 // 計算縮放後的座標

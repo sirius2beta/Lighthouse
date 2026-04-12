@@ -157,12 +157,7 @@ void DNVideoManager::onBoatAdded()
 void DNVideoManager::onDetectMsg(uint8_t boatID, QByteArray detectMsg)
 {
 
-    if(detectMsg.size() <=2){
-        return;
-    }
-    if((detectMsg.size()-2)%17 != 0){
-        return;
-    }
+
     uint8_t cmd_ID = uint8_t(detectMsg[0]);
     uint8_t video_no = uint8_t(detectMsg[1]);
 
