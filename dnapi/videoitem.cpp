@@ -453,12 +453,12 @@ QString VideoItem::videoFormat()
 void VideoItem::processDetection(QByteArray data)
 {
     _detectionMatrixModel.clear();
+
     for(int i = 0; i< data.size(); ){
         if(i%17==0){
             uint8_t x;
             memcpy(&x, data.data()+i, sizeof(uint8_t));
             _detectionMatrixModel.append(x);
-           // qDebug()<<"class:"<< x;
             i += 1;
         }else if(i%17==9){
             float x;

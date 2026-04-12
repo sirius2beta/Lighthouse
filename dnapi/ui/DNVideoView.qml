@@ -95,7 +95,7 @@ Item {
         id: detection_box
         model: detect_model
         delegate: Rectangle {
-            visible: isFull && videoItem.AIEnabled
+            visible: isFull
             x: model.x
             y: model.y
             width: model.width
@@ -246,32 +246,49 @@ Item {
     Connections {
         target: videoItem
         function onDetectionMatrixModelChanged(model){
-            var count = model.length/7
+            // 安全檢查：確保解析度大於 0
+            if (_root.h_resolution <= 0 || _root.w_resolution <= 0) return;
+
+            var count = model.length / 7
             var videoRatio = 1
             var dx = 0
             var dy = 0
 
-            if(background.width/background.height > _root.ratio){
-                videoRatio = background.height/_root.h_resolution
-                dx = (background.width-background.height*ratio)/2
-            }else{
-                videoRatio = background.width/_root.w_resolution
-                dy = (background.height-background.width/_root.ratio)/2
+            // 使用明確的 _root.ratio 以避免變數找不到的問題
+            if (background.width / background.height > _root.ratio) {
+                // 寬度有餘，影像高度填滿，左右留黑邊
+                videoRatio = background.height / _root.h_resolution
+                dx = (background.width - (background.height * _root.ratio)) / 2
+                dy = 0
+            } else {
+                // 高度有餘，影像寬度填滿，上下留黑邊
+                videoRatio = background.width / _root.w_resolution
+                dy = (background.height - (background.width / _root.ratio)) / 2
+                dx = 0
             }
 
             detect_model.clear()
-            for(var i = 0; i< count; i++){
-                var box_x = model[i*7 + 1]*videoRatio + dx
-                var box_y = model[i*7 + 2]*videoRatio + dy
-                var box_w = model[i*7 + 3]*videoRatio
-                var box_h = model[i*7 + 4]*videoRatio
-                var box_cx = model[i*7 + 5]*1
-                var box_cy = model[i*7 + 6]*1
-                detect_model.append({x:box_x, y:box_y, width:box_w, height:box_h, cx: box_cx, cy: box_cy})
+            for(var i = 0; i < count; i++){
+                // 計算縮放後的座標
+                var box_x = model[i*7 + 1] * videoRatio + dx
+                var box_y = model[i*7 + 2] * videoRatio + dy
+                var box_w = model[i*7 + 3] * videoRatio
+                var box_h = model[i*7 + 4] * videoRatio
+
+                // 確保數值不是 NaN
+                if (!isNaN(box_x)) {
+                    detect_model.append({
+                        "x": box_x,
+                        "y": box_y,
+                        "width": box_w,
+                        "height": box_h,
+                        "cx": model[i*7 + 5],
+                        "cy": model[i*7 + 6]
+                    })
+                }
             }
         }
     }
-
     Rectangle{
         id: border
         anchors.fill: parent

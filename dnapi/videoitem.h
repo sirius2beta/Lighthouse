@@ -81,6 +81,9 @@ public:
         if(_videoIndex == -1){
             return -1;
         }else{
+            if(_videoIndex>=_videoNoListModel.size()){
+                return -1;
+            }
             return _videoNoListModel[_videoIndex].toInt();
         }
     }

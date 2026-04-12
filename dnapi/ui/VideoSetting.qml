@@ -33,7 +33,6 @@ Item {
         _index = index
         _videoItem = DeNovoViewer.videoManager.getVideoItem(index)
 
-
         if(_videoItem){
             _videoItem.update()
         }
@@ -359,8 +358,6 @@ Item {
 
                     Connections{
                         function onActivated(index) {
-                            //_videoItem.setQualityIndex(index)
-                            //console.log("set qualityIndex:", index)
                         }
                     }
                 }
