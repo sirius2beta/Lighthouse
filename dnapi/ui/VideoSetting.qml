@@ -373,12 +373,43 @@ Item {
                     color: "white"
                     font.family: "Segoe UI"
                 }
+                ListModel {
+                    id: cbModel
+                    ListElement { text: "None"; isEnable: true }
+                    ListElement { text: "Yolov8"; isEnable: false }
+                    ListElement { text: "Seagrass"; isEnable: false }
+                }
                 ComboBox{
                     height:40
 
                     id: _AIType
                     font.family: "Segoe UI"
-                    model: ["None", "Yolov8", "Seagrass"]
+                    delegate: ItemDelegate {
+                        width: _AIType.width
+                        text: model.text
+
+                        // 核心關鍵：根據 Model 決定是否禁用
+                        enabled: model.isEnable
+
+                        // 可選：調整外觀讓使用者看出「被禁用」
+                        contentItem: Text {
+                            text: model.text
+                            font.family: "Segoe UI"
+                            font.pointSize: 12
+                            color: {
+                                  if (!model.isEnable) return "gray"          // 禁用時顯示灰色
+                                  if (_AIType.currentIndex === index) return "pink" // 選中時顯示藍色 (原本可能是粉紅)
+                                  return "white"                              // 其他正常狀態顯示黑色
+                              }
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        highlighted: _AIType.highlightedIndex === index
+                    }
+                    textRole: "text"
+
+                    model: cbModel
 
 
                 }
@@ -501,6 +532,12 @@ Item {
         target:_videoItem
         function onAiTypeChanged(type){
             _AIType.currentIndex = type
+        }
+    }
+    Connections{
+        target:_videoItem
+        function onModelReady(index, ready){
+            cbModel.setProperty(index, "isEnable", ready > 0);
         }
     }
     Connections{

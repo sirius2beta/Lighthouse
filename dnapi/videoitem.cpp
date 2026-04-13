@@ -506,3 +506,8 @@ void VideoItem::getVideoStatus(uint8_t videoIndex)
     //if(msg == QString("")) return;
     emit sendMsg(_boatID, _core->configManager()->message("COMMAND"), msg);
 }
+
+void VideoItem::setAIModelReady(uint8_t model_index, uint8_t isReady)
+{
+        emit modelReady(model_index, isReady);
+}

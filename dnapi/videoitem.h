@@ -106,6 +106,7 @@ public:
     QString encoder() {return _encoder;}
     QString videoFormat();
     void processDetection(QByteArray data);
+    void setAIModelReady(uint8_t model_index, uint8_t isReady);
 
 signals:
     void sendMsg(int8_t boatID, char topic, QByteArray data);
@@ -128,6 +129,8 @@ signals:
     void videoIndexChanged(uint8_t index);
     void statusChanged(uint8_t status);
     void recordingChanged(uint8_t recording);
+    void modelReady(uint8_t index, uint8_t isReady);
+    void seagrassModelReady(uint8_t isReady);
 
 protected slots:
     void onCameraMsg(uint8_t boatID, QByteArray msg);

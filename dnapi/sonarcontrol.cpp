@@ -22,6 +22,25 @@ void SonarControl::setPower(bool p)
     emit sendMsgbyID(boatID(), 5, bt);
 }
 
+void SonarControl::getStatus()
+{
+    QByteArray bt;
+    uint8_t controlType = 2;
+    uint8_t commandType = 1;
+    uint8_t index = 0;
+
+    char rawdata[3];
+    memcpy(rawdata, &controlType, sizeof(uint8_t));
+    memcpy(rawdata+1, &commandType, sizeof(uint8_t));
+    memcpy(rawdata+2, &controlType, sizeof(uint8_t));
+    QByteArray msg = QByteArray(rawdata,3);
+
+
+
+    // message type use raw
+    emit sendMsgbyID(boatID(), 5, bt);
+}
+
 void SonarControl::processMsg(QByteArray command)
 {
     qDebug()<<"SonarControl::processMsg"<<command.size();

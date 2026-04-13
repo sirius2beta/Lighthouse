@@ -104,14 +104,14 @@ void DNVideoManager::onPlay(VideoItem* videoItem)
     char rawdata[9];
 
     uint8_t operation = 1;
-    uint8_t videoNoraw = videoItem->videoNo();
+    uint8_t videoNo = videoItem->videoNo();
     uint8_t formatIndexraw = videoItem->formatIndex();
     uint8_t encoder = videoItem->encoder() == QString("h264")? 0:1;
     int32_t port = videoItem->port();
     uint8_t aiType = videoItem->AIType();
 
     memcpy(rawdata, &operation, sizeof(uint8_t));
-    memcpy(rawdata+1, &videoNoraw, sizeof(uint8_t));
+    memcpy(rawdata+1, &videoNo, sizeof(uint8_t));
     memcpy(rawdata+2, &formatIndexraw, sizeof(uint8_t));
     memcpy(rawdata+3, &encoder, sizeof(uint8_t));
 
@@ -125,13 +125,12 @@ void DNVideoManager::onPlay(VideoItem* videoItem)
 void DNVideoManager::onStop(VideoItem* videoItem)
 {
 
-    QString videoNo = QString("video")+QString::number(videoItem->videoNo());
     uint8_t operation = 2;
-    uint8_t videoNoraw = videoItem->videoNo();
+    uint8_t videoNo = videoItem->videoNo();
 
     char rawdata[2];
     memcpy(rawdata, &operation, sizeof(uint8_t));
-    memcpy(rawdata+1, &videoNoraw, sizeof(uint8_t));
+    memcpy(rawdata+1, &videoNo, sizeof(uint8_t));
     QByteArray msg = QByteArray(rawdata,2);
 
     if(_core->boatManager()->getBoatbyID(videoItem->boatID()) == 0){
@@ -218,6 +217,15 @@ void DNVideoManager::setVideoFormat(uint8_t ID, QByteArray data)
         if(data.length() == 6){
             for(int i = 0; i < videoList.size(); i++){
                 videoList[i]->setCurrentVideoStatus(data);
+            }
+        }else{
+            qDebug()<<"DNVideoManager: command size error:"<<data.length();
+        }
+    }else if(data[0] == 3){
+        qDebug()<<"get =====================index:"<<int(data[1])<<" Ready?"<<int(data[2]);
+        if(data.length() == 3){
+            for(int i = 0; i < videoList.size(); i++){
+                videoList[i]->setAIModelReady(data[1],data[2]);
             }
         }else{
             qDebug()<<"DNVideoManager: command size error:"<<data.length();
