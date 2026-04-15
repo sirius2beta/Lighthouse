@@ -1,4 +1,4 @@
-/****************************************************************************
+﻿/****************************************************************************
  *
  * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
  *
@@ -136,7 +136,7 @@ private slots:
 private:
     /// If all new connections should be suspended a message is displayed to the user and true is returned;
     bool _connectionsSuspendedMsg() const;
-
+    void _updateAutoConnectLinks();
     void _removeConfiguration(const LinkConfiguration *config);
     void _addUDPAutoConnectLink();
     void _createDynamicForwardLink(const char *linkName, const QString &hostName);

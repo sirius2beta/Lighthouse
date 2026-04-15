@@ -1,4 +1,4 @@
-/****************************************************************************
+﻿/****************************************************************************
  *
  * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
  *
@@ -56,13 +56,20 @@ LinkManager *LinkManager::instance()
 void LinkManager::init()
 {
 
-
+    (void) connect(_portListTimer, &QTimer::timeout, this, &LinkManager::_updateAutoConnectLinks);
+        _portListTimer->start(_autoconnectUpdateTimerMSecs); // timeout must be long enough to get past bootloader on second pass
     _addUDPAutoConnectLink();
     Bridge::instance()->init();
 
 }
 
+void LinkManager::_updateAutoConnectLinks()
+{
 
+    //_addSerialAutoConnectLink();
+
+
+}
 
 void LinkManager::createConnectedLink(const LinkConfiguration *config)
 {
@@ -674,7 +681,7 @@ void LinkManager::_addSerialAutoConnectLink()
 
     QStringList currentPorts;
     for (const QGCSerialPortInfo &portInfo: portList) {
-        /*
+
         qCDebug(LinkManagerVerboseLog) << "-----------------------------------------------------";
         qCDebug(LinkManagerVerboseLog) << "portName:          " << portInfo.portName();
         qCDebug(LinkManagerVerboseLog) << "systemLocation:    " << portInfo.systemLocation();
@@ -683,7 +690,7 @@ void LinkManager::_addSerialAutoConnectLink()
         qCDebug(LinkManagerVerboseLog) << "serialNumber:      " << portInfo.serialNumber();
         qCDebug(LinkManagerVerboseLog) << "vendorIdentifier:  " << portInfo.vendorIdentifier();
         qCDebug(LinkManagerVerboseLog) << "productIdentifier: " << portInfo.productIdentifier();
-*/
+
 
         currentPorts << portInfo.systemLocation();
 
@@ -692,6 +699,7 @@ void LinkManager::_addSerialAutoConnectLink()
 
         // check to see if nmea gps is configured for current Serial port, if so, set it up to connect
         if (portInfo.getBoardInfo(boardType, boardName)) {
+            qCDebug(LinkManagerVerboseLog) << "in board list";
             // Should we be auto-connecting to this board type?
             if (!_allowAutoConnectToBoard(boardType)) {
                 continue;
@@ -728,6 +736,9 @@ void LinkManager::_addSerialAutoConnectLink()
                     qCDebug(LinkManagerLog) << "RTK GPS auto-connected" << portInfo.portName().trimmed();
                     //_autoConnectRTKPort = portInfo.systemLocation();
                     //GPSManager::instance()->gpsRtk()->connectGPS(portInfo.systemLocation(), boardName);
+                    break;
+                case QGCSerialPortInfo::BoardTypeSuperTaira:
+                    qCDebug(LinkManagerLog) << "supertaira auto-connected" << portInfo.portName().trimmed();
                     break;
                 default:
                     qCWarning(LinkManagerLog) << "Internal error: Unknown board type" << boardType;
@@ -770,6 +781,9 @@ bool LinkManager::_allowAutoConnectToBoard(QGCSerialPortInfo::BoardType_t boardT
         return true;
         break;
     case QGCSerialPortInfo::BoardTypeRTKGPS:
+        return true;
+        break;
+    case QGCSerialPortInfo::BoardTypeSuperTaira:
         return true;
         break;
     default:

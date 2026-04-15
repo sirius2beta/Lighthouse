@@ -1,4 +1,4 @@
-/****************************************************************************
+﻿/****************************************************************************
  *
  * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
  *
@@ -171,7 +171,7 @@ void _qtGstLog(GstDebugCategory *category,
 void _setGstEnvVars()
 {
     const QString appDir = QCoreApplication::applicationDirPath();
-    qCDebug(GStreamerLog) << "App Directory:" << appDir;
+    //qCDebug(GStreamerLog) << "App Directory:" << appDir;
 
 #if defined(Q_OS_MACOS) && defined(QGC_GST_MACOS_FRAMEWORK)
     const QString frameworkDir = QDir(appDir).filePath("../Frameworks/GStreamer.framework");
@@ -229,7 +229,7 @@ void _checkPlugin(gpointer data, gpointer user_data)
 
     const gchar *name = gst_plugin_get_name(plugin);
     const gchar *version = gst_plugin_get_version(plugin);
-    qCDebug(GStreamerLog) << QString("Plugin %1: (Version %2)").arg(name, version);
+    //qCDebug(GStreamerLog) << QString("Plugin %1: (Version %2)").arg(name, version);
 }
 
 bool _verifyPlugins()
@@ -415,7 +415,7 @@ bool initialize()
         const char* name = GST_OBJECT_NAME(f);
         //qDebug() << "QGC_GStreamer_Debug:  -> " << name;
         if (g_str_has_prefix(name, "amcviddec")) {
-            qDebug() << "QGC_GStreamer_Debug: 發現可用硬解 -> " << name;
+            //qDebug() << "QGC_GStreamer_Debug: 發現可用硬解 -> " << name;
         }
     }
     gst_plugin_feature_list_free(list);

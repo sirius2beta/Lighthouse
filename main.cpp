@@ -6,9 +6,9 @@
 #include <QSplashScreen>
 
 #include "dnapplication.h"
-
 int main(int argc, char *argv[])
 {
+    qputenv("QT_LOGGING_RULES", "qt.network.ssl.warning=false;qt.location.osm.tilefetcher.debug=true");
 
     DNApplication* app = new DNApplication(argc, argv);
     QPixmap pixmap(":/res/splash.png");

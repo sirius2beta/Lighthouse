@@ -60,16 +60,13 @@
 
         { "vendorID": 5446, "productID": 424,       "boardClass": "RTK GPS",    "name": "U-blox RTK GPS",       "comment": "U-blox RTK GPS (M8P)" },
         { "vendorID": 5446, "productID": 425,       "boardClass": "RTK GPS",    "name": "U-blox RTK GPS",       "comment": "U-blox RTK GPS (F9P)" },
-        { "vendorID": 1317, "productID": 42151,     "boardClass": "RTK GPS",    "name": "Trimble RTK GPS" },
+        { "vendorID": 1659, "productID": 9123,     "boardClass": "SuperTaira",    "name": "Supertaira" },
         { "vendorID": 5418, "productID": 34240,     "boardClass": "RTK GPS",    "name": "Septentrio RTK GPS" },
         { "vendorID": 8352, "productID": 16732,     "boardClass": "OpenPilot",  "name": "OpenPilot OPLink" },
         { "vendorID": 8352, "productID": 16733,     "boardClass": "OpenPilot",  "name": "OpenPilot CC3D" },
         { "vendorID": 8352, "productID": 16734,     "boardClass": "OpenPilot",  "name": "OpenPilot Revolution" },
         { "vendorID": 8352, "productID": 16848,     "boardClass": "OpenPilot",  "name": "Taulabs Sparky2" },
-        { "vendorID": 13891, "productID": 5600,     "boardClass": "Pixhawk",    "name": "ZeroOne X6" },
-        { "venderID": 1659, "productID":9123,       "boardClass": "SuperTaira", "name": "SuperTaira"},
-        { "venderID": 1659, "productID":8963,       "boardClass": "SuperTaira", "name": "SuperTaira"},
-
+        { "vendorID": 13891, "productID": 5600,     "boardClass": "Pixhawk",    "name": "ZeroOne X6" }
     ],
 
     "boardDescriptionFallback": [

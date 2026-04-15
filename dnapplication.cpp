@@ -14,6 +14,7 @@
 #include "dnapi/controlitem.h"
 #include "dnapi/dnvalue.h"
 #include "dnapi/aquagraph.h"
+#include "dnapi/arcgisnetworkmanager.h"
 
 
 
@@ -96,7 +97,8 @@ void DNApplication::_init(int &argc, char *argv[])
     QFontDatabase::addApplicationFont(":/fonts/Roboto-Black.ttf");
 
     _core->videoManager()->initGstreamer();
-
+    LighthouseMapProxy *mapProxy = new LighthouseMapProxy(this);
+    _qmlEngine->setNetworkAccessManagerFactory(new ArcGISNetworkFactory());
     _qmlEngine->addImportPath("qrc:/imports");
     _qmlEngine->addImportPath("qrc:/qml");
     _qmlEngine->load("qrc:/main.qml");

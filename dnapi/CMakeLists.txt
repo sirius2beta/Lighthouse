@@ -1,4 +1,4 @@
-find_package(Qt6 REQUIRED COMPONENTS Core Network Qml Gui Quick)
+﻿find_package(Qt6 REQUIRED COMPONENTS Core Network Qml Gui Quick)
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     boatitem.cpp
@@ -17,6 +17,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     dncontrol.h
     dncore.cpp
     dncore.h
+    ArcGISNetworkManager.h
+    ArcGISNetworkManager.cpp
 
     dnmetadata.cpp
     dnmetadata.h

@@ -15,7 +15,7 @@ ConfigManager::ConfigManager(QObject *parent)
     QFile file(":/res/SensorType.xml");
     reader.setDevice(&file);
     if(file.open(QIODevice::ReadOnly | QIODevice::Text)){
-        qDebug()<<"file opened";
+        //qDebug()<<"file opened";
 
         if (reader.readNextStartElement()) {
             if (reader.name().toString() == "marinelink"){
@@ -47,7 +47,7 @@ ConfigManager::ConfigManager(QObject *parent)
         }
     }
     file.close();
-    qDebug()<<"ConfigManager:: xml file closed";
+    //qDebug()<<"ConfigManager:: xml file closed";
 }
 
 
@@ -79,13 +79,13 @@ void ConfigManager::readSensorTypes()
     while(reader.readNextStartElement()){
         if(reader.name().toString() == "sensorgroup"){
             SensorGroup sg(nullptr, reader.attributes().value("name").toString());
-            qDebug()<<reader.attributes().value("name");
+            //qDebug()<<reader.attributes().value("name");
             // readElementText at last to prevent breaking loop
 
             while(reader.readNextStartElement()){
 
                 if(reader.name().toString() == "sensor"){
-                    qDebug()<<reader.attributes().value("name");
+                    //qDebug()<<reader.attributes().value("name");
                     int sensorType = reader.attributes().value("value").toInt();
                     QString name = reader.attributes().value("name").toString();
                     QString dataTypeName = reader.attributes().value("type").toString();
@@ -93,7 +93,7 @@ void ConfigManager::readSensorTypes()
                     DNValue value(0, dataType);
                     SensorItem* si = new SensorItem(this, name, sensorType, value);
 
-                    qDebug()<<dataTypeName;
+                    //qDebug()<<dataTypeName;
                     sg.append(si);
                     // readElementText at last to prevent breaking loop
                     if(dataTypeName == QString("array")){
@@ -125,7 +125,7 @@ void ConfigManager::readMessageTypes()
             QString name = reader.attributes().value("name").toString();
             _messageTypeMap[name] = messageType;
 
-            qDebug()<<messageType<<","<<name;
+            //qDebug()<<messageType<<","<<name;
             // readElementText at last to prevent breaking loop
 
 
@@ -138,14 +138,14 @@ void ConfigManager::readMessageTypes()
 
 void ConfigManager::readVideoFormatTypes()
 {
-    qDebug()<<"ConfigManager::read videoformat types";
+    //qDebug()<<"ConfigManager::read videoformat types";
     while(reader.readNextStartElement()){
 
         if(reader.name().toString() == "entry"){
             uint8_t videoType = reader.attributes().value("value").toInt();
             QString name = reader.attributes().value("name").toString();
             _videoFormatTypeList.append(name);
-            qDebug()<<"  -"<<videoType<<","<<name;
+            //qDebug()<<"  -"<<videoType<<","<<name;
             // readElementText at last to prevent breaking loop
             reader.readElementText();
 
@@ -157,7 +157,7 @@ void ConfigManager::readVideoFormatTypes()
 
 void ConfigManager::readControlTypes()
 {
-    qDebug()<<"ConfigManager::read control types";
+    //qDebug()<<"ConfigManager::read control types";
     while(reader.readNextStartElement()){
 
         if(reader.name().toString() == "entry"){
@@ -166,7 +166,7 @@ void ConfigManager::readControlTypes()
             QString name = reader.attributes().value("name").toString();
             QVector<DNValue> fields;
 
-            qDebug()<<"  -"<<controlType<<","<<name;
+            //qDebug()<<"  -"<<controlType<<","<<name;
             // readElementText at last to prevent breaking loop
             //reader.readElementText();
             while(reader.readNextStartElement()){
@@ -177,7 +177,7 @@ void ConfigManager::readControlTypes()
                     DNValue value(0, DNMetaData::stringToType(type));
                     value.setName(fieldName);
                     fields.append(value);
-                    qDebug()<<value.name()<<type;
+                    //qDebug()<<value.name()<<type;
                     // readElementText at last to prevent breaking loop
 
                     reader.readElementText();
@@ -197,7 +197,7 @@ void ConfigManager::readArray()
     while(reader.readNextStartElement()){
 
         if(reader.name().toString() == "entry"){
-            qDebug()<<reader.attributes().value("name");
+            //qDebug()<<reader.attributes().value("name");
             int sensorType = reader.attributes().value("value").toInt();
             QString name = reader.attributes().value("name").toString();
             QString dataTypeName = reader.attributes().value("type").toString();
@@ -206,7 +206,7 @@ void ConfigManager::readArray()
             SensorItem* si = new SensorItem(this, name, sensorType, value);
 
             //_messageTypeMap[name] = messageType;
-            qDebug()<<name<<","<<dataType;
+            //qDebug()<<name<<","<<dataType;
             // readElementText at last to prevent breaking loop
             reader.readElementText();
         }

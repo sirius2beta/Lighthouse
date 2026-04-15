@@ -27,8 +27,6 @@ void SensorManager::init()
         }
         _sensorGroupListModel.append(model);
     }
-    SensorItem* sensor = qobject_cast<SensorItem*> (_sensorGroupListModel[4]->get(1));
-    qDebug()<<"type:"<<sensor->value().dataType();
     qDebug()<<"sensorManager:: Initiate complete";
 }
 
