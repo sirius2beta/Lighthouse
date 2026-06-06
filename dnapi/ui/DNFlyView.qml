@@ -43,6 +43,7 @@ Item {
             anchors.left:        parent.left
             anchors.top:         parent.top
             anchors.margins:        10
+            anchors.topMargin: 30
             item1:                  videoView0
             item2:                  videoView1
             name: "his"

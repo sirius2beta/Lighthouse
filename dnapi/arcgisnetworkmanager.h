@@ -40,7 +40,7 @@ protected:
                         QString y = coords[2];
 
                         // 重組成 ArcGIS 格式 (Z/Y/X)
-                        QString newUrl = QString("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/%1/%2/%3")
+                        QString newUrl = QString("http://mt1.google.com/vt/lyrs=s&hl=zh-TW&x=%3&y=%2&z=%1&s=Galil&scale=1")
                                          .arg(z).arg(y).arg(x);
                         qDebug() << "Redirect to:" << newUrl;
                         QNetworkRequest newRequest(newUrl);
@@ -97,7 +97,7 @@ protected:
                 QString y = match.captured(3);
 
                 // 【核心修正】將 X/Y 對調以符合 ArcGIS 的 Z/Y/X 規範
-                QString arcgisUrl = QString("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/%1/%2/%3")
+                QString arcgisUrl = QString("http://mt1.google.com/vt/lyrs=s&hl=zh-TW&x=%3&y=%2&z=%1&s=Galil&scale=1")
                                     .arg(z).arg(y).arg(x);
                 QNetworkRequest req(arcgisUrl);
                 req.setRawHeader("User-Agent", "Lighthouse_USV");
