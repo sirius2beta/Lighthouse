@@ -14,6 +14,7 @@ DNCore::DNCore(QObject *parent, QString config)
     _sensorManager = new SensorManager(this, this);
     _controlManager = new ControlManager(this, this);
     _aquaGraph = new AquaGraph(this, this);
+    _marineDatabase = new MarineDatabase(this);
 
 
     connect(_networkManager, &NetworkManager::setFormat, _videoManager, &DNVideoManager::setVideoFormat);

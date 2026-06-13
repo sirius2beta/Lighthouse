@@ -70,9 +70,6 @@ void DNApplication::_shutdown()
 
 void DNApplication::_init(int &argc, char *argv[])
 {
-
-
-
     _app = this;
     qmlRegisterUncreatableType<AquaGraph>("DeNovoViewer.Boat", 1, 0, "AquaGraph", "reference only");
     _qmlEngine = new QQmlApplicationEngine(this);
@@ -109,10 +106,7 @@ void DNApplication::_init(int &argc, char *argv[])
                                       QQuickWindow::BeforeSynchronizingStage);
     }
 
-
-
     emit initiated();
-
 
 }
 

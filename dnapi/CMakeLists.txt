@@ -1,4 +1,4 @@
-﻿find_package(Qt6 REQUIRED COMPONENTS Core Network Qml Gui Quick)
+﻿find_package(Qt6 REQUIRED COMPONENTS Core Network Qml Gui Quick Sql)
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     boatitem.cpp
@@ -46,16 +46,16 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     winchcontrol.h
     aquagraph.cpp
     aquagraph.h
+    marinedatabase.cpp
+    marinedatabase.h
 )
 
-target_link_libraries(${CMAKE_PROJECT_NAME}
-    PRIVATE
-        Qt6::Qml
-    PUBLIC
-        Qt6::Core
-        Qt6::Network
-        Qt6::Gui
-        Qt6::Quick
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Network
+    Qt6::Qml
+    Qt6::Quick
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

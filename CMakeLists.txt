@@ -50,7 +50,7 @@ else()
     set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE "${CMAKE_BINARY_DIR}/staging")
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Network Qml QuickControls2 SerialPort Widgets Graphs)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Network Qml QuickControls2 SerialPort Widgets Graphs Sql)
 
 
 qt_standard_project_setup(REQUIRES 6.5)
@@ -65,6 +65,7 @@ qt_add_executable(${CMAKE_PROJECT_NAME}
     dnapplication.cpp
     dnapplication.h
     ${QGC_RESOURCES}
+    dnapi/marinedatabase.h dnapi/marinedatabase.cpp
 )
 
 if(WIN32)
@@ -109,6 +110,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         Qt6::QuickControls2
         Qt6::SerialPort
         Qt6::Graphs
+        Qt6::Sql
         gstqml6gl
 
     PUBLIC

@@ -11,6 +11,7 @@
 #include "dnqmlglobal.h"
 #include "controlmanager.h"
 #include "aquagraph.h"
+#include "marinedatabase.h"
 
 class DNCore : public QObject
 {
@@ -28,6 +29,7 @@ public:
     ConfigManager* configManager() { return _configManager; }
     ControlManager* controlManager() { return _controlManager; }
     AquaGraph* aquaGraph(){ return _aquaGraph; }
+    MarineDatabase* marineDatabase() {return _marineDatabase;}
     QString config() {return _config;}
 
 
@@ -40,6 +42,7 @@ private:
     ConfigManager* _configManager;
     ControlManager* _controlManager;
     AquaGraph* _aquaGraph;
+    MarineDatabase* _marineDatabase;
 
 };
 
