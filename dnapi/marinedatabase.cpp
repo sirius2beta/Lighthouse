@@ -24,9 +24,15 @@ MarineDatabase::MarineDatabase(QObject *parent, const QString& dbName)
     : QObject(parent), m_dbName(dbName), _writeInterval(5) // 預設 5 秒
 {
     m_connectionName = QUuid::createUuid().toString();
+    QSettings settings;
+    // Is the group even there?
 
     m_logTimer = new QTimer(this);
     connect(m_logTimer, &QTimer::timeout, this, &MarineDatabase::handleLogTimeout);
+    if (settings.contains(settingsRoot() + "/lastRecord")) {
+        QString path = settings.value(settingsRoot() + "/lastRecord").toString();
+        openConnection(path);
+    }
 }
 
 MarineDatabase::~MarineDatabase() {
@@ -51,6 +57,7 @@ bool MarineDatabase::openConnection(const QString& path) {
     }
 
     m_isClosed = false;
+    emit dbConnected(m_isClosed);
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", m_connectionName);
     db.setDatabaseName(m_dbName);
 
@@ -73,7 +80,8 @@ bool MarineDatabase::openConnection(const QString& path) {
         return false;
     }
     m_sensorCache.clear();
-
+    QSettings settings;
+    settings.setValue(settingsRoot() + "/lastRecord", path);
     emit connectionStatusChanged(true);
     return true;
 }
@@ -86,6 +94,7 @@ void MarineDatabase::closeConnection() {
 
 
     m_isClosed = true;
+    emit dbConnected(m_isClosed);
 
     if (!QSqlDatabase::contains(m_connectionName)) {
         return;

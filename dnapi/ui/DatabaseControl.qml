@@ -237,7 +237,7 @@ Item {
     Component.onCompleted: {
         if (DeNovoViewer.marineDatabase) {
             var path = DeNovoViewer.marineDatabase.dbName
-            if (path && path !== "marine.db" && path !== "") {
+            if (DeNovoViewer.marineDatabase.isConnected) {
                 root.isDbConnected = true
                 root.currentDbName = path.substring(path.lastIndexOf("/") + 1)
                 root.isRecording = false

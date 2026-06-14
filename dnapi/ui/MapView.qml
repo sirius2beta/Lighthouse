@@ -220,7 +220,7 @@ Item {
     }
     Rectangle{
         id: controlBar
-        width:50*3+10+2*2
+        width:50*4+10+2*3
         height:60
         anchors.margins: 5
         anchors.bottom: parent.bottom
@@ -326,6 +326,37 @@ Item {
                 }
             }
 
+            Button {
+                Layout.alignment: Qt.AlignVCenter
+                id: database_setting_button
+                text: ""
+                property bool activate: false
+                background: Rectangle {
+                    implicitWidth: 50
+                    implicitHeight: 50
+                    color: parent.down ? "#99555555" : "#00000000"
+                    radius: 4
+                    Rectangle{
+                        anchors.fill: parent
+                        radius:4
+                        anchors.margins: 5
+                        color:"#00999900"
+                    }
+
+                    Image{
+                        anchors.margins: 5
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        fillMode: Image.PreserveAspectFit
+                        source: "qrc:/res/database_sm.svg"
+                    }
+
+                }
+                onClicked: {
+                    activate = !activate // 切換按鈕的活躍狀態
+                }
+            }
+
         }
     }
     // 🎨 色彩漸層計算機
@@ -383,8 +414,7 @@ Item {
 
             // 判斷資料庫是否已經有開啟檔案 (假設利用 dbName 判斷，可依據你的 C++ 邏輯微調)
             property bool isDbReady: DeNovoViewer.marineDatabase &&
-                                     DeNovoViewer.marineDatabase.dbName !== "" &&
-                                     DeNovoViewer.marineDatabase.dbName !== "marine.db"
+                                     DeNovoViewer.marineDatabase.isConnected
             function refreshMapData() {
                         // 清空舊點
                         trajectoryModel.clear()
@@ -515,6 +545,40 @@ Item {
 
             }
         }
+
+        Rectangle {
+                id: database_setting
+                width: 260
+                height: 350
+                // 停靠在控制列的上方
+                anchors.bottom: controlBar.top
+                anchors.bottomMargin: 10
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                color: "#252528"
+                radius: 8
+                border.color: "#3a3a3c"
+                border.width: 1
+
+                // 💡 修正：綁定到剛建好的 database_setting_button
+                visible: database_setting_button.activate && isFull
+
+                // 防止滑鼠點擊穿透到下方的地圖
+                MouseArea { anchors.fill: parent }
+
+                // 🚀 核心魔法：動態載入器
+                Loader {
+                    id: databaseControlLoader
+                    anchors.fill: parent
+                    anchors.margins: 1 // 避開邊框
+
+                    // 指定要載入的外部 QML 檔案
+                    source: "DatabaseControl.qml"
+
+                    // 💡 效能優化：只有當這個 Rectangle 顯示時，才真正在記憶體中實體化它
+                    active: parent.visible
+                }
+            }
 
         Connections {
                 target: DeNovoViewer.marineDatabase
