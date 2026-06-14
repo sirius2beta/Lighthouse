@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>船端 Jetson 照片監視器</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; display: flex; height: 93vh; gap: 20px; }
+        
+        #sidebar { 
+            width: 280px; 
+            background: #fff; 
+            padding: 15px; 
+            border: 1px solid #ccc; 
+            border-radius: 8px;
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        
+        .list-container {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            background: #fafafa;
+            overflow-y: auto;
+            scroll-behavior: smooth; 
+        }
+        
+        #folder-list { flex: 4; }
+        
+        #image-list { 
+            flex: 6; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+            gap: 6px; 
+            align-content: start; 
+        }
+        
+        #main-content { 
+            flex: 1; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        .folder-item { padding: 8px 10px; cursor: pointer; border-bottom: 1px solid #eee; background: #fff; border-radius: 3px; margin-bottom: 4px; font-size: 14px; }
+        .folder-item:hover { background-color: #e0e0e0; }
+        .active { background-color: #007bff; color: white; }
+        .active:hover { background-color: #007bff; }
+        
+        .image-item { padding: 6px 4px; cursor: pointer; text-align: center; background: #eee; font-size: 11px; word-break: break-all; border-radius: 3px; height: fit-content; transition: background-color 0.3s; }
+        .image-item:hover { background: #bbb; }
+        .selected-image { background: #6c757d !important; color: white; } 
+        
+        @keyframes highlightNew {
+            0% { background-color: #ffeeba; }
+            100% { background-color: #eee; }
+        }
+        .new-item { animation: highlightNew 2s ease-out forwards; }
+        
+        #viewer { width: 100%; text-align: center; background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .loading { color: #888; font-style: italic; text-align: center; grid-column: 1 / -1; padding: 10px 0; }
+        
+        .control-panel { margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap; }
+        
+        .btn-toggle { padding: 10px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; transition: all 0.2s ease; background-color: #fff; color: #333; }
+        
+        .btn-toggle.mask-on { background-color: #28a745; color: white; border-color: #248afd; }
+        
+        .btn-latest { background-color: #007bff; color: white; border-color: #0056b3; }
+        .btn-latest:hover { background-color: #0056b3; }
+
+        .btn-toggle.auto-on { background-color: #17a2b8; color: white; border-color: #117a8b; box-shadow: 0 0 8px rgba(23, 162, 184, 0.5); }
+        
+        .slider-container { display: flex; align-items: center; gap: 10px; font-weight: bold; }
+        input[type="range"] { cursor: pointer; }
+
+        #mask-info-board {
+            margin: 5px auto 15px auto;
+            padding: 10px 20px;
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            border-radius: 6px;
+            display: inline-block;
+            font-size: 16px;
+            font-weight: bold;
+            color: #c53030;
+        }
+
+        #image-container {
+            position: relative;
+            display: inline-block;
+            border: 3px solid #333;
+            background: #000;
+            max-width: 100%;
+        }
+        
+        #preview-img-base {
+            display: block;
+            max-width: 100%;
+            max-height: 55vh; 
+        }
+
+        #preview-mask-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <h4 style="margin: 0 0 5px 0;">1. Record 資料夾</h4>
+        <div id="folder-list" class="list-container loading">載入中...</div>
+        
+        <h4 style="margin: 10px 0 5px 0;">2. 照片清單 (即時更新)</h4>
+        <div id="image-list" class="list-container">請先選擇資料夾...</div>
+    </div>
+
+    <div id="main-content">
+        <div id="viewer">
+            <h2 id="current-folder" style="margin-top: 0;">請選擇左側資料夾</h2>
+            
+            <div class="control-panel">
+                
+                <button class="btn-toggle btn-latest" onclick="showLatestImage()">
+                    ⏭️ 跳至最新
+                </button>
+
+                <button id="auto-follow-btn" class="btn-toggle" onclick="toggleAutoFollow()">
+                    ▶️ 即時追蹤: 停止 (OFF)
+                </button>
+
+                <button id="mask-btn" class="btn-toggle" onclick="toggleMaskMode()">
+                    AI 遮罩: 隱藏 (OFF)
+                </button>
+                
+                <div class="slider-container" id="opacity-control" style="display: none;">
+                    <label for="mask-opacity">遮罩透明度:</label>
+                    <input type="range" id="mask-opacity" min="0" max="1" step="0.1" value="0.5" oninput="updateOpacity()">
+                    <span id="opacity-val">50%</span>
+                </div>
+            </div>
+            
+            <h4 id="current-viewing-filename" style="color: #4a5568; margin-bottom: 5px;">請選擇照片</h4>
+            
+            <div id="mask-info-board" style="display: none;">
+                🌱 海草估算面積：<span id="mask-ratio">0.00</span> % 
+                <span style="font-size: 13px; color: #718096; font-weight: normal; margin-left: 10px;">
+                    (共 <span id="mask-pixels">0</span> / <span id="total-pixels">0</span> 像素)
+                </span>
+            </div>
+            <br>
+            
+            <div id="image-container" style="display: none;">
+                <img id="preview-img-base" src="" alt="原始照片">
+                <canvas id="preview-mask-canvas" style="display: none;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SERVER_IP = "http://10.10.10.65:5000"; 
+
+        let currentRecordDir = "";
+        let currentImageBase = ""; 
+        let isMaskMode = false;     
+        
+        let pollingInterval = null; 
+        let currentTotalImages = 0; 
+        let isAutoFollow = false;
+
+        document.addEventListener("DOMContentLoaded", fetchStructure);
+
+        function fetchStructure() {
+            fetch(`${SERVER_IP}/api/structure`)
+                .then(res => res.json())
+                .then(data => {
+                    const listDiv = document.getElementById("folder-list");
+                    listDiv.innerHTML = "";
+                    if(data.records && data.records.length > 0) {
+                        data.records.forEach(folder => {
+                            const div = document.createElement("div");
+                            div.className = "folder-item";
+                            div.innerText = folder;
+                            div.onclick = () => selectFolder(folder, div);
+                            listDiv.appendChild(div);
+                        });
+                    } else {
+                        listDiv.innerText = "沒有找到任何 record 資料夾";
+                    }
+                })
+                .catch(err => {
+                    document.getElementById("folder-list").innerText = "連線失敗";
+                    console.error(err);
+                });
+        }
+
+        function selectFolder(folderName, element) {
+            document.querySelectorAll('.folder-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            currentRecordDir = folderName;
+            currentImageBase = ""; 
+            currentTotalImages = 0; 
+            
+            if (pollingInterval) clearInterval(pollingInterval);
+            if (isAutoFollow) toggleAutoFollow(); 
+
+            document.getElementById("current-folder").innerText = `目前資料夾：${folderName}`;
+            document.getElementById("current-viewing-filename").innerText = "請選擇照片";
+            document.getElementById("image-container").style.display = "none";
+            document.getElementById("mask-info-board").style.display = "none";
+            
+            const imageListDiv = document.getElementById("image-list");
+            imageListDiv.innerHTML = "<div class='loading'>計算清單中...</div>";
+
+            fetchImagesAndRender(folderName, true);
+            
+            pollingInterval = setInterval(() => {
+                fetchImagesAndRender(currentRecordDir, false);
+            }, 2000);
+        }
+
+        function fetchImagesAndRender(folderName, isInitialLoad) {
+            fetch(`${SERVER_IP}/api/structure/${folderName}`)
+                .then(res => res.json())
+                .then(data => {
+                    if(data.images && data.images.length > 0) {
+                        
+                        data.images.reverse(); 
+                        const newCount = data.images.length;
+                        const imageListDiv = document.getElementById("image-list");
+
+                        if (isInitialLoad) {
+                            imageListDiv.innerHTML = ""; 
+                        }
+
+                        if (newCount > currentTotalImages) {
+                            const newItems = data.images.slice(0, newCount - currentTotalImages);
+                            
+                            for (let i = newItems.length - 1; i >= 0; i--) {
+                                const imgName = newItems[i];
+                                const div = document.createElement("div");
+                                
+                                div.className = "image-item" + (!isInitialLoad ? " new-item" : "");
+                                div.id = `img-${imgName.split('.')[0]}`; 
+                                div.innerText = imgName;
+                                div.onclick = () => selectImage(imgName, true); 
+                                
+                                imageListDiv.prepend(div);
+                            }
+                            
+                            currentTotalImages = newCount;
+
+                            if (isAutoFollow && !isInitialLoad) {
+                                selectImage(newItems[0], false); 
+                                imageListDiv.scrollTop = 0;
+                            }
+                        }
+                    } else if (isInitialLoad) {
+                        document.getElementById("image-list").innerText = "無照片";
+                    }
+                })
+                .catch(err => {
+                    if (isInitialLoad) document.getElementById("image-list").innerText = "讀取失敗";
+                    console.error("Polling Error:", err);
+                });
+        }
+
+        function selectImage(imgName, isUserClick = false) {
+            if (isUserClick && isAutoFollow) {
+                toggleAutoFollow(); 
+            }
+
+            document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected-image'));
+            currentImageBase = imgName.split('.')[0]; 
+            const currentItem = document.getElementById(`img-${currentImageBase}`);
+            if (currentItem) currentItem.classList.add('selected-image');
+            
+            renderViewer();
+        }
+
+        // 🛠️ 關鍵修正點：調整為 false，不觸發解鎖機制
+        function showLatestImage() {
+            if (!currentRecordDir) {
+                alert("請先在左側選擇一個資料夾！");
+                return;
+            }
+
+            const imageListDiv = document.getElementById("image-list");
+            const firstImageItem = imageListDiv.querySelector('.image-item');
+
+            if (firstImageItem) {
+                const latestImgName = firstImageItem.innerText;
+                selectImage(latestImgName, false); // ✨ 這裡改為 false，代表移至最新不算是「看舊照片」
+                imageListDiv.scrollTop = 0;
+            } else {
+                alert("目前資料夾沒有照片！");
+            }
+        }
+
+        function toggleAutoFollow() {
+            if (!currentRecordDir && !isAutoFollow) {
+                alert("請先在左側選擇一個資料夾！");
+                return;
+            }
+
+            isAutoFollow = !isAutoFollow;
+            const btn = document.getElementById("auto-follow-btn");
+
+            if (isAutoFollow) {
+                btn.innerText = "▶️ 即時追蹤: 啟動中 (ON)";
+                btn.classList.add("auto-on");
+                showLatestImage();
+            } else {
+                btn.innerText = "▶️ 即時追蹤: 停止 (OFF)";
+                btn.classList.remove("auto-on");
+            }
+        }
+
+        function renderViewer() {
+            if (!currentImageBase || !currentRecordDir) return;
+
+            const containerEl = document.getElementById("image-container");
+            const baseImgEl = document.getElementById("preview-img-base");
+            const maskCanvas = document.getElementById("preview-mask-canvas");
+            const titleEl = document.getElementById("current-viewing-filename");
+
+            titleEl.innerText = `正在檢視：${currentImageBase}.jpg`;
+            baseImgEl.src = `${SERVER_IP}/api/image/${currentRecordDir}/${currentImageBase}.jpg`;
+            containerEl.style.display = "inline-block";
+
+            if (isMaskMode) {
+                maskCanvas.style.display = "block";
+                processMaskImage(`${SERVER_IP}/api/image/${currentRecordDir}/${currentImageBase}_mask.jpg`);
+            } else {
+                maskCanvas.style.display = "none";
+                document.getElementById("mask-info-board").style.display = "none";
+            }
+        }
+
+        function processMaskImage(maskUrl) {
+            const canvas = document.getElementById("preview-mask-canvas");
+            const ctx = canvas.getContext("2d", { willReadFrequently: true });
+            
+            const img = new Image();
+            img.crossOrigin = "Anonymous"; 
+            
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                let seagrassPixelCount = 0; 
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i]; 
+                    if (r >= 128) { 
+                        data[i] = 255;     
+                        data[i+1] = 0;     
+                        data[i+2] = 0;     
+                        data[i+3] = 255;   
+                        seagrassPixelCount++; 
+                    } else { 
+                        data[i+3] = 0;     
+                    }
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+                updateOpacity(); 
+                
+                const totalPixels = canvas.width * canvas.height;
+                const ratio = (seagrassPixelCount / totalPixels) * 100;
+                
+                document.getElementById("mask-ratio").innerText = ratio.toFixed(2);
+                document.getElementById("mask-pixels").innerText = seagrassPixelCount.toLocaleString();
+                document.getElementById("total-pixels").innerText = totalPixels.toLocaleString();
+                document.getElementById("mask-info-board").style.display = "inline-block";
+            };
+            
+            img.src = maskUrl;
+        }
+
+        function toggleMaskMode() {
+            isMaskMode = !isMaskMode;
+            const btn = document.getElementById("mask-btn");
+            const opacityCtrl = document.getElementById("opacity-control");
+            const maskCanvas = document.getElementById("preview-mask-canvas");
+            const infoBoard = document.getElementById("mask-info-board");
+
+            if (isMaskMode) {
+                btn.innerText = "AI 遮罩: 疊加中 (ON)";
+                btn.classList.add("mask-on");
+                opacityCtrl.style.display = "flex";
+                
+                if (currentImageBase) {
+                    maskCanvas.style.display = "block";
+                    processMaskImage(`${SERVER_IP}/api/image/${currentRecordDir}/${currentImageBase}_mask.jpg`);
+                }
+            } else {
+                btn.innerText = "AI 遮罩: 隱藏 (OFF)";
+                btn.classList.remove("mask-on");
+                opacityCtrl.style.display = "none";
+                maskCanvas.style.display = "none";
+                infoBoard.style.display = "none"; 
+            }
+        }
+
+        function updateOpacity() {
+            const slider = document.getElementById("mask-opacity");
+            const maskCanvas = document.getElementById("preview-mask-canvas");
+            const valLabel = document.getElementById("opacity-val");
+            
+            maskCanvas.style.opacity = slider.value;
+            valLabel.innerText = `${Math.round(slider.value * 100)}%`;
+        }
+    </script>
+</body>
+</html>

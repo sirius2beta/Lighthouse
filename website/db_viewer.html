@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LightHouse Log DB 讀取器 (支援 JSON 展開)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            padding: 20px;
+            max-width: 95%;
+            margin: auto;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        input[type="file"] {
+            display: block;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #ecf0f1;
+            border-radius: 4px;
+            border: 1px solid #bdc3c7;
+            cursor: pointer;
+        }
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 15px;
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 800px;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+            white-space: nowrap; /* 避免表格內容過度折行 */
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .json-header {
+            background-color: #9b59b6; /* 針對展開的 JSON 欄位使用不同顏色區分 */
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1c40f !important;
+        }
+        .info-msg {
+            color: #e67e22;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>📊 船上數值紀錄 (Log) 檢視器 <span>✨ 支援 JSON 自動展開</span></h2>
+        <p>請選擇你要查看的 SQLite (.db) 檔案。若欄位內容為 JSON，將會自動展開成獨立欄位。</p>
+        <input type="file" id="dbfile" accept=".db,.sqlite,.sqlite3">
+    </div>
+
+    <div id="status" class="info-msg">正在初始化載入核心套件...</div>
+    <div id="table-container" class="table-container" style="display: none;"></div>
+
+    <script>
+        const fileInput = document.getElementById('dbfile');
+        const tableContainer = document.getElementById('table-container');
+        const statusDiv = document.getElementById('status');
+        let SQL;
+
+        // 初始化 sql.js
+        initSqlJs({
+            locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+        }).then(function(SQL_obj){
+            SQL = SQL_obj;
+            statusDiv.textContent = "✅ 系統準備就緒，請選擇檔案。";
+            statusDiv.style.color = "#27ae60";
+        }).catch(err => {
+            statusDiv.textContent = "❌ 初始化失敗，請檢查網路連線以便載入 sql.js。";
+            statusDiv.style.color = "#e74c3c";
+        });
+
+        fileInput.addEventListener('change', function() {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            statusDiv.textContent = "讀取與解析檔案中...";
+            tableContainer.style.display = "none";
+            
+            const reader = new FileReader();
+            
+            reader.onload = function() {
+                const Uints = new Uint8Array(reader.result);
+                if (!SQL) {
+                    alert("SQL 核心尚未載入完成，請稍後再試！");
+                    return;
+                }
+                
+                const db = new SQL.Database(Uints);
+                
+                try {
+                    const tableQuery = db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';");
+                    if (tableQuery.length === 0) {
+                        statusDiv.textContent = "⚠️ 在這個檔案中找不到任何資料表。";
+                        return;
+                    }
+                    
+                    const tableName = tableQuery[0].values[0][0];
+                    statusDiv.textContent = `✅ 成功讀取表：[ ${tableName} ] (預設顯示前 200 筆資料防卡頓)`;
+                    
+                    const res = db.exec(`SELECT * FROM "${tableName}" LIMIT 200`);
+                    
+                    if (res.length > 0) {
+                        // 🌟 在這裡加入 JSON 展開處理
+                        const processedData = expandJsonColumns(res[0].columns, res[0].values);
+                        
+                        // 繪製處理過後的表格
+                        renderTable(processedData.columns, processedData.values, processedData.isJsonCol);
+                        tableContainer.style.display = "block";
+                    } else {
+                        statusDiv.textContent = `⚠️ 資料表 ${tableName} 是空的。`;
+                    }
+                } catch (err) {
+                    statusDiv.textContent = `❌ 解析錯誤: ${err.message}`;
+                    statusDiv.style.color = "#e74c3c";
+                } finally {
+                    db.close();
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        });
+
+        /**
+         * 核心功能：分析資料，將 JSON 字串展開成獨立欄位
+         */
+        function expandJsonColumns(originalColumns, originalValues) {
+            let jsonKeysMap = {}; // 記錄哪個欄位 index 包含哪些 JSON keys
+
+            // 第一階段：掃描所有資料，找出 JSON 欄位並收集所有的 Keys
+            originalValues.forEach(row => {
+                row.forEach((val, colIndex) => {
+                    if (typeof val === 'string' && val.trim().startsWith('{') && val.trim().endsWith('}')) {
+                        try {
+                            const parsed = JSON.parse(val);
+                            // 確定是物件而不是陣列或 null
+                            if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+                                if (!jsonKeysMap[colIndex]) {
+                                    jsonKeysMap[colIndex] = new Set();
+                                }
+                                // 收集這個 JSON 物件裡所有的 key
+                                Object.keys(parsed).forEach(k => jsonKeysMap[colIndex].add(k));
+                            }
+                        } catch (e) {
+                            // 不是合法的 JSON，略過
+                        }
+                    }
+                });
+            });
+
+            // 第二階段：重組表頭 (Columns)
+            let newColumns = [];
+            let isJsonColMap = []; // 標記是否為展開的欄位（用來上色）
+            
+            originalColumns.forEach((colName, colIndex) => {
+                if (jsonKeysMap[colIndex]) {
+                    // 這個欄位是 JSON，展開它
+                    jsonKeysMap[colIndex].forEach(key => {
+                        newColumns.push(`${key}`); // 命名：原欄位名_JSON屬性名
+                        isJsonColMap.push(true);
+                    });
+                } else {
+                    // 普通欄位
+                    newColumns.push(colName);
+                    isJsonColMap.push(false);
+                }
+            });
+
+            // 第三階段：重組數值 (Values)
+            let newValues = [];
+            originalValues.forEach(row => {
+                let newRow = [];
+                row.forEach((val, colIndex) => {
+                    if (jsonKeysMap[colIndex]) {
+                        // 嘗試解析該儲存格的 JSON
+                        let parsed = {};
+                        try {
+                            parsed = JSON.parse(val) || {};
+                        } catch(e) {}
+
+                        // 按照收集到的 keys 順序填入數值
+                        jsonKeysMap[colIndex].forEach(key => {
+                            let cellValue = parsed[key];
+                            // 如果裡面還有巢狀物件，先轉成字串顯示，避免變成 [object Object]
+                            if (typeof cellValue === 'object' && cellValue !== null) {
+                                cellValue = JSON.stringify(cellValue);
+                            }
+                            newRow.push(cellValue !== undefined ? cellValue : null);
+                        });
+                    } else {
+                        // 普通欄位直接塞入
+                        newRow.push(val);
+                    }
+                });
+                newValues.push(newRow);
+            });
+
+            return { columns: newColumns, values: newValues, isJsonCol: isJsonColMap };
+        }
+
+        // 負責畫出 HTML 表格的函數
+        function renderTable(columns, values, isJsonColMap) {
+            let html = '<table><thead><tr>';
+            
+            // 建立表頭，如果有展開的 JSON 欄位，給予不同的 CSS Class 變色
+            columns.forEach((col, index) => {
+                let thClass = isJsonColMap[index] ? 'class="json-header"' : '';
+                html += `<th ${thClass}>${col}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            // 建立資料列
+            values.forEach(row => {
+                html += '<tr>';
+                row.forEach(val => {
+                    // 處理 null 值
+                    let displayVal = val !== null ? val : '<span style="color:#bdc3c7;">NULL</span>';
+                    html += `<td>${displayVal}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            tableContainer.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
