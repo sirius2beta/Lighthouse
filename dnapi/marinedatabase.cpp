@@ -1,4 +1,4 @@
-#include "marinedatabase.h"
+﻿#include "marinedatabase.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDebug>
@@ -212,14 +212,13 @@ void MarineDatabase::setDefaultLogDirectory(const QString& path) {
 QVariantList MarineDatabase::fetchTrajectoryData(int fieldIndex) {
     QVariantList trajectory;
     QSqlDatabase db = QSqlDatabase::database(m_connectionName);
-    // 防呆：如果選擇 0 (None) 或資料庫沒開，直接回傳空陣列
-    if (fieldIndex == 0 || !db.isOpen()) {
+    if ( !db.isOpen()) {
         return trajectory;
     }
 
     // 💡 效能關鍵：每 5 筆抽樣 1 筆 (id % 5 = 0)。記得把 id 也撈出來給 QML 防呆用！
     QSqlQuery query(db);
-    query.prepare("SELECT id, lat, lon, data_json FROM sensor_logs WHERE id % 5 = 0");
+    query.prepare("SELECT id, data_json FROM sensor_logs WHERE id % 5 = 0");
 
     if (!query.exec()) {
         qDebug() << "讀取軌跡資料失敗:" << query.lastError().text();
@@ -228,8 +227,7 @@ QVariantList MarineDatabase::fetchTrajectoryData(int fieldIndex) {
 
     while (query.next()) {
         int id = query.value(0).toInt();
-        double lat = query.value(1).toDouble();
-        double lon = query.value(2).toDouble();
+
         QString jsonStr = query.value(3).toString();
 
         // 🌟 解析 JSON 字串
@@ -237,7 +235,8 @@ QVariantList MarineDatabase::fetchTrajectoryData(int fieldIndex) {
         QJsonObject jsonObj = doc.object();
 
         double val = 0.0;
-
+        double lat = jsonObj.value("lat").toDouble();
+        double lon = jsonObj.value("lon").toDouble();
         // 💡 根據 QML 傳來的 fieldIndex (下拉選單的 Index) 來決定抓哪個數值
         // 假設 QML: 1="Temperature", 2="Depth", 3="pH"
         if (fieldIndex == 1) {
@@ -275,7 +274,7 @@ QVariantMap MarineDatabase::fetchLatestPoint(int fieldIndex) {
 
     // 💡 利用 ORDER BY id DESC LIMIT 1，瞬間抓出最新的一筆紀錄
     QSqlQuery query(db);
-    query.prepare("SELECT id, lat, lon, data_json FROM sensor_logs ORDER BY id DESC LIMIT 1");
+    query.prepare("SELECT id, data_json FROM sensor_logs ORDER BY id DESC LIMIT 1");
 
     if (!query.exec()) {
         qDebug() << "讀取最新點位失敗:" << query.lastError().text();
@@ -300,6 +299,8 @@ QVariantMap MarineDatabase::fetchLatestPoint(int fieldIndex) {
             val = jsonObj.value("Depth").toDouble();
         } else if (fieldIndex == 3) {
             val = jsonObj.value("pH").toDouble();
+        }else{
+            val = 1;
         }
 
         point["value"] = val;
