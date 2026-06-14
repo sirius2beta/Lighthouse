@@ -27,6 +27,7 @@ void SensorManager::init()
         }
         _sensorGroupListModel.append(model);
     }
+    whiteList = {1,4};
     qDebug()<<"sensorManager:: Initiate complete";
 }
 
@@ -158,7 +159,7 @@ void SensorManager::onSensorMsg(uint8_t ID, QByteArray data)
 
     }
 
-    if (sensorGroup == 1){
+    if (whiteList.contains(sensorGroup)){
         QVariantMap payload;
 
         // 💡 讓程式自動幫你把這 20 個感測器全部打包，不用手動一行一行寫！
@@ -173,8 +174,6 @@ void SensorManager::onSensorMsg(uint8_t ID, QByteArray data)
 
         // 💡 打包完成，一次發射給 Database！
         emit dataReceived(payload);
-    }else if(sensorGroup == 4){
-
     }
 
 }

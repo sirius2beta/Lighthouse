@@ -51,6 +51,7 @@ private:
     DNCore* _core;
 
     QList<DNQmlObjectListModel*> _sensorGroupListModel;
+    QList<int> whiteList;
 };
 
 #endif // SENSORMANAGER_H
