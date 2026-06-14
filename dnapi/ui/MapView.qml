@@ -21,6 +21,7 @@ Item {
     property int w_resolution: 640
     property real ratio: w_resolution/h_resolution
     property int lastRenderedId: -1
+    property bool follow_boat: true
 
     clip: true
 
@@ -52,64 +53,57 @@ Item {
             PluginParameter { name: "osm.mapping.cache.disk.size"; value: "0" }
             PluginParameter { name: "osm.mapping.offline.allow"; value: "false" }
     }
+
     ListModel {
         id: trajectoryModel
     }
+
     Map {
         id: mmap
         anchors.fill: parent
         plugin: archPlugin
-        //activeMapType: supportedMapTypes[3] // Cycle map provided by Thunderforest
 
-        // 💡 這是用來繪製軌跡點的工廠
         MapItemView {
-                    id: trajectoryRenderer
-                    model: trajectoryModel // 綁定到上面的 ListModel
+            id: trajectoryRenderer
+            model: trajectoryModel // 綁定到上面的 ListModel
 
-                    delegate: MapQuickItem {
-                        coordinate: QtPositioning.coordinate(lat, lon)
+            delegate: MapQuickItem {
+                coordinate: QtPositioning.coordinate(lat, lon)
+                anchorPoint.x: 4
+                anchorPoint.y: 4
 
-                        anchorPoint.x: 4
-                        anchorPoint.y: 4
-
-                        sourceItem: Rectangle {
-                            width: 8
-                            height: 8
-                            radius: 4
-                            color: colorRampEngine.getColor(
-                                       value, // 直接寫 value
-                                       parseFloat(minField.text),
-                                       parseFloat(maxField.text),
-                                       colorRampCombo.currentIndex)
-                        }
-                    }
-
-
-
-
-
+                sourceItem: Rectangle {
+                    width: 8
+                    height: 8
+                    radius: 4
+                    color: colorRampEngine.getColor(
+                               value, // 直接寫 value
+                               parseFloat(minField.text),
+                               parseFloat(maxField.text),
+                               colorRampCombo.currentIndex)
                 }
-            // --- 關鍵除錯區 ---
-            onActiveMapTypeChanged: {
-                console.log("當前使用的地圖名稱: " + activeMapType.name)
-                console.log("當前使用的樣式編號: " + activeMapType.style)
             }
+        }
 
-            Component.onCompleted: {
-                // 強制搜尋並切換到自定義類型
-                for (var i = 0; i < supportedMapTypes.length; i++) {
-                    if (supportedMapTypes[i].name.indexOf("Custom") !== -1) {
-                        activeMapType = supportedMapTypes[i]
-                        console.log(">>> 已強制切換至 Custom URL Map (Index: " + i + ")")
-                        return
-                    }
+        onActiveMapTypeChanged: {
+            console.log("當前使用的地圖名稱: " + activeMapType.name)
+            console.log("當前使用的樣式編號: " + activeMapType.style)
+        }
+
+        Component.onCompleted: {
+            // 強制搜尋並切換到自定義類型
+            for (var i = 0; i < supportedMapTypes.length; i++) {
+                if (supportedMapTypes[i].name.indexOf("Custom") !== -1) {
+                    activeMapType = supportedMapTypes[i]
+                    console.log(">>> 已強制切換至 Custom URL Map (Index: " + i + ")")
+                    return
                 }
-                console.log("找不到 Custom URL Map，請檢查 Plugin 參數！")
             }
+            console.log("找不到 Custom URL Map，請檢查 Plugin 參數！")
+        }
         center: h_point
-        zoomLevel: 10
+        zoomLevel: 15
 
-        // 建議同時設定限制，防止縮放到不見或報錯
         minimumZoomLevel: 3
         maximumZoomLevel: 20
         copyrightsVisible: false
@@ -128,19 +122,20 @@ Item {
         MapQuickItem{
             id: b_point
             zoomLevel: parent.zoomLevel
-            //coordinate: lat?QtPositioning.coordinate(lat,lon): QtPositioning.coordinate(25, 121.3)
-            coordinate: QtPositioning.coordinate(0, 0)
+            coordinate: lat?QtPositioning.coordinate(lat,lon): QtPositioning.coordinate(23.642, 119.601)
             anchorPoint: Qt.point(sourceItem.width/2, sourceItem.height/2)
-            opacity: 0.2
+            opacity: 0.8
             sourceItem: Image{
-                width:30
-                height:30
+                width:15
+                height:15
                 source: "qrc:/res/navigation.png"
                 fillMode: Image.Stretch
                 transform: Rotation{origin.x:25; origin.y:25; angle:parseInt(DeNovoViewer.sensorManager.mav1Model.get(4).displayValue)/100}
             }
             onCoordinateChanged: {
+                if(follow_boat){
                     mmap.center = coordinate
+                }
             }
 
         }
@@ -175,6 +170,7 @@ Item {
         signal mapPanStart()
         signal mapPanStop()
         signal mapClicked(var position)
+
         MultiPointTouchArea {
                 anchors.fill: parent
                 maximumTouchPoints: 1
@@ -293,7 +289,10 @@ Item {
 
                 }
                 onClicked: {
-                    //openControlView()
+                    follow_boat = follow_boat?false:true
+                    if(follow_boat){
+                        mmap.center = b_point.coordinate
+                    }
                 }
             }
             Button {
@@ -431,7 +430,7 @@ Item {
                             if (checked) {
                                 map_setting.refreshMapData() // 開啟時抓資料
                             } else {
-                                trajectoryRenderer.model = [] // 關閉時清空地圖上的點
+                                trajectoryModel.clear() // 關閉時清空地圖上的點
                             }
                         }
                     }
@@ -467,7 +466,7 @@ Item {
 
                         // 💡 當更改來源時，重新抓資料
                         onCurrentIndexChanged: {
-                            if (renderSwitch.checked) refreshMapData()
+                            if (renderSwitch.checked) map_setting.refreshMapData()
                         }
                     }
 

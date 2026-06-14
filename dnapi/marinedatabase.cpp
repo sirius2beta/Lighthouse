@@ -218,7 +218,7 @@ QVariantList MarineDatabase::fetchTrajectoryData(int fieldIndex) {
 
     // 💡 效能關鍵：每 5 筆抽樣 1 筆 (id % 5 = 0)。記得把 id 也撈出來給 QML 防呆用！
     QSqlQuery query(db);
-    query.prepare("SELECT id, data_json FROM sensor_logs WHERE id % 5 = 0");
+    query.prepare("SELECT id, data_json FROM sensor_logs WHERE id % 50 = 0");
 
     if (!query.exec()) {
         qDebug() << "讀取軌跡資料失敗:" << query.lastError().text();
@@ -228,23 +228,20 @@ QVariantList MarineDatabase::fetchTrajectoryData(int fieldIndex) {
     while (query.next()) {
         int id = query.value(0).toInt();
 
-        QString jsonStr = query.value(3).toString();
-
-        // 🌟 解析 JSON 字串
+        QString jsonStr = query.value(1).toString();
         QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
         QJsonObject jsonObj = doc.object();
 
         double val = 0.0;
         double lat = jsonObj.value("lat").toDouble();
         double lon = jsonObj.value("lon").toDouble();
-        // 💡 根據 QML 傳來的 fieldIndex (下拉選單的 Index) 來決定抓哪個數值
-        // 假設 QML: 1="Temperature", 2="Depth", 3="pH"
+
         if (fieldIndex == 1) {
-            val = jsonObj.value("Temperature").toDouble();
+            val = jsonObj.value("temperature").toDouble();
         } else if (fieldIndex == 2) {
-            val = jsonObj.value("Depth").toDouble();
+            val = jsonObj.value("depth").toDouble();
         } else if (fieldIndex == 3) {
-            val = jsonObj.value("pH").toDouble();
+            val = jsonObj.value("dissolved_oxygen_concentration").toDouble();
         }
 
         // 將這一個點包裝成 QVariantMap (QML 中會變成 JavaScript Object)
@@ -260,9 +257,6 @@ QVariantList MarineDatabase::fetchTrajectoryData(int fieldIndex) {
     return trajectory;
 }
 
-// =================================================================
-// 2. 撈取最新的一顆點 (用於航行中，每存一筆資料就即時畫一顆點)
-// =================================================================
 QVariantMap MarineDatabase::fetchLatestPoint(int fieldIndex) {
     QVariantMap point;
     point["id"] = -1; // 預設無效值，給 QML 判斷用
@@ -282,16 +276,15 @@ QVariantMap MarineDatabase::fetchLatestPoint(int fieldIndex) {
     }
 
     if (query.next()) {
-        point["id"] = query.value(0).toInt();
-        point["lat"] = query.value(1).toDouble();
-        point["lon"] = query.value(2).toDouble();
-        QString jsonStr = query.value(3).toString();
+        int id = query.value(0).toInt();
 
-        // 🌟 解析 JSON 字串 (邏輯與上方完全相同)
+        QString jsonStr = query.value(1).toString();
         QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
         QJsonObject jsonObj = doc.object();
 
         double val = 0.0;
+        double lat = jsonObj.value("lat").toDouble();
+        double lon = jsonObj.value("lon").toDouble();
 
         if (fieldIndex == 1) {
             val = jsonObj.value("Temperature").toDouble();
@@ -299,10 +292,10 @@ QVariantMap MarineDatabase::fetchLatestPoint(int fieldIndex) {
             val = jsonObj.value("Depth").toDouble();
         } else if (fieldIndex == 3) {
             val = jsonObj.value("pH").toDouble();
-        }else{
-            val = 1;
         }
-
+        point["lat"] = lat;
+        point["lon"] = lon;
+        point["id"] = id;
         point["value"] = val;
     }
 
