@@ -36,6 +36,7 @@ public:
 
     Q_INVOKABLE QString defaultLogDirectory() const;
     Q_INVOKABLE void setDefaultLogDirectory(const QString& path);
+    Q_INVOKABLE QVariantList fetchTrajectoryData(int fieldIndex);
 signals:
     void connectionStatusChanged(bool connected);
     void dataInsertedSuccessfully();

@@ -206,3 +206,37 @@ void MarineDatabase::setDefaultLogDirectory(const QString& path) {
     QSettings settings;
     settings.setValue("storage/log_root_dir", path);
 }
+
+QVariantList MarineDatabase::fetchTrajectoryData(int fieldIndex) {
+    QVariantList trajectory;
+
+    // 假設 fieldIndex: 1=Temperature, 2=Depth, 3=pH
+    // 如果 fieldIndex == 0 (None)，直接回傳空陣列
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+
+    if (fieldIndex == 0 || db.isOpen()) return trajectory;
+
+    // 💡 效能關鍵：利用 id % 5 = 0 進行降頻抽樣，5小時的資料只抓 3600 筆！
+    QSqlQuery query("SELECT lat, lon, data_json FROM sensor_logs WHERE id % 5 = 0");
+
+    while (query.next()) {
+        double lat = query.value(0).toDouble();
+        double lon = query.value(1).toDouble();
+        QString jsonStr = query.value(2).toString();
+
+        // 這裡你需要根據你的 JSON 格式把數值解析出來
+        // 假設你解析出來的值存入 val 變數
+        double val = 0.0;
+        /* 解析 jsonStr 取得對應 fieldIndex 的數值 ... */
+
+        // 將這一個點包裝成 QVariantMap (QML 的 Object)
+        QVariantMap point;
+        point["lat"] = lat;
+        point["lon"] = lon;
+        point["value"] = val;
+
+        trajectory.append(point);
+    }
+
+    return trajectory;
+}

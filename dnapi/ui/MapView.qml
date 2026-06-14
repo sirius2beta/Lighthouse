@@ -4,6 +4,7 @@ import QtQuick.Controls 2.15
 import QtQuick.Controls.Material 2.15
 import QtPositioning
 import QtLocation
+import QtQuick.Layouts
 
 import DeNovoViewer 1.0
 import DeNovoViewer.Boat 1.0
@@ -34,89 +35,19 @@ Item {
     property VideoItem videoItem
 
     Plugin {
-            id: esriPlugin
-            name: "esri"
-        }
-
-    Plugin {
-        id: googlePlugin
-        name: "osm"
-
-        // 1. 使用 Google 衛星圖 (它完全符合 Qt 的 Z/X/Y 順序)
-        // 我們利用問號 '?' 來吃掉 Qt 自動補上的 ".png"
-        PluginParameter {
-            name: "osm.mapping.custom.host"
-            value: "http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}&scale=1&"
-        }
-
-        // 2. 偽裝 User-Agent (必填，否則 Google 會封鎖請求)
-        PluginParameter {
-            name: "osm.useragent"
-            value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        }
-
-        // 3. 停用其他干擾
-        PluginParameter { name: "osm.mapping.providersrepository.disabled"; value: "true" }
-        PluginParameter { name: "osm.mapping.cache.disk.size"; value: 0 }
-        PluginParameter { name: "osm.mapping.cache.directory"; value: "" }
-    }
-    Plugin {
-            id: google2Plugin
+            id: archPlugin
             name: "osm"
 
-            // 1. 填入 Google 衛星圖 + 你的 API Key
             PluginParameter {
                 name: "osm.mapping.custom.host"
-                value: "http://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&key=AIzaSyDmmZdDsB36uPDeQPBw8jCm8RFKat7tnDA"
-            }
-
-            // 2. 核心關鍵：禁用 OSM 從網路獲取預設提供者清單，防止它連到死掉的 qt.io
-            PluginParameter {
-                name: "osm.mapping.providersrepository.disabled"
-                value: "true"
-            }
-            PluginParameter {
-                    name: "osm.useragent"
-                    value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                }
-
-            // 3. 核心關鍵：禁用預設的地圖選項，逼它只剩下基礎圖與自定義圖
-            PluginParameter {
-                name: "osm.mapping.providers.visible"
-                value: "false"
-            }
-            PluginParameter {
-                name: "osm.mapping.custom.format"
-                value: "png" // 如果用 lyrs=y，請用 png；如果用 lyrs=s，請試試 jpeg
-            }
-
-            // 4. 強制清空損壞的快取
-            PluginParameter { name: "osm.mapping.cache.directory"; value: "" }
-            PluginParameter { name: "osm.mapping.cache.disk.size"; value: 0 }
-        }
-    Plugin {
-            id: archPlugin
-            name: "osm" // "mapboxgl", "esri", ...
-            // specify plugin parameters if necessary
-
-
-
-            // 1. 核心網址：ArcGIS 衛星圖 (ZYX 格式)
-            PluginParameter {
-                name: "osm.mapping.custom.host"
-                // 關鍵：刪掉所有的 {z}/{y}/{x}，只留到 tile/
-                // Qt 會自動在後面補上 "19/438799/224521.png"
                 value: "http://127.0.0.1:8081/tile/"
             }
             // 2. 偽裝成 QGC 或瀏覽器以確保穩定連線
             PluginParameter { name: "osm.useragent"; value: "Lighthouse_Proxy" }
-            // 3. 停用那些會報錯的預設 OSM 轉向伺服器
             PluginParameter { name: "osm.mapping.providersrepository.disabled"; value: "true" }
             PluginParameter { name: "osm.mapping.providers.visible"; value: "false" }
             PluginParameter { name: "osm.mapping.cache.directory"; value: "" }
             PluginParameter { name: "osm.mapping.cache.disk.size"; value: "0" }
-
-            // 3. 提高連線逾時，確保不會因為網路慢而跳錯誤圖
             PluginParameter { name: "osm.mapping.offline.allow"; value: "false" }
     }
     Map {
@@ -125,7 +56,31 @@ Item {
         plugin: archPlugin
         //activeMapType: supportedMapTypes[3] // Cycle map provided by Thunderforest
 
+        // 💡 這是用來繪製軌跡點的工廠
+                MapItemView {
+                    id: trajectoryRenderer
+                    // model 預設是空的，等待開關打開時塞入資料
+                    model: []
 
+                    delegate: MapCircle {
+                        // 讀取從 C++ 傳來的 lat / lon
+                        center: QtPositioning.coordinate(modelData.lat, modelData.lon)
+
+                        // 圓的半徑 (公尺)。地圖縮放時它會保持相對真實的地理大小
+                        radius: 4.0
+
+                        // 邊框拿掉看起來比較像平滑的熱力圖
+                        border.width: 0
+
+                        // 💡 呼叫剛剛寫的演算法，即時計算這顆圓點的顏色！
+                        color: colorRampEngine.getColor(
+                            modelData.value,
+                            parseFloat(minField.text),
+                            parseFloat(maxField.text),
+                            colorRampCombo.currentIndex
+                        )
+                    }
+                }
             // --- 關鍵除錯區 ---
             onActiveMapTypeChanged: {
                 console.log("當前使用的地圖名稱: " + activeMapType.name)
@@ -165,7 +120,8 @@ Item {
         MapQuickItem{
             id: b_point
             zoomLevel: parent.zoomLevel
-            coordinate: lat? QtPositioning.coordinate(lat,lon): QtPositioning.coordinate(25, 121.3)
+            //coordinate: lat?QtPositioning.coordinate(lat,lon): QtPositioning.coordinate(25, 121.3)
+            coordinate: QtPositioning.coordinate(lat,lon)
             anchorPoint: Qt.point(sourceItem.width/2, sourceItem.height/2)
             sourceItem: Image{
                 width:30
@@ -257,7 +213,290 @@ Item {
             if (mmap.zoomLevel < 3) mmap.zoomLevel = 3
         }
     }
+    Rectangle{
+        id: controlBar
+        width:50*3+10+2*2
+        height:60
+        anchors.margins: 5
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        color:"#191919"
+        radius:5
+        visible: isFull
+        RowLayout{
+            anchors.fill:parent
+            spacing: 2
+            Button {
+                Layout.alignment: Qt.AlignVCenter
+                id: menu_button
+                text: ""
+                property bool activate: false
+                background: Rectangle {
+                    implicitWidth: 50
+                    implicitHeight: 50
+                    color: parent.down ? "#99555555" : "#00000000"
+                    radius: 4
+                    Rectangle{
+                        anchors.fill: parent
+                        radius:4
+                        anchors.margins: 5
+                        color:"#00999900"
+                    }
 
+                    Image{
+                        id: img
+                        anchors.margins: 5
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        fillMode: Image.PreserveAspectFit
+                        source: "qrc:/res/menu.svg"
+                    }
 
+                }
+                onClicked: {
+                    activate = !activate // 切換按鈕的活躍狀態
+                }
+            }
+            Button {
+                Layout.alignment: Qt.AlignVCenter
+                id: follow_boat_button
+                text: ""
+                property bool activate: false
+                background: Rectangle {
+                    implicitWidth: 50
+                    implicitHeight: 50
+                    color: parent.down ? "#99555555" : "#00000000"
+                    radius: 4
+                    Rectangle{
+                        anchors.fill: parent
+                        radius:4
+                        anchors.margins: 5
+                        color:"#00999900"
+                    }
+
+                    Image{
+                        anchors.margins: 5
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        fillMode: Image.PreserveAspectFit
+                        source: "qrc:/res/boat.svg"
+                    }
+
+                }
+                onClicked: {
+                    //openControlView()
+                }
+            }
+            Button {
+                Layout.alignment: Qt.AlignVCenter
+                id: focus_home_button
+                text: ""
+                property bool activate: false
+                background: Rectangle {
+                    implicitWidth: 50
+                    implicitHeight: 50
+                    color: parent.down ? "#99555555" : "#00000000"
+                    radius: 4
+                    Rectangle{
+                        anchors.fill: parent
+                        radius:4
+                        anchors.margins: 5
+                        color:"#00999900"
+                    }
+
+                    Image{
+                        anchors.margins: 5
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        fillMode: Image.PreserveAspectFit
+                        source: "qrc:/res/home.svg"
+                    }
+
+                }
+                onClicked: {
+                    //openControlView()
+                }
+            }
+
+        }
+    }
+    // 🎨 色彩漸層計算機
+        QtObject {
+            id: colorRampEngine
+
+            function getColor(value, min, max, rampType) {
+                // 1. 防呆與範圍限制，計算比例 (0.0 ~ 1.0)
+                if (min >= max) return "#808080" // 避免除以零
+                var ratio = (value - min) / (max - min)
+                if (ratio < 0) ratio = 0
+                if (ratio > 1) ratio = 1
+
+                // 2. 根據選擇的 Color Ramp 回傳顏色
+                // 0: Rainbow (彩虹：藍 -> 青 -> 綠 -> 黃 -> 紅)
+                if (rampType === 0) {
+                    // Hue 從 240(藍色) 到 0(紅色)
+                    var h = (1.0 - ratio) * 240.0 / 360.0
+                    return Qt.hsla(h, 1.0, 0.5, 0.8) // 0.8 是透明度
+                }
+                // 1: Heatmap (熱力：黑 -> 深紅 -> 橘 -> 黃 -> 白)
+                else if (rampType === 1) {
+                    // 利用 HSL 亮度控制
+                    var l = ratio * 0.8 + 0.1
+                    var h2 = (1.0 - ratio) * 60.0 / 360.0
+                    return Qt.hsla(h2, 1.0, l, 0.8)
+                }
+                // 2: Monochrome (單色：透明深紫 -> 不透明亮紫)
+                else {
+                    return Qt.rgba(0.6, 0.2, 0.8, ratio * 0.8 + 0.2)
+                }
+            }
+        }
+    // --- 地圖資料可視化設定面板 ---
+
+        Rectangle {
+            id: map_setting
+            width: 260
+            height: 350
+            // 停靠在控制列的上方
+            anchors.bottom: controlBar.top
+            anchors.bottomMargin: 10
+            anchors.horizontalCenter: parent.horizontalCenter
+
+            color: "#252528"
+            radius: 8
+            border.color: "#3a3a3c"
+            border.width: 1
+
+            // 💡 綁定到選單按鈕的狀態
+            visible: menu_button.activate && isFull
+
+            // 防止滑鼠點擊穿透到下方的地圖
+            MouseArea { anchors.fill: parent }
+
+            // 判斷資料庫是否已經有開啟檔案 (假設利用 dbName 判斷，可依據你的 C++ 邏輯微調)
+            property bool isDbReady: DeNovoViewer.marineDatabase &&
+                                     DeNovoViewer.marineDatabase.dbName !== "" &&
+                                     DeNovoViewer.marineDatabase.dbName !== "未連線"
+            function refreshMapData() {
+                if (!isDbReady || dataFieldCombo.currentIndex === 0) {
+                    trajectoryRenderer.model = []
+                    return
+                }
+                // 呼叫 C++ 撈資料
+                var rawData = DeNovoViewer.marineDatabase.fetchTrajectoryData(dataFieldCombo.currentIndex)
+
+                // 把資料塞給地圖的渲染器，瞬間畫出幾千個點！
+                trajectoryRenderer.model = rawData
+            }
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 15
+                spacing: 10
+
+                // ==========================================
+                // 1. 開啟/關閉軌跡繪圖 (搭配未連線警告)
+                // ==========================================
+                RowLayout {
+                    Layout.fillWidth: true
+                    Text {
+                        text: "啟用歷史數值渲染"
+                        color: "#FFFFFF"
+                        font.bold: true
+                        font.pointSize: 10
+                        Layout.fillWidth: true
+                    }
+                    Switch {
+                        id: renderSwitch
+                        checked: false
+                        enabled: map_setting.isDbReady // 💡 DB 沒開就不准打開開關
+                        onCheckedChanged: {
+                            if (checked) {
+                                map_setting.refreshMapData() // 開啟時抓資料
+                            } else {
+                                trajectoryRenderer.model = [] // 關閉時清空地圖上的點
+                            }
+                        }
+                    }
+                }
+
+                // ⚠️ 警告提示：當資料庫未準備好時顯示
+                Text {
+                    text: "⚠️ 請先至日誌系統開啟或選取 DB 檔案"
+                    color: "#E74C3C"
+                    font.pointSize: 8
+                    visible: !map_setting.isDbReady
+                    Layout.topMargin: -10
+                }
+
+                // 分隔線
+                Rectangle { Layout.fillWidth: true; height: 1; color: "#3a3a3c" }
+
+                // 以下設定，只有在 Switch 打開時才允許操作 (防呆)
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    enabled: renderSwitch.checked
+                    opacity: renderSwitch.checked ? 1.0 : 0.4 // 視覺上的 Disable 效果
+                    spacing: 8
+
+                    // ==========================================
+                    // 2. 代表點顏色的欄位 (Data Source)
+                    // ==========================================
+                    Text { text: "數值來源 (Data Field):"; color: "#B3B3B3"; font.pointSize: 9 }
+                    ComboBox {
+                        id: dataFieldCombo
+                        Layout.fillWidth: true
+                        model: ["None (無)", "Temperature (溫度)", "Depth (水深)", "pH (酸鹼度)"]
+
+                        // 💡 當更改來源時，重新抓資料
+                        onCurrentIndexChanged: {
+                            if (renderSwitch.checked) refreshMapData()
+                        }
+                    }
+
+                    // ==========================================
+                    // 3. Color Ramp 漸層配色
+                    // ==========================================
+                    Text { text: "漸層配色 (Color Ramp):"; color: "#B3B3B3"; font.pointSize: 9 }
+                    ComboBox {
+                        id: colorRampCombo
+                        Layout.fillWidth: true
+                        model: ["Rainbow (彩虹漸層)", "Heatmap (熱力紅黃)", "Monochrome (單色深淺)"]
+                    }
+
+                    // ==========================================
+                    // 4. 數值範圍 (Min ~ Max)
+                    // ==========================================
+                    Text { text: "色彩對應範圍 (Min ~ Max):"; color: "#B3B3B3"; font.pointSize: 9 }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+
+                        TextField {
+                            id: minField
+                            Layout.fillWidth: true
+                            placeholderText: "Min"
+                            text: "0.0"
+                            // 限制只能輸入小數或整數
+                            validator: DoubleValidator { bottom: -10000; top: 10000; decimals: 2 }
+                            color: "#FFFFFF"
+                        }
+                        Text { text: "~"; color: "#8A8A8F"; font.bold: true }
+                        TextField {
+                            id: maxField
+                            Layout.fillWidth: true
+                            placeholderText: "Max"
+                            text: "100.0"
+                            validator: DoubleValidator { bottom: -10000; top: 10000; decimals: 2 }
+                            color: "#FFFFFF"
+                        }
+                    }
+
+                }
+
+                // 彈性留白撐開佈局
+                Item { Layout.fillHeight: true }
+
+            }
+        }
 
 }

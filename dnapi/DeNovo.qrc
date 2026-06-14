@@ -80,6 +80,9 @@
         <file alias="indicator1.png">res/indicator1.png</file>
         <file alias="indicator2.png">res/indicator2.png</file>
         <file alias="database.svg">res/database.svg</file>
+        <file alias="boat.svg">res/boat.svg</file>
+        <file alias="home.svg">res/home.svg</file>
+        <file alias="menu.svg">res/menu.svg</file>
     </qresource>
     <qresource prefix="/fonts">
         <file alias="Roboto-Regular.ttf">res/fonts/Roboto-Regular.ttf</file>
