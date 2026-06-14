@@ -99,7 +99,7 @@ Item {
                 console.log("找不到 Custom URL Map，請檢查 Plugin 參數！")
             }
         center: h_point
-        zoomLevel: 19
+        zoomLevel: 10
 
         // 建議同時設定限制，防止縮放到不見或報錯
         minimumZoomLevel: 3
@@ -121,8 +121,9 @@ Item {
             id: b_point
             zoomLevel: parent.zoomLevel
             //coordinate: lat?QtPositioning.coordinate(lat,lon): QtPositioning.coordinate(25, 121.3)
-            coordinate: QtPositioning.coordinate(lat,lon)
+            coordinate: QtPositioning.coordinate(0, 0)
             anchorPoint: Qt.point(sourceItem.width/2, sourceItem.height/2)
+            opacity: 0.2
             sourceItem: Image{
                 width:30
                 height:30
