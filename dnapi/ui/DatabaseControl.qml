@@ -82,7 +82,7 @@ Item {
                 spacing: 10
 
                 Text {
-                    text: "Lighthouse 日誌系統"
+                    text: "Lighthouse Database"
                     color: "#FFFFFF"
                     font.bold: true
                     font.pointSize: 11
@@ -141,7 +141,7 @@ Item {
 
                     // 尚未連線時顯示：新建與選取
                     Button {
-                        text: "✨ 建立新紀錄檔"
+                        text: "建立新紀錄檔"
                         Layout.fillWidth: true
                         visible: !root.isDbConnected // 💡 有連線就隱藏
 
@@ -153,7 +153,7 @@ Item {
                     }
 
                     Button {
-                        text: "📂 選取舊紀錄檔"
+                        text: "選取舊紀錄檔"
                         Layout.fillWidth: true
                         visible: !root.isDbConnected // 💡 有連線就隱藏
 
@@ -165,7 +165,7 @@ Item {
 
                     // 已連線時顯示：關閉檔案
                     Button {
-                        text: "❌ 關閉目前檔案"
+                        text: "關閉目前檔案"
                         Layout.fillWidth: true
                         visible: root.isDbConnected // 💡 只有連線時才顯示
                         enabled: !root.isRecording  // 💡 錄製中禁止關閉檔案
@@ -188,7 +188,7 @@ Item {
                     Text { text: "2. 紀錄控制"; color: "#B3B3B3"; font.pointSize: 8 }
 
                     Button {
-                        text: "▶️ 開始記錄"
+                        text: "開始記錄"
                         Layout.fillWidth: true
                         enabled: root.isDbConnected && !root.isRecording // 💡 有檔案且未錄製時才能按
 
@@ -201,7 +201,7 @@ Item {
                     }
 
                     Button {
-                        text: "⏹️ 停止紀錄"
+                        text: "停止紀錄"
                         Layout.fillWidth: true
                         enabled: root.isRecording // 💡 只有正在錄製時才能按停止
 

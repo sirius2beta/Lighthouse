@@ -79,6 +79,7 @@
         <file alias="construction.png">res/construction.png</file>
         <file alias="indicator1.png">res/indicator1.png</file>
         <file alias="indicator2.png">res/indicator2.png</file>
+        <file alias="database.svg">res/database.svg</file>
     </qresource>
     <qresource prefix="/fonts">
         <file alias="Roboto-Regular.ttf">res/fonts/Roboto-Regular.ttf</file>

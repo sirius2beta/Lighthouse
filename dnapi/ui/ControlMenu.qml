@@ -67,8 +67,8 @@ Item {
 
                     }
                     MenuButton{
-                        imgsrc: "qrc:/res/checklist.png"
-                        text: "Check"
+                        imgsrc: "qrc:/res/database.svg"
+                        text: "Database"
                         onClicked: {
                             playSound.play()
                             loader.source = "DatabaseControl.qml"

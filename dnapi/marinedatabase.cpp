@@ -21,7 +21,7 @@ MarineDatabase* MarineDatabase::instance()
 }
 
 MarineDatabase::MarineDatabase(QObject *parent, const QString& dbName)
-    : QObject(parent), m_dbName(dbName), _writeInterval(1) // 預設 1 秒
+    : QObject(parent), m_dbName(dbName), _writeInterval(5) // 預設 5 秒
 {
     m_connectionName = QUuid::createUuid().toString();
 
