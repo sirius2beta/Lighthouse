@@ -106,7 +106,7 @@ Item {
                 name: "osm.mapping.custom.host"
                 // 關鍵：刪掉所有的 {z}/{y}/{x}，只留到 tile/
                 // Qt 會自動在後面補上 "19/438799/224521.png"
-                value: "http://127.0.0.1:8080/tile/"
+                value: "http://127.0.0.1:8081/tile/"
             }
             // 2. 偽裝成 QGC 或瀏覽器以確保穩定連線
             PluginParameter { name: "osm.useragent"; value: "Lighthouse_Proxy" }

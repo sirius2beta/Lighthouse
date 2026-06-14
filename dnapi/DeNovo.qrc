@@ -41,6 +41,7 @@
         <file alias="DeNovoViewer/Display/DNValueEdit.qml">ui/DNValueEdit.qml</file>
         <file alias="DeNovoViewer/Display/VideoView.qml">ui/VideoView.qml</file>
         <file alias="DeNovoViewer/Display/AquaDataGraph.qml">ui/AquaDataGraph.qml</file>
+        <file alias="DeNovoViewer/Display/DatabaseControl.qml">ui/DatabaseControl.qml</file>
 
 
     </qresource>

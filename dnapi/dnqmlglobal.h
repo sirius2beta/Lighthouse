@@ -9,6 +9,7 @@
 #include "sensormanager.h"
 #include "controlmanager.h"
 #include "aquagraph.h"
+#include "marinedatabase.h"
 class DNCore;
 
 class DNQmlGlobal : public QObject
@@ -29,6 +30,7 @@ public:
     Q_PROPERTY(SensorManager* sensorManager READ sensorManager CONSTANT);
     Q_PROPERTY(ControlManager* controlManager READ controlManager CONSTANT);
     Q_PROPERTY(AquaGraph* aquaGraph READ aquaGraph CONSTANT);
+    Q_PROPERTY(MarineDatabase* marineDatabase READ marineDatabase CONSTANT);
     Q_PROPERTY(int boatListmodel READ boatListmodel CONSTANT)
 
     NetworkManager* networkManager() { return _networkManager; }
@@ -37,6 +39,7 @@ public:
     SensorManager* sensorManager() {return _sensorManager;}
     ControlManager* controlManager() { return _controlManager;}
     AquaGraph* aquaGraph(){ return _aquaGraph; }
+    MarineDatabase* marineDatabase() { return MarineDatabase::instance();}
     int boatListmodel() const {return 0;}
 signals:
 private:
@@ -47,6 +50,7 @@ private:
     SensorManager* _sensorManager = nullptr;
     ControlManager* _controlManager = nullptr;
     AquaGraph* _aquaGraph = nullptr;
+    MarineDatabase* _marineDatabase = nullptr;
     QString _programName ;
 };
 

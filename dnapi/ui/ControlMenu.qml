@@ -71,7 +71,7 @@ Item {
                         text: "Check"
                         onClicked: {
                             playSound.play()
-                            loader.source = "CheckList.qml"
+                            loader.source = "DatabaseControl.qml"
                         }
 
                     }

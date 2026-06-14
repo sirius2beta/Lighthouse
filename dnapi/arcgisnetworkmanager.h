@@ -78,7 +78,7 @@ class LighthouseMapProxy : public QTcpServer {
     Q_OBJECT
 public:
     LighthouseMapProxy(QObject *parent = nullptr) : QTcpServer(parent) {
-        listen(QHostAddress::LocalHost, 8080); // 監聽 8080 埠口
+        listen(QHostAddress::LocalHost, 8081); // 監聽 8081 埠口
         connect(&networkManager, &QNetworkAccessManager::finished, this, &LighthouseMapProxy::onReplyFinished);
     }
 

@@ -157,4 +157,24 @@ void SensorManager::onSensorMsg(uint8_t ID, QByteArray data)
 
 
     }
+
+    if (sensorGroup == 1){
+        QVariantMap payload;
+
+        // 💡 讓程式自動幫你把這 20 個感測器全部打包，不用手動一行一行寫！
+        for (int i = 0; i < sensorGroupModel->count(); ++i) {
+            SensorItem* sensor = qobject_cast<SensorItem*>(sensorGroupModel->get(i));
+            if (sensor) {
+                // 自動使用 XML 的 name 作為 Key (例如 "TEMPERATURE")
+                // 並將 DNValue 轉成 double 作為 Value
+                payload[sensor->name().toLower()] = sensor->value().data().toDouble();
+            }
+        }
+
+        // 💡 打包完成，一次發射給 Database！
+        emit dataReceived(payload);
+    }else if(sensorGroup == 4){
+
+    }
+
 }

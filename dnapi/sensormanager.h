@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QStandardItemModel>
+#include <QVariantMap>
 #include "sensoritem.h"
 #include "sensorgroup.h"
 #include "dnvalue.h"
@@ -41,6 +42,7 @@ public:
 
 signals:
     void sensorDataChanged(uint8_t ID, DNValue& value);
+    void dataReceived(const QVariantMap& data);
 
 public slots:
     void onSensorMsg(uint8_t ID, QByteArray data); //處理來自networkmanager的訊息

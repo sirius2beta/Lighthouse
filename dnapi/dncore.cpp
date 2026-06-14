@@ -14,8 +14,7 @@ DNCore::DNCore(QObject *parent, QString config)
     _sensorManager = new SensorManager(this, this);
     _controlManager = new ControlManager(this, this);
     _aquaGraph = new AquaGraph(this, this);
-    _marineDatabase = new MarineDatabase(this);
-
+    _marineDatabase = MarineDatabase::instance();
 
     connect(_networkManager, &NetworkManager::setFormat, _videoManager, &DNVideoManager::setVideoFormat);
     connect(_networkManager, &NetworkManager::detectMsg, _videoManager, &DNVideoManager::onDetectMsg);
@@ -26,7 +25,8 @@ DNCore::DNCore(QObject *parent, QString config)
     connect(_networkManager, &NetworkManager::sensorMsg, _sensorManager, &SensorManager::onSensorMsg);
     connect(_networkManager, &NetworkManager::controlMsg, _controlManager, &ControlManager::onControlMsg);
     connect(_videoManager, &DNVideoManager::sendMsgbyID, _networkManager, &NetworkManager::sendMsgbyID);
-
+    connect(_sensorManager, &SensorManager::dataReceived, _marineDatabase, &MarineDatabase::handleDataUpdate);
+    connect(qApp, &QCoreApplication::aboutToQuit, _marineDatabase, &MarineDatabase::closeConnection);
     init();
 }
 
@@ -41,9 +41,6 @@ void DNCore::init()
     _sensorManager->init();
     _networkManager->init();
     _controlManager->init();
-
-    // Register our Qml objects
-    // Register Qml Singletons
 
 }
 

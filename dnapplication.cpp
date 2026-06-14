@@ -15,7 +15,7 @@
 #include "dnapi/dnvalue.h"
 #include "dnapi/aquagraph.h"
 #include "dnapi/arcgisnetworkmanager.h"
-
+#include "dnapi/marinedatabase.h"
 
 
 
@@ -83,6 +83,8 @@ void DNApplication::_init(int &argc, char *argv[])
     qmlRegisterUncreatableType<SensorManager>("DeNovoViewer.Boat", 1, 0, "SensorManager",  "reference only");
     qmlRegisterUncreatableType<ControlManager>("DeNovoViewer.Boat", 1, 0, "ControlManager", "reference only");
     qmlRegisterUncreatableType<ControlItem>("DeNovoViewer.Boat", 1, 0, "ControlItem", "reference only");
+    qmlRegisterUncreatableType<MarineDatabase>("DeNovoViewer.Boat", 1, 0, "MarineDatabase", "reference only");
+
     qmlRegisterType<DNValue>("DeNovoViewer.Boat", 1, 0, "DNValue");
 
     // Register Qml Singletons

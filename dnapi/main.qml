@@ -172,6 +172,5 @@ Window {
 
 
     Component.onCompleted: {
-
     }
 }
