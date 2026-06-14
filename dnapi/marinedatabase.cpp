@@ -207,30 +207,50 @@ void MarineDatabase::setDefaultLogDirectory(const QString& path) {
     settings.setValue("storage/log_root_dir", path);
 }
 
+
+
 QVariantList MarineDatabase::fetchTrajectoryData(int fieldIndex) {
     QVariantList trajectory;
-
-    // 假設 fieldIndex: 1=Temperature, 2=Depth, 3=pH
-    // 如果 fieldIndex == 0 (None)，直接回傳空陣列
     QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+    // 防呆：如果選擇 0 (None) 或資料庫沒開，直接回傳空陣列
+    if (fieldIndex == 0 || !db.isOpen()) {
+        return trajectory;
+    }
 
-    if (fieldIndex == 0 || db.isOpen()) return trajectory;
+    // 💡 效能關鍵：每 5 筆抽樣 1 筆 (id % 5 = 0)。記得把 id 也撈出來給 QML 防呆用！
+    QSqlQuery query(db);
+    query.prepare("SELECT id, lat, lon, data_json FROM sensor_logs WHERE id % 5 = 0");
 
-    // 💡 效能關鍵：利用 id % 5 = 0 進行降頻抽樣，5小時的資料只抓 3600 筆！
-    QSqlQuery query("SELECT lat, lon, data_json FROM sensor_logs WHERE id % 5 = 0");
+    if (!query.exec()) {
+        qDebug() << "讀取軌跡資料失敗:" << query.lastError().text();
+        return trajectory;
+    }
 
     while (query.next()) {
-        double lat = query.value(0).toDouble();
-        double lon = query.value(1).toDouble();
-        QString jsonStr = query.value(2).toString();
+        int id = query.value(0).toInt();
+        double lat = query.value(1).toDouble();
+        double lon = query.value(2).toDouble();
+        QString jsonStr = query.value(3).toString();
 
-        // 這裡你需要根據你的 JSON 格式把數值解析出來
-        // 假設你解析出來的值存入 val 變數
+        // 🌟 解析 JSON 字串
+        QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
+        QJsonObject jsonObj = doc.object();
+
         double val = 0.0;
-        /* 解析 jsonStr 取得對應 fieldIndex 的數值 ... */
 
-        // 將這一個點包裝成 QVariantMap (QML 的 Object)
+        // 💡 根據 QML 傳來的 fieldIndex (下拉選單的 Index) 來決定抓哪個數值
+        // 假設 QML: 1="Temperature", 2="Depth", 3="pH"
+        if (fieldIndex == 1) {
+            val = jsonObj.value("Temperature").toDouble();
+        } else if (fieldIndex == 2) {
+            val = jsonObj.value("Depth").toDouble();
+        } else if (fieldIndex == 3) {
+            val = jsonObj.value("pH").toDouble();
+        }
+
+        // 將這一個點包裝成 QVariantMap (QML 中會變成 JavaScript Object)
         QVariantMap point;
+        point["id"] = id;
         point["lat"] = lat;
         point["lon"] = lon;
         point["value"] = val;
@@ -239,4 +259,51 @@ QVariantList MarineDatabase::fetchTrajectoryData(int fieldIndex) {
     }
 
     return trajectory;
+}
+
+// =================================================================
+// 2. 撈取最新的一顆點 (用於航行中，每存一筆資料就即時畫一顆點)
+// =================================================================
+QVariantMap MarineDatabase::fetchLatestPoint(int fieldIndex) {
+    QVariantMap point;
+    point["id"] = -1; // 預設無效值，給 QML 判斷用
+    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
+
+    if (fieldIndex == 0 || !db.isOpen()) {
+        return point;
+    }
+
+    // 💡 利用 ORDER BY id DESC LIMIT 1，瞬間抓出最新的一筆紀錄
+    QSqlQuery query(db);
+    query.prepare("SELECT id, lat, lon, data_json FROM sensor_logs ORDER BY id DESC LIMIT 1");
+
+    if (!query.exec()) {
+        qDebug() << "讀取最新點位失敗:" << query.lastError().text();
+        return point;
+    }
+
+    if (query.next()) {
+        point["id"] = query.value(0).toInt();
+        point["lat"] = query.value(1).toDouble();
+        point["lon"] = query.value(2).toDouble();
+        QString jsonStr = query.value(3).toString();
+
+        // 🌟 解析 JSON 字串 (邏輯與上方完全相同)
+        QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
+        QJsonObject jsonObj = doc.object();
+
+        double val = 0.0;
+
+        if (fieldIndex == 1) {
+            val = jsonObj.value("Temperature").toDouble();
+        } else if (fieldIndex == 2) {
+            val = jsonObj.value("Depth").toDouble();
+        } else if (fieldIndex == 3) {
+            val = jsonObj.value("pH").toDouble();
+        }
+
+        point["value"] = val;
+    }
+
+    return point;
 }

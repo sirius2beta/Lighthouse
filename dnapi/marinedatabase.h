@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QString>
 #include <QSqlDatabase>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QMap>
 #include <QVariant>
 #include "dnvalue.h"
@@ -37,6 +39,7 @@ public:
     Q_INVOKABLE QString defaultLogDirectory() const;
     Q_INVOKABLE void setDefaultLogDirectory(const QString& path);
     Q_INVOKABLE QVariantList fetchTrajectoryData(int fieldIndex);
+    Q_INVOKABLE QVariantMap fetchLatestPoint(int fieldIndex);
 signals:
     void connectionStatusChanged(bool connected);
     void dataInsertedSuccessfully();

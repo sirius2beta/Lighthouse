@@ -20,6 +20,8 @@ Item {
     property int h_resolution: 480
     property int w_resolution: 640
     property real ratio: w_resolution/h_resolution
+    property int lastRenderedId: -1
+
     clip: true
 
     PipState {
@@ -50,6 +52,9 @@ Item {
             PluginParameter { name: "osm.mapping.cache.disk.size"; value: "0" }
             PluginParameter { name: "osm.mapping.offline.allow"; value: "false" }
     }
+    ListModel {
+        id: trajectoryModel
+    }
     Map {
         id: mmap
         anchors.fill: parent
@@ -57,24 +62,17 @@ Item {
         //activeMapType: supportedMapTypes[3] // Cycle map provided by Thunderforest
 
         // 💡 這是用來繪製軌跡點的工廠
-                MapItemView {
+        MapItemView {
                     id: trajectoryRenderer
-                    // model 預設是空的，等待開關打開時塞入資料
-                    model: []
+                    model: trajectoryModel // 綁定到上面的 ListModel
 
                     delegate: MapCircle {
-                        // 讀取從 C++ 傳來的 lat / lon
-                        center: QtPositioning.coordinate(modelData.lat, modelData.lon)
-
-                        // 圓的半徑 (公尺)。地圖縮放時它會保持相對真實的地理大小
+                        // ⚠️ 關鍵改變：使用 ListModel 後，不需要寫 modelData.，直接寫變數名稱即可！
+                        center: QtPositioning.coordinate(lat, lon)
                         radius: 4.0
-
-                        // 邊框拿掉看起來比較像平滑的熱力圖
                         border.width: 0
-
-                        // 💡 呼叫剛剛寫的演算法，即時計算這顆圓點的顏色！
                         color: colorRampEngine.getColor(
-                            modelData.value,
+                            value, // 直接寫 value
                             parseFloat(minField.text),
                             parseFloat(maxField.text),
                             colorRampCombo.currentIndex
@@ -379,16 +377,24 @@ Item {
                                      DeNovoViewer.marineDatabase.dbName !== "" &&
                                      DeNovoViewer.marineDatabase.dbName !== "未連線"
             function refreshMapData() {
-                if (!isDbReady || dataFieldCombo.currentIndex === 0) {
-                    trajectoryRenderer.model = []
-                    return
-                }
-                // 呼叫 C++ 撈資料
-                var rawData = DeNovoViewer.marineDatabase.fetchTrajectoryData(dataFieldCombo.currentIndex)
+                        // 清空舊點
+                        trajectoryModel.clear()
+                        _root.lastRenderedId = -1
 
-                // 把資料塞給地圖的渲染器，瞬間畫出幾千個點！
-                trajectoryRenderer.model = rawData
-            }
+                        if (!isDbReady || dataFieldCombo.currentIndex === 0) return
+
+                        var rawData = DeNovoViewer.marineDatabase.fetchTrajectoryData(dataFieldCombo.currentIndex)
+
+                        // 💡 將 C++ 傳來的大量陣列，一筆一筆快速塞進動態模型中
+                        for (var i = 0; i < rawData.length; i++) {
+                            trajectoryModel.append(rawData[i])
+                        }
+
+                        // 記錄最後一筆的 ID，方便接續即時繪圖
+                        if (rawData.length > 0) {
+                            root.lastRenderedId = rawData[rawData.length - 1].id
+                        }
+                    }
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: 15
@@ -500,4 +506,31 @@ Item {
             }
         }
 
+        Connections {
+                target: DeNovoViewer.marineDatabase
+                // ...
+
+                // 🌟 當 C++ 成功寫入一筆資料到 SQLite 時觸發！
+                function onDataInsertedSuccessfully() {
+                    blinkAnimation.start()
+
+                    // 如果軌跡渲染開關有打開，且有選擇要畫的數值
+                    if (renderSwitch.checked && dataFieldCombo.currentIndex !== 0) {
+
+                        // 向 C++ 請求最新寫入的那一筆點
+                        var newPt = DeNovoViewer.marineDatabase.fetchLatestPoint(dataFieldCombo.currentIndex)
+
+                        // 💡 降頻與防呆邏輯：
+                        // 1. 確保這筆資料的 id 是 5 的倍數 (對應你的 1/5 抽樣率)
+                        // 2. 確保沒有重複畫 (newPt.id !== lastRenderedId)
+                        if (newPt.id !== -1 && newPt.id % 5 === 0 && newPt.id !== root.lastRenderedId) {
+
+                            root.lastRenderedId = newPt.id
+
+                            // 🚀 核心：直接把新點 Append 到地圖上，完全不影響舊的點！
+                            trajectoryModel.append(newPt)
+                        }
+                    }
+                }
+}
 }
