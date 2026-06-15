@@ -398,8 +398,8 @@ Item {
             height: 350
             // 停靠在控制列的上方
             anchors.bottom: controlBar.top
+            anchors.right: controlBar.left
             anchors.bottomMargin: 10
-            anchors.horizontalCenter: parent.horizontalCenter
 
             color: "#252528"
             radius: 8
@@ -423,15 +423,45 @@ Item {
                         if (!isDbReady) return
 
                         var rawData = DeNovoViewer.marineDatabase.fetchTrajectoryData(dataFieldCombo.currentIndex)
-                        console.log(">>> QML 準備畫圖，接收到點數: " + rawData.length)
-                        // 💡 將 C++ 傳來的大量陣列，一筆一筆快速塞進動態模型中
-                        for (var i = 0; i < rawData.length; i++) {
-                            trajectoryModel.append(rawData[i])
-                        }
 
-
-                        // 記錄最後一筆的 ID，方便接續即時繪圖
+                        // 初始化最大最小變數 (以第一筆資料為基準)
                         if (rawData.length > 0) {
+                            // 🌟 1. 萃取所有數值到一個純 JS 陣列中
+                            var values = [];
+                            for (var i = 0; i < rawData.length; i++) {
+                                values.push(rawData[i].value);
+                            }
+
+                            // 🌟 2. 將數值從小到大排序
+                            // (JS 預設 sort 是轉字串排，所以務必加入 a-b 的比較函式)
+                            values.sort(function(a, b) { return a - b; });
+
+                            // 🌟 3. 採用「百分位數過濾法」，捨棄頭尾各 2% 的極端雜訊
+                            var minIndex = Math.floor(values.length * 0.02);
+                            var maxIndex = Math.floor(values.length * 0.98);
+
+                            // 防呆：避免資料筆數太少時超出陣列範圍
+                            if (minIndex < 0) minIndex = 0;
+                            if (maxIndex >= values.length) maxIndex = values.length - 1;
+
+                            var autoMin = values[minIndex];
+                            var autoMax = values[maxIndex];
+
+                            // 🌟 4. 防呆機制：如果整趟航程數值完全沒變
+                            if (autoMin === autoMax) {
+                                autoMax += 1.0;
+                            }
+
+                            // 🌟 5. 自動把過濾後的合理最大最小值填入 TextField
+                            minField.text = autoMin.toFixed(2);
+                            maxField.text = autoMax.toFixed(2);
+
+                            // 🌟 6. 將資料正式塞入地圖渲染引擎
+                            for (var j = 0; j < rawData.length; j++) {
+                                trajectoryModel.append(rawData[j])
+                            }
+
+                            // 記錄最後一筆的 ID，方便接續即時繪圖
                             _root.lastRenderedId = rawData[rawData.length - 1].id
                         }
                     }
@@ -492,7 +522,7 @@ Item {
                     ComboBox {
                         id: dataFieldCombo
                         Layout.fillWidth: true
-                        model: ["None (無)", "Temperature (溫度)", "Depth (水深)", "pH (酸鹼度)"]
+                        model: ["None (無)", "Temperature (溫度)", "Depth (水深)", "DO (%)"]
 
                         // 💡 當更改來源時，重新抓資料
                         onCurrentIndexChanged: {
@@ -579,6 +609,145 @@ Item {
                     active: parent.visible
                 }
             }
+        // ==========================================
+            // 🎨 左下角：色彩漸層圖例 (Color Legend) - 專業刻度版
+            // ==========================================
+            Rectangle {
+                id: colorLegend
+                width: 85  // 💡 加寬一點，為了塞下右側的數字
+                height: 280 // 💡 加高一點，讓 10 個刻度不會太擁擠
+
+                // 停靠在左下角，位於 controlBar 的上方
+                anchors.left: parent.left
+                anchors.bottom: controlBar.top
+                anchors.margins: 20
+
+                color: "#E6252528" // 稍微帶一點透明度的高階黑背景 (Alpha 90%)
+                radius: 8
+                border.color: "#3a3a3c"
+                border.width: 1
+
+                // 💡 智慧顯示邏輯
+                visible: renderSwitch.checked && dataFieldCombo.currentIndex !== 0 && isFull
+
+                // --- 預先宣告三種漸層 ---
+                Gradient {
+                    id: rainbowGradient
+                    GradientStop { position: 0.00; color: Qt.hsla(0.0, 1.0, 0.5, 0.8) }   // 紅色 (Max)
+                    GradientStop { position: 0.25; color: Qt.hsla(60/360, 1.0, 0.5, 0.8) } // 黃色
+                    GradientStop { position: 0.50; color: Qt.hsla(120/360, 1.0, 0.5, 0.8)} // 綠色
+                    GradientStop { position: 0.75; color: Qt.hsla(180/360, 1.0, 0.5, 0.8)} // 青色
+                    GradientStop { position: 1.00; color: Qt.hsla(240/360, 1.0, 0.5, 0.8)} // 藍色 (Min)
+                }
+
+                Gradient {
+                    id: heatmapGradient
+                    GradientStop { position: 0.00; color: Qt.hsla(0.0, 1.0, 0.9, 0.8) } // 亮白紅 (Max)
+                    GradientStop { position: 0.50; color: Qt.hsla(30/360, 1.0, 0.5, 0.8) } // 橘紅
+                    GradientStop { position: 1.00; color: Qt.hsla(60/360, 1.0, 0.1, 0.8) } // 偏黑黃 (Min)
+                }
+
+                Gradient {
+                    id: monochromeGradient
+                    GradientStop { position: 0.0; color: Qt.rgba(0.6, 0.2, 0.8, 1.0) } // 不透明紫 (Max)
+                    GradientStop { position: 1.0; color: Qt.rgba(0.6, 0.2, 0.8, 0.2) } // 透明深紫 (Min)
+                }
+
+                // --- 圖例排版設計 ---
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: 12 // 邊距加大，防止最上下的文字被切到
+                    spacing: 8
+
+                    // 1. 標題
+                    Text {
+                        text: dataFieldCombo.currentText.split(" ")[0]
+                        color: "#B3B3B3"
+                        font.pointSize: 9
+                        font.bold: true
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+
+                    // 分隔線
+                    Rectangle { Layout.fillWidth: true; height: 1; color: "#3a3a3c" }
+
+                    // 2. 左右並排區塊 (左邊色條，右邊刻度)
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        spacing: 6
+
+                        // 🌟 左側：漸層色條本體
+                        Rectangle {
+                            Layout.preferredWidth: 16
+                            Layout.fillHeight: true
+                            radius: 3
+                            border.color: "#111111" // 加個深色邊框更有質感
+                            border.width: 1
+
+                            gradient: {
+                                if (colorRampCombo.currentIndex === 0) return rainbowGradient;
+                                if (colorRampCombo.currentIndex === 1) return heatmapGradient;
+                                return monochromeGradient;
+                            }
+                        }
+
+                        // 🌟 右側：11個刻度與數值 (切成完美的 10 等分)
+                        Item {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+
+                            Repeater {
+                                model: 11 // 產生 11 個點位 (0~10)
+
+                                Item {
+                                    width: parent.width
+                                    height: 1
+
+                                    // 🚀 精準計算 Y 座標：確保點位完美平均分佈在色條的高度上
+                                    // index 0 是最頂端 (0%)，index 10 是最底端 (100%)
+                                    y: index * (parent.height / 10.0)
+
+                                    // 刻度小橫線
+                                    Rectangle {
+                                        width: 5
+                                        height: 1
+                                        color: "#8A8A8F"
+                                        anchors.left: parent.left
+                                        anchors.verticalCenter: parent.verticalCenter
+                                    }
+
+                                    // 數值文字
+                                    Text {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 8
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        color: "#FFFFFF"
+                                        font.pointSize: 8
+                                        font.family: "Consolas" // 建議使用等寬字體，數字對齊會更好看
+
+                                        // 🚀 神奇綁定：根據 Min/Max 自動內插算出這格的數字
+                                        text: {
+                                            let minVal = parseFloat(minField.text);
+                                            if (isNaN(minVal)) minVal = 0.0;
+
+                                            let maxVal = parseFloat(maxField.text);
+                                            if (isNaN(maxVal)) maxVal = 100.0;
+
+                                            // 計算當前刻度對應的數值 (index 0 必須是 Max，index 10 是 Min)
+                                            let ratio = 1.0 - (index / 10.0);
+                                            let val = minVal + (maxVal - minVal) * ratio;
+
+                                            // 格式化為小數點後 1 位
+                                            return val.toFixed(1);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
         Connections {
                 target: DeNovoViewer.marineDatabase
@@ -605,5 +774,5 @@ Item {
                         }
                     }
                 }
-}
+    }
 }
