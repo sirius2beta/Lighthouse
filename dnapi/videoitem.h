@@ -19,6 +19,7 @@ class DNCore;
 
 typedef std::function<void()> Task;
 
+
 class GstVideoWorker : public QThread
 {
     Q_OBJECT
@@ -90,6 +91,8 @@ public:
 
     void initVideo(QQuickItem *widget);
     void start();
+    void stopPipeline();
+    void cleanGstreamer();
     void setDisplay(WId xwinid);
     void setVideoFormat(QByteArray data);
     void setVideoStatus(QByteArray data);
@@ -136,6 +139,23 @@ public:
     void processDetection(QByteArray data);
     void setAIModelReady(uint8_t model_index, uint8_t isReady);
     bool _needDispatch();
+    enum VIDEO_STREAM_TYPE {
+        VIDEO_STREAM_TYPE_RTPUDP = 0,
+        VIDEO_STREAM_TYPE_RTSP
+    };
+    Q_ENUM(VIDEO_STREAM_TYPE)
+
+    enum STATUS {
+            STATUS_MIN = 0,
+            STATUS_OK = STATUS_MIN,
+            STATUS_FAIL,
+            STATUS_INVALID_STATE,
+            STATUS_INVALID_URL,
+            STATUS_NOT_IMPLEMENTED,
+            STATUS_MAX = STATUS_NOT_IMPLEMENTED
+        };
+        Q_ENUM(STATUS)
+        static bool isValidStatus(STATUS status) { return ((status >= STATUS_MIN) && (status <= STATUS_MAX)); }
 signals:
     void sendMsg(int8_t boatID, char topic, QByteArray data);
     void requestFormat(VideoItem* v); //set _requestFormat = true before sending
@@ -159,6 +179,8 @@ signals:
     void recordingChanged(uint8_t recording);
     void modelReady(uint8_t index, uint8_t isReady);
     void seagrassModelReady(uint8_t isReady);
+    void onStartComplete(STATUS status);
+    void onStopComplete(STATUS status);
 
 public slots:
     void onCameraMsg(uint8_t boatID, QByteArray msg);
@@ -167,7 +189,6 @@ public slots:
 
 private:
     DNCore* _core;
-    bool _initialized;
     QString _title;
     int _boatID;
     int _index;
@@ -188,8 +209,8 @@ private:
     uint8_t _status;
     QQuickItem* _videoWidget;
 
-    GstElement *_pipeline;
-    GstElement *_sink;
+    GstElement *_pipeline = nullptr;
+    GstElement *_sink = nullptr;
     bool _isPlaying;
     bool _isVideoInfo;
 
@@ -211,6 +232,7 @@ private:
 
     uint32_t _signalDepth = 0;
     void _dispatchSignal(Task emitter);
+    VIDEO_STREAM_TYPE _streamType;
 
 };
 

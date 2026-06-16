@@ -11,7 +11,6 @@
 VideoItem::VideoItem(QObject *parent, DNCore* core, int index, QString title, int boatID, int videoNo, int qualityIndex, int PCPort)
     : QObject{parent},
       _core(core),
-      _initialized(false),
       _title(title),
       _boatID(boatID),
       _index(index),
@@ -28,8 +27,31 @@ VideoItem::VideoItem(QObject *parent, DNCore* core, int index, QString title, in
     _isVideoInfo(false),
     _AIEnabled(false),
     _AIType(0),
-    _worker(new GstVideoWorker(this))
+    _worker(new GstVideoWorker(this)),
+    _streamType(VideoItem::VIDEO_STREAM_TYPE_RTPUDP)
 {
+    (void) connect(this, &VideoItem::onStartComplete, this, [this](VideoItem::STATUS status) {
+            qDebug() << "Video" << "Start complete, status:" << status;
+            switch (status) {
+            case VideoItem::STATUS_OK:
+                break;
+            case VideoItem::STATUS_INVALID_URL:
+            case VideoItem::STATUS_INVALID_STATE:
+                break;
+            default:
+                start();
+                break;
+            }
+        });
+    (void) connect(this, &VideoItem::onStopComplete, this, [this](VideoItem::STATUS status) {
+
+                QTimer::singleShot(1000, this, [this]() {
+                    qDebug() << "Restarting video receiver";
+                    start();
+                });
+
+        });
+
     _worker->start();
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
     connect(_core->networkManager(), &NetworkManager::cameraMsg, this, &VideoItem::onCameraMsg);
@@ -42,13 +64,7 @@ VideoItem::VideoItem(QObject *parent, DNCore* core, int index, QString title, in
 VideoItem::~VideoItem()
 {
 
-    if(_initialized == false){
-
-    }else{
-        gst_element_set_state (_pipeline, GST_STATE_NULL);
-        gst_object_unref (_pipeline);
-        gst_object_unref (_sink);
-    }
+    cleanGstreamer();
     _worker->shutdown();
 
 }
@@ -72,6 +88,7 @@ void VideoItem::initVideo(QQuickItem *widget)
     //setenv("GST_DEBUG", "3,decodebin*:6,amc*:6,avdec*:6", 1);
     GstElement *sink = nullptr;
     _videoWidget = widget;
+    qDebug() << "start the pipeline;";
     start();
 
 }
@@ -90,55 +107,164 @@ void VideoItem::start()
 
     QString gstcmd;
 
-# ifdef ANDROID
-        gstcmd = QString(
-                     "udpsrc port=%1 ! "
-                     "application/x-rtp, media=video, clock-rate=90000, payload=96 ! "
-                     "rtpjitterbuffer mode=1 latency=200 ! "
-                     "rtph264depay ! h264parse ! "
-                     "amcviddec-c2exynosh264decoder ! "
-                     "queue max-size-buffers=1 leaky=downstream ! " // 修正為 leaky=downstream (或 leaky=1)
-                     "glupload ! "
-                     "glcolorconvert ! "
-                     "qml6glsink name=sink sync=false async=false "
-                     ).arg(QString::number(_PCPort));
+#ifdef ANDROID
+    gstcmd = QString(
+                 "udpsrc port=%1 ! "
+                 "application/x-rtp, media=video, clock-rate=90000, payload=96 ! "
+                 "rtpjitterbuffer mode=1 latency=200 ! "
+                 "rtph264depay ! h264parse ! "
+                 "amcviddec-c2exynosh264decoder ! "
+                 "queue max-size-buffers=1 leaky=downstream ! "
+                 "glupload ! "
+                 "glcolorconvert ! "
+                 "qml6glsink name=sink sync=false async=false "
+                 ).arg(QString::number(_PCPort));
 #else
+    QString portRange = QString("%1-%2").arg((_PCPort-5201)*5+5201).arg((_PCPort-5201)*5+5201 + 5);
+    switch (_streamType) {
+    case VideoItem::VIDEO_STREAM_TYPE_RTPUDP:
+        gstcmd = QString("udpsrc port=%1 ! application/x-rtp, media=video, clock-rate=90000, payload=96 ! rtph264depay ! avdec_h264   !\
+                  glupload ! glcolorconvert ! qml6glsink name=sink").arg(QString::number(_PCPort));
+        _watchdogTimer.stop();
+        break;
+    case VideoItem::VIDEO_STREAM_TYPE_RTSP:
+        gstcmd = QString(
+            "rtspsrc location=rtsp://127.0.0.1:8555/boat_stream "
+            "latency=0 drop-on-latency=true protocols=udp "
+            "port-range=%1 ! "  // <--- 強制指定 UDP Port 範圍
+            "rtph264depay ! h264parse ! avdec_h264 ! "
+            "watchdog timeout=3000 ! "
+            "glupload ! glcolorconvert ! "
+            "qml6glsink name=sink sync=false async=false"
+        ).arg(portRange);
+        break;
+    default:
+        gstcmd = QString("udpsrc port=%1 ! application/x-rtp, media=video, clock-rate=90000, payload=96 ! rtph264depay ! avdec_h264   !\
+                  glupload ! glcolorconvert ! qml6glsink name=sink").arg(QString::number(_PCPort));
+        break;
+    }
 
-        gstcmd = QString("rtspsrc location=rtsp://127.0.0.1:8555/boat_stream latency=0 ! rtph264depay ! h264parse ! avdec_h264 ! watchdog timeout=3000 ! glupload ! glcolorconvert ! qml6glsink name=sink");
+
 #endif
 
+    GError *error = nullptr;
 
-     GError *error = nullptr;
-     bool running = false;
-     // 1. 修正元件名稱為 qml6glsink 並增加錯誤捕捉
-     _pipeline = gst_parse_launch(gstcmd.toLocal8Bit(), &error);
-     _sink = gst_bin_get_by_name(GST_BIN(_pipeline), "sink");
-     if (_sink) {
-         GstPad *sinkPad = gst_element_get_static_pad(_sink, "sink");
-         if (sinkPad) {
-             gst_pad_add_probe(sinkPad, GST_PAD_PROBE_TYPE_BUFFER, padProbeCb, this, nullptr);
-             gst_object_unref(sinkPad);
-         }
-         g_object_set(_sink, "widget", _videoWidget, NULL);
-     }
-     running = running = (gst_element_set_state(_pipeline, GST_STATE_PLAYING) != GST_STATE_CHANGE_FAILURE);
+    // 1. 嘗試解析建立 Pipeline
+    _pipeline = gst_parse_launch(gstcmd.toLocal8Bit(), &error);
 
-    if(!running){
-        if (!_pipeline) {
-            if (error) {
-               qDebug() << "Pipeline 啟動失敗:" << error->message;
-               g_error_free(error);
-            }
-            qDebug() << "無法建立 Pipeline，請檢查 GStreamer 插件是否安裝完整。";
-            (void) gst_element_set_state(_pipeline, GST_STATE_NULL);
-            gst_clear_object(&_pipeline);
+    // 2. 檢查解析是否失敗 (這步非常重要，阻擋後續崩潰)
+    if (!_pipeline) {
+        if (error) {
+            qDebug() << "Pipeline 語法解析失敗:" << error->message;
+            g_error_free(error);
         }
+        qDebug() << "無法建立 Pipeline，請檢查 GStreamer 插件是否安裝完整。";
         QThread::sleep(1);
-    }else{
-        _isPlaying = true;
+        return; // 直接退出，不要往下執行
     }
+
+    // 有時候即便成功建立，也可能會有無害的 warning error，記得釋放
+    if (error) {
+        g_error_free(error);
+    }
+
+    // 3. 安全地取得 Sink 並設定
+    _sink = gst_bin_get_by_name(GST_BIN(_pipeline), "sink");
+    if (_sink) {
+        GstPad *sinkPad = gst_element_get_static_pad(_sink, "sink");
+        if (sinkPad) {
+            gst_pad_add_probe(sinkPad, GST_PAD_PROBE_TYPE_BUFFER, padProbeCb, this, nullptr);
+            gst_object_unref(sinkPad); // 記得釋放 pad
+        }
+        g_object_set(_sink, "widget", _videoWidget, NULL);
+    } else {
+        qDebug() << "警告：找不到名稱為 'sink' 的元件！";
+    }
+
+    // 4. 嘗試將 Pipeline 設定為播放狀態
+    GstStateChangeReturn ret = gst_element_set_state(_pipeline, GST_STATE_PLAYING);
+
+    // 5. 檢查啟動是否失敗
+    if (ret == GST_STATE_CHANGE_FAILURE) {
+        qDebug() << "Pipeline 狀態切換至 PLAYING 失敗！";
+
+        // --- 啟動失敗的標準清理流程 ---
+        gst_element_set_state(_pipeline, GST_STATE_NULL); // 設定回 NULL
+
+        // 如果你有用類別成員 _sink，在這裡也必須清空它，否則會有殘留指標
+        if (_sink) {
+            gst_clear_object(&_sink);
+        }
+        gst_clear_object(&_pipeline); // 安全地釋放並將 _pipeline 設為 nullptr
+
+        QThread::sleep(1);
+        _dispatchSignal([this]() { emit onStartComplete(STATUS_FAIL); });
+        return;
+    }else{
+        _dispatchSignal([this]() { emit onStartComplete(STATUS_OK); });
+    }
+
+    qDebug() << "Pipeline 啟動程序已觸發！";
 }
 
+void VideoItem::stopPipeline()
+{
+    if (_needDispatch()) {
+        _worker->dispatch([this]() { stopPipeline(); });
+        return;
+    }
+
+    if (_pipeline) {
+
+        // 1. 安全分離 Video Sink，避免 Qt GUI 死鎖
+        if (_sink) {
+            // 檢查 sink 是否還掛在 pipeline 上
+            GstObject *parent = gst_element_get_parent(_sink);
+            if (parent) {
+                // 強制將 sink 從 pipeline 中移除
+                (void) gst_bin_remove(GST_BIN(_pipeline), _sink);
+                gst_clear_object(&parent); // 釋放 get_parent 增加的計數
+            }
+
+            // 讓已經脫離管轄的 sink 獨立停止
+            (void) gst_element_set_state(_sink, GST_STATE_NULL);
+
+            // 安全釋放我們自己握有的 sink 指標
+            gst_clear_object(&_sink);
+        }
+
+        // 2. 停止剩餘的 Pipeline (此時裡面已經沒有 Sink 了，不會卡死)
+        (void) gst_element_set_state(_pipeline, GST_STATE_NULL);
+
+        // 3. 清空 Pipeline 物件
+        gst_clear_object(&_pipeline);
+        _lastFrameTime = 0;
+    }
+    _dispatchSignal([this]() { emit onStopComplete(STATUS_OK); });
+}
+
+void VideoItem::cleanGstreamer()
+{
+    if (_pipeline) {
+        // 1. 安全分離 Video Sink
+        if (_sink) {
+            GstObject *parent = gst_element_get_parent(_sink);
+            if (parent) {
+                (void) gst_bin_remove(GST_BIN(_pipeline), _sink);
+                gst_clear_object(&parent);
+            }
+            (void) gst_element_set_state(_sink, GST_STATE_NULL);
+            gst_clear_object(&_sink);
+        }
+
+        // 2. 停止剩餘的 Pipeline
+        (void) gst_element_set_state(_pipeline, GST_STATE_NULL);
+
+        // 3. 清空 Pipeline 物件
+        gst_clear_object(&_pipeline);
+        _lastFrameTime = 0;
+    }
+}
 void VideoItem::handlePipelineError() {
     if (_needDispatch()) {
             _worker->dispatch([this]() { handlePipelineError(); });
@@ -146,23 +272,7 @@ void VideoItem::handlePipelineError() {
         }
 
     qDebug() << "停止 Pipeline 並準備重連...";
-    if (_pipeline) {
-        // 將狀態設為 NULL 會釋放網路資源與記憶體
-        gst_element_set_state(_pipeline, GST_STATE_NULL);
-        gst_object_unref(_pipeline);
-        _isPlaying = false;
-        _pipeline = nullptr;
-        _sink = nullptr;
-    }
-
-    // 1. 先把 QML 的綁定解除，避免畫面卡死
-    if (_sink) {
-        g_object_set(_sink, "widget", NULL, NULL);
-    }
-
-
-
-    _initialized = false;
+    stopPipeline();
 
 
 
@@ -172,11 +282,14 @@ void VideoItem::watchdogCheck() {
 
     _worker->dispatch([this]() {
 
-        if (!_pipeline || !_isPlaying) return;
-        qint64 now = QDateTime::currentSecsSinceEpoch();
-        qDebug() << "看門狗觸發";
+        if (!_pipeline) return;
+
 
         // 如果超過 3 秒沒有收到新畫面 (Timeout)
+        const qint64 now = QDateTime::currentSecsSinceEpoch();
+        if (_lastFrameTime == 0) {
+            _lastFrameTime = now;
+        }
         if ((now - _lastFrameTime) > 3) {
             qDebug() << "看門狗觸發：超過 3 秒無畫面，判定斷線，準備重啟！";
 
