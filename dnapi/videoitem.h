@@ -10,8 +10,35 @@
 #include <QQuickItem>
 #include <QMap>
 #include <QHostAddress>
-
+#include <QtCore/QMutex>
+#include <QtCore/QQueue>
+#include <QtCore/QThread>
+#include <QtCore/QTimer>
+#include <QtCore/QWaitCondition>
 class DNCore;
+
+typedef std::function<void()> Task;
+
+class GstVideoWorker : public QThread
+{
+    Q_OBJECT
+
+public:
+    explicit GstVideoWorker(QObject *parent = nullptr);
+    ~GstVideoWorker();
+    bool needDispatch() const;
+    void dispatch(Task task);
+    void shutdown();
+
+private:
+    void run() final;
+
+    QWaitCondition _taskQueueUpdate;
+    QMutex _taskQueueSync;
+    QQueue<Task> _taskQueue;
+    bool _shutdown = false;
+};
+
 class VideoItem : public QObject
 {
     Q_OBJECT
@@ -62,6 +89,7 @@ public:
     Q_INVOKABLE void getVideoFormatByIndex(int index);
 
     void initVideo(QQuickItem *widget);
+    void start();
     void setDisplay(WId xwinid);
     void setVideoFormat(QByteArray data);
     void setVideoStatus(QByteArray data);
@@ -107,7 +135,7 @@ public:
     QString videoFormat();
     void processDetection(QByteArray data);
     void setAIModelReady(uint8_t model_index, uint8_t isReady);
-
+    bool _needDispatch();
 signals:
     void sendMsg(int8_t boatID, char topic, QByteArray data);
     void requestFormat(VideoItem* v); //set _requestFormat = true before sending
@@ -132,8 +160,10 @@ signals:
     void modelReady(uint8_t index, uint8_t isReady);
     void seagrassModelReady(uint8_t isReady);
 
-protected slots:
+public slots:
     void onCameraMsg(uint8_t boatID, QByteArray msg);
+    void handlePipelineError();
+    void watchdogCheck(); // 看門狗定時檢查
 
 private:
     DNCore* _core;
@@ -170,7 +200,19 @@ private:
     QStringList _formatListModel;
     QStringList _formatStringListModel;
     QList<int> _detectionMatrixModel;
+    GstVideoWorker *_worker = nullptr;
+
+    qint64 _lastFrameTime = 0;
+    QTimer* _reconnectTimer;
+    QTimer _watchdogTimer;
+
+        // GStreamer 探針回呼函式
+    static GstPadProbeReturn padProbeCb(GstPad *pad, GstPadProbeInfo *info, gpointer user_data);
+
+    uint32_t _signalDepth = 0;
+    void _dispatchSignal(Task emitter);
 
 };
+
 
 #endif // VIDEOITEM_H

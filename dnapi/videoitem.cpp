@@ -27,10 +27,14 @@ VideoItem::VideoItem(QObject *parent, DNCore* core, int index, QString title, in
     _isPlaying(false),
     _isVideoInfo(false),
     _AIEnabled(false),
-    _AIType(0)
+    _AIType(0),
+    _worker(new GstVideoWorker(this))
 {
+    _worker->start();
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
     connect(_core->networkManager(), &NetworkManager::cameraMsg, this, &VideoItem::onCameraMsg);
+    (void) connect(&_watchdogTimer, &QTimer::timeout, this, &VideoItem::watchdogCheck);
+    _watchdogTimer.start(1000);
 
 
 }
@@ -45,25 +49,47 @@ VideoItem::~VideoItem()
         gst_object_unref (_pipeline);
         gst_object_unref (_sink);
     }
+    _worker->shutdown();
+
+}
+
+void VideoItem::_dispatchSignal(Task emitter)
+{
+    _signalDepth += 1;
+
+    // QElapsedTimer timer;
+    // timer.start();
+
+    emitter();
+
+    // qCDebug(GstVideoReceiverLog) << "Task took" << timer.elapsed() << "ms";
+
+    _signalDepth -= 1;
 }
 
 void VideoItem::initVideo(QQuickItem *widget)
 {
     //setenv("GST_DEBUG", "3,decodebin*:6,amc*:6,avdec*:6", 1);
-
-    GstElement *decoder = gst_element_factory_make("decodebin3", nullptr);
-    if (!decoder) {
-        qDebug() << "gst_element_factory_make('decodebin3') failed";
-    }
     GstElement *sink = nullptr;
-    sink = gst_element_factory_make("qml6glsink", nullptr);
-    if (!sink) {
-        qDebug() << "gst_element_factory_make('qml6glsink') failed";
-    }
     _videoWidget = widget;
+    start();
+
+}
+
+void VideoItem::start()
+{
+    if (_needDispatch()) {
+        _worker->dispatch([this]() { start(); });
+        return;
+    }
+
+    if (_pipeline) {
+        qDebug() << "pipeline Already running!";
+        return;
+    }
 
     QString gstcmd;
-     if(_encoder == "h264"){
+
 # ifdef ANDROID
         gstcmd = QString(
                      "udpsrc port=%1 ! "
@@ -77,44 +103,95 @@ void VideoItem::initVideo(QQuickItem *widget)
                      "qml6glsink name=sink sync=false async=false "
                      ).arg(QString::number(_PCPort));
 #else
-         gstcmd = QString("udpsrc port=%1 ! application/x-rtp, media=video, clock-rate=90000, payload=96 ! rtph264depay ! avdec_h264   !\
-          glupload ! glcolorconvert ! qml6glsink name=sink").arg(QString::number(_PCPort));
+
+        gstcmd = QString("rtspsrc location=rtsp://127.0.0.1:8555/boat_stream latency=0 ! rtph264depay ! h264parse ! avdec_h264 ! watchdog timeout=3000 ! glupload ! glcolorconvert ! qml6glsink name=sink");
 #endif
-     }else{
-          gstcmd = QString("udpsrc port=%1 ! application/x-rtp, media=video, clock-rate=90000, payload=96 ! rtpjpegdepay ! jpegdec ! videoconvert  !\
-          glupload ! qml6glsink name=sink").arg(QString::number(_PCPort));
+
+
+     GError *error = nullptr;
+     bool running = false;
+     // 1. 修正元件名稱為 qml6glsink 並增加錯誤捕捉
+     _pipeline = gst_parse_launch(gstcmd.toLocal8Bit(), &error);
+     _sink = gst_bin_get_by_name(GST_BIN(_pipeline), "sink");
+     if (_sink) {
+         GstPad *sinkPad = gst_element_get_static_pad(_sink, "sink");
+         if (sinkPad) {
+             gst_pad_add_probe(sinkPad, GST_PAD_PROBE_TYPE_BUFFER, padProbeCb, this, nullptr);
+             gst_object_unref(sinkPad);
+         }
+         g_object_set(_sink, "widget", _videoWidget, NULL);
      }
+     running = running = (gst_element_set_state(_pipeline, GST_STATE_PLAYING) != GST_STATE_CHANGE_FAILURE);
 
-    if(!_initialized){
-         GError *error = nullptr;
-         // 1. 修正元件名稱為 qml6glsink 並增加錯誤捕捉
-         _pipeline = gst_parse_launch(gstcmd.toLocal8Bit(), &error);
+    if(!running){
+        if (!_pipeline) {
+            if (error) {
+               qDebug() << "Pipeline 啟動失敗:" << error->message;
+               g_error_free(error);
+            }
+            qDebug() << "無法建立 Pipeline，請檢查 GStreamer 插件是否安裝完整。";
+            (void) gst_element_set_state(_pipeline, GST_STATE_NULL);
+            gst_clear_object(&_pipeline);
+        }
+        QThread::sleep(1);
+    }else{
+        _isPlaying = true;
+    }
+}
 
-         if (error) {
-             qDebug() << "Pipeline 啟動失敗:" << error->message;
-             g_error_free(error);
-             return;
-         }
+void VideoItem::handlePipelineError() {
+    if (_needDispatch()) {
+            _worker->dispatch([this]() { handlePipelineError(); });
+            return;
+        }
 
-         if (!_pipeline) {
-             qDebug() << "無法建立 Pipeline，請檢查 GStreamer 插件是否安裝完整。";
-             return;
-         }
-
-         _sink = gst_bin_get_by_name(GST_BIN(_pipeline), "sink");
-
-         if (!_sink) {
-             qDebug() << "找不到名為 'sink' 的元件！";
-         } else {
-             // 2. 修正 g_object_set 的 Sentinel
-             g_object_set(_sink, "widget", widget, NULL);
-         }
-
-         gst_element_set_state(_pipeline, GST_STATE_PLAYING);
-
+    qDebug() << "停止 Pipeline 並準備重連...";
+    if (_pipeline) {
+        // 將狀態設為 NULL 會釋放網路資源與記憶體
+        gst_element_set_state(_pipeline, GST_STATE_NULL);
+        gst_object_unref(_pipeline);
+        _isPlaying = false;
+        _pipeline = nullptr;
+        _sink = nullptr;
     }
 
-    _initialized = true;
+    // 1. 先把 QML 的綁定解除，避免畫面卡死
+    if (_sink) {
+        g_object_set(_sink, "widget", NULL, NULL);
+    }
+
+
+
+    _initialized = false;
+
+
+
+}
+
+void VideoItem::watchdogCheck() {
+
+    _worker->dispatch([this]() {
+
+        if (!_pipeline || !_isPlaying) return;
+        qint64 now = QDateTime::currentSecsSinceEpoch();
+        qDebug() << "看門狗觸發";
+
+        // 如果超過 3 秒沒有收到新畫面 (Timeout)
+        if ((now - _lastFrameTime) > 3) {
+            qDebug() << "看門狗觸發：超過 3 秒無畫面，判定斷線，準備重啟！";
+
+            handlePipelineError(); // 呼叫你原本寫好的重啟邏輯
+        }
+    }
+    );
+
+
+}
+
+GstPadProbeReturn VideoItem::padProbeCb(GstPad *pad, GstPadProbeInfo *info, gpointer user_data) {
+    VideoItem *item = static_cast<VideoItem*>(user_data);
+    item->_lastFrameTime = QDateTime::currentSecsSinceEpoch();
+    return GST_PAD_PROBE_OK;
 }
 
 void VideoItem::setTitle(QString title)
@@ -490,6 +567,7 @@ void VideoItem::onCameraMsg(uint8_t boatID, QByteArray msg)
     }
 }
 
+
 void VideoItem::getVideoStatus(uint8_t videoIndex)
 {
     char rawdata[3];
@@ -510,4 +588,60 @@ void VideoItem::getVideoStatus(uint8_t videoIndex)
 void VideoItem::setAIModelReady(uint8_t model_index, uint8_t isReady)
 {
         emit modelReady(model_index, isReady);
+}
+
+bool VideoItem::_needDispatch()
+{
+    return _worker->needDispatch();
+}
+
+
+GstVideoWorker::GstVideoWorker(QObject *parent)
+    : QThread(parent)
+{
+    // qCDebug(GstVideoReceiverLog) << this;
+}
+
+GstVideoWorker::~GstVideoWorker()
+{
+    // qCDebug(GstVideoReceiverLog) << this;
+}
+
+bool GstVideoWorker::needDispatch() const
+{
+    return (QThread::currentThread() != this);
+}
+
+void GstVideoWorker::dispatch(Task task)
+{
+    QMutexLocker lock(&_taskQueueSync);
+    _taskQueue.enqueue(task);
+    _taskQueueUpdate.wakeOne();
+}
+
+void GstVideoWorker::shutdown()
+{
+    if (needDispatch()) {
+        dispatch([this]() { _shutdown = true; });
+        (void) QThread::wait(2000);
+    } else {
+        QThread::quit();
+    }
+}
+
+void GstVideoWorker::run()
+{
+    while (!_shutdown) {
+        _taskQueueSync.lock();
+
+        while (_taskQueue.isEmpty()) {
+            _taskQueueUpdate.wait(&_taskQueueSync);
+        }
+
+        const Task task = _taskQueue.dequeue();
+
+        _taskQueueSync.unlock();
+
+        task();
+    }
 }
