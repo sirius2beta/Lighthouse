@@ -6,6 +6,7 @@ import QtQuick.Layouts 1.15
 import QtQuick.Dialogs
 import DeNovoViewer 1.0
 import DeNovoViewer.Boat 1.0
+import DeNovoViewer.Control 1.0
 
 Item {
     property VideoItem _videoItem
@@ -442,9 +443,7 @@ Item {
             RowLayout{
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignRight
-                Button{
-
-
+                DNSquareButton{
                     id: _startRecordingButton
                     font.family: "Segoe UI"
                     text: "開始錄製"
@@ -455,7 +454,7 @@ Item {
                     }
                 }
 
-                Button{
+                DNSquareButton{
                     id: _stopRecordingButton
                     //height: _videoIndex.height
                     font.family: "Segoe UI"
@@ -472,7 +471,7 @@ Item {
             RowLayout{
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignRight
-                Button{
+                DNSquareButton{
 
 
                     id: _stopButton
@@ -485,7 +484,7 @@ Item {
                     }
                 }
 
-                Button{
+                DNSquareButton{
                     id: _playButton
                     //height: _videoIndex.height
                     font.family: "Segoe UI"

@@ -1,0 +1,4 @@
+﻿Module DenovoViewer.Control
+
+DNSquareButton   1.0 DNSquareButton.qml
+DNIconButton   1.0 DNIconButton.qml

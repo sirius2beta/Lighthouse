@@ -42,8 +42,9 @@
         <file alias="DeNovoViewer/Display/VideoView.qml">ui/VideoView.qml</file>
         <file alias="DeNovoViewer/Display/AquaDataGraph.qml">ui/AquaDataGraph.qml</file>
         <file alias="DeNovoViewer/Display/DatabaseControl.qml">ui/DatabaseControl.qml</file>
-
-
+        <file alias="DeNovoViewer/Control/qmldir">ui/DeNovoViewer/Control/qmldir</file>
+        <file alias="DeNovoViewer/Control/DNSquareButton.qml">ui/DNSquareButton.qml</file>
+        <file alias="DeNovoViewer/Control/DNIconButton.qml">ui/DNIconButton.qml</file>
     </qresource>
     <qresource prefix="/res">
         <file alias="boatManager.png">res/boatManager.png</file>
@@ -84,6 +85,9 @@
         <file alias="boat.svg">res/boat.svg</file>
         <file alias="home.svg">res/home.svg</file>
         <file alias="menu.svg">res/menu.svg</file>
+        <file alias="delete.svg">res/delete.svg</file>
+        <file alias="edit_square.svg">res/edit_square.svg</file>
+        <file alias="check.svg">res/check.svg</file>
     </qresource>
     <qresource prefix="/fonts">
         <file alias="Roboto-Regular.ttf">res/fonts/Roboto-Regular.ttf</file>

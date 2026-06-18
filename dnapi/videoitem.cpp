@@ -121,10 +121,17 @@ void VideoItem::start()
                  ).arg(QString::number(_PCPort));
 #else
     QString portRange = QString("%1-%2").arg((_PCPort-5201)*5+5201).arg((_PCPort-5201)*5+5201 + 5);
+    int portNum = _PCPort -5200;
     switch (_streamType) {
     case VideoItem::VIDEO_STREAM_TYPE_RTPUDP:
-        gstcmd = QString("udpsrc port=%1 ! application/x-rtp, media=video, clock-rate=90000, payload=96 ! rtph264depay ! avdec_h264   !\
-                  glupload ! glcolorconvert ! qml6glsink name=sink").arg(QString::number(_PCPort));
+        gstcmd = QString(
+            "udpsrc port=%1 caps=\"application/x-rtp, media=video, clock-rate=90000, encoding-name=H264, payload=96\" ! "
+            "tee name=t "
+            // 分支 1：拆解 RTP -> 轉為 H.264 位元流 -> 解碼 -> 渲染至 QML 畫面
+            "t. ! queue ! rtph264depay ! h264parse ! avdec_h264 ! glupload ! glcolorconvert ! qml6glsink name=sink "
+            // 分支 2：維持原始 RTP 封包 -> 轉發給本機的其他服務 (例如 MediaMTX)
+            "t. ! queue ! udpsink host=127.0.0.1 port=%2"
+        ).arg(QString::number(_PCPort)).arg(QString::number(5000+portNum));
         _watchdogTimer.stop();
         break;
     case VideoItem::VIDEO_STREAM_TYPE_RTSP:

@@ -2,6 +2,7 @@
 #include "dncore.h"
 #include <QQmlEngine>
 #include <QTimer>
+#include <QSettings>
 
 BoatManager::BoatManager(QObject* parent, DNCore *core): QObject(parent),
     _activeBoat(0),

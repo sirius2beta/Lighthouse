@@ -62,13 +62,149 @@ void NetworkManager::init()
         }
     }
     // add forward client of MP(14550) and QGC(14450)
-    qobject_cast<UDPConfiguration*>(forwardLinkConfig.get())->addHost("127.0.0.1", 14450);
-    qobject_cast<UDPConfiguration*>(forwardLinkConfig.get())->addHost("127.0.0.1", 14550);
+    QSettings settings;
+    QString root = settingsRoot() + QStringLiteral("/forwardLinks");
+
+    if (settings.contains(root + QStringLiteral("/count"))) {
+        const int count = settings.value(root + QStringLiteral("/count")).toInt();
+
+        for (int i = 0; i < count; i++) {
+            const QString root_ = root + QStringLiteral("/Link%1").arg(i);
+            QString addr = settings.value(root_).toString();
+            if (!addr.isEmpty()) {
+                _forwardConnections.append(addr);
+                QStringList parts = addr.split(':');
+
+                if (parts.size() == 2) {
+                    QString ip = parts[0];
+                    int port = parts[1].toInt();
+
+                    // 執行呼叫
+                    qobject_cast<UDPConfiguration*>(forwardLinkConfig.get())->addHost(ip, port);
+                }
+            }
+        }
+        emit forwardConnectionsChanged();
+
+    }
+    //qobject_cast<UDPConfiguration*>(forwardLinkConfig.get())->addHost("127.0.0.1", 14450);
+    //qobject_cast<UDPConfiguration*>(forwardLinkConfig.get())->addHost("127.0.0.1", 14550);
 
     connect(MAVLinkProtocol::instance(), &MAVLinkProtocol::messageReceived, this, &NetworkManager::_mavlinkMessageReceived);
 }
 
+void NetworkManager::addForwardConnection(const QString &address)
+{
+    // 安全防護：避免加入重複的連線
+    if (_forwardConnections.contains(address)) {
+        return; // 如果已經存在，直接離開，什麼都不做
+    }
 
+    LinkManager* linkManager = LinkManager::instance();
+    // 確保 mavlinkForwardingLink 不為空
+    if (auto forwardingLink = linkManager->mavlinkForwardingLink()) {
+        SharedLinkConfigurationPtr forwardLinkConfig = forwardingLink->linkConfiguration();
+
+        if (forwardLinkConfig) {
+            UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(forwardLinkConfig.get());
+            if (udpConfig) { // 確保轉型成功
+                QStringList parts = address.split(':');
+                if (parts.size() == 2) {
+                    QString ip = parts[0];
+                    int port = parts[1].toInt();
+                    udpConfig->addHost(ip, port);
+                }
+            }
+        }
+    }
+
+    // 確定沒有重複才加入列表，並觸發更新
+    _forwardConnections.append(address);
+    emit forwardConnectionsChanged();
+    _updateSettings();
+}
+
+void NetworkManager::removeForwardConnection(const QString &address)
+{
+    // removeOne 會移除第一個匹配的項目。如果成功移除會回傳 true
+    if (_forwardConnections.removeOne(address)) {
+
+        LinkManager* linkManager = LinkManager::instance();
+        if (auto forwardingLink = linkManager->mavlinkForwardingLink()) {
+            SharedLinkConfigurationPtr forwardLinkConfig = forwardingLink->linkConfiguration();
+            if (forwardLinkConfig) {
+                UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(forwardLinkConfig.get());
+                if (udpConfig) {
+                    udpConfig->removeHost(address);
+                }
+            }
+        }
+
+        // 注意：把這兩行移到 if (forwardLinkConfig) 之外！
+        // 因為只要 _forwardConnections 有變動，就必須通知 QML 跟 Settings 更新
+        emit forwardConnectionsChanged();
+        _updateSettings();
+    }
+}
+
+void NetworkManager::_updateSettings()
+{
+    QSettings settings;
+    QString root = settingsRoot() + QStringLiteral("/forwardLinks");
+
+    settings.remove(root);
+
+    for (int i = 0; i < _forwardConnections.count(); ++i) {
+        QString linkKey = root + QStringLiteral("/Link%1").arg(i);
+        settings.setValue(linkKey, _forwardConnections.at(i));
+    }
+    settings.setValue(root + QStringLiteral("/count"), _forwardConnections.count());
+}
+
+void NetworkManager::editForwardConnection(int index, const QString &address)
+{
+    // 安全防護：確保 index 在合法範圍內
+    if (index >= 0 && index < _forwardConnections.size()) {
+
+        QString oldAddress = _forwardConnections[index];
+
+        // 只有當新地址跟原本不同的時候才更新
+        if (oldAddress != address) {
+
+            // 防護：如果新的地址已經存在於其他欄位，則拒絕修改（避免出現兩筆一樣的）
+            if (_forwardConnections.contains(address)) {
+                return;
+            }
+
+            LinkManager* linkManager = LinkManager::instance();
+            if (auto forwardingLink = linkManager->mavlinkForwardingLink()) {
+                SharedLinkConfigurationPtr forwardLinkConfig = forwardingLink->linkConfiguration();
+
+                if (forwardLinkConfig) {
+                    UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(forwardLinkConfig.get());
+                    if (udpConfig) {
+                        // 修正：必須先移除「舊的」連線，而不是移除「新的」連線
+                        udpConfig->removeHost(oldAddress);
+
+                        QStringList parts = address.split(':');
+                        if (parts.size() == 2) {
+                            QString ip = parts[0];
+                            int port = parts[1].toInt();
+                            udpConfig->addHost(ip, port);
+                        }
+                    }
+                }
+            }
+
+            // 更新列表
+            _forwardConnections[index] = address;
+
+            // 必須發送訊號通知 QML 畫面更新
+            emit forwardConnectionsChanged();
+            _updateSettings();
+        }
+    }
+}
 
 void NetworkManager::sendMsg(QHostAddress addr, LinkInterface* link, mavlink_message_t message)
 {
