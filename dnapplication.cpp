@@ -17,11 +17,6 @@
 #include "dnapi/arcgisnetworkmanager.h"
 #include "dnapi/marinedatabase.h"
 
-
-
-
-
-
 class FinishVideoInitialization : public QRunnable
 {
 public:

@@ -41,76 +41,69 @@ MarineDatabase::~MarineDatabase() {
 }
 
 bool MarineDatabase::openConnection(const QString& path) {
-    // 💡 2. 更新檔名並發射訊號給 QML
     if (m_dbName != path) {
         m_dbName = path;
         emit dbNameChanged(m_dbName);
     }
 
-    // 💡 3. 自動建立目標資料夾，避免硬碟路徑不存在導致 open 失敗
     QFileInfo fileInfo(m_dbName);
     QDir().mkpath(fileInfo.absolutePath());
 
-    // 預防機制：如果舊連線還開著，先把它清掉
     if (QSqlDatabase::contains(m_connectionName)) {
         closeConnection();
     }
 
-    m_isClosed = false;
-    emit dbConnected(m_isClosed);
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", m_connectionName);
     db.setDatabaseName(m_dbName);
 
     if (!db.open()) {
         qDebug() << "無法開啟海洋資料庫:" << db.lastError().text();
         closeConnection();
-        emit connectionStatusChanged(false);
+        // （closeConnection 裡面已經會 emit false，這裡不用重複寫）
         return false;
     }
 
-    // 💡 為了即時作圖順暢，開啟 WAL 模式
     QSqlQuery query(db);
     if (!query.exec("PRAGMA journal_mode=WAL;")) {
         qDebug() << "無法啟動 WAL 模式:" << query.lastError().text();
     }
 
     if (!createTables()) {
-        closeConnection(); // 如果建表失敗，記得把連線完整關閉
-        emit connectionStatusChanged(false);
+        closeConnection();
         return false;
     }
+
     m_sensorCache.clear();
     QSettings settings;
     settings.setValue(settingsRoot() + "/lastRecord", path);
+
+    // ✅ 統一在這裡更新狀態並發送訊號
+    m_isClosed = false;
     emit connectionStatusChanged(true);
+
     return true;
 }
 
 void MarineDatabase::closeConnection() {
-
     if (m_isClosed) {
         return;
     }
 
+    // 停止錄製（安全防護）
+    stopLogging();
 
-    m_isClosed = true;
-    emit dbConnected(m_isClosed);
-
-    if (!QSqlDatabase::contains(m_connectionName)) {
-        return;
-    }
-
-    {
+    if (QSqlDatabase::contains(m_connectionName)) {
         QSqlDatabase db = QSqlDatabase::database(m_connectionName, false);
         if (db.isOpen()) {
             db.close();
         }
+        QSqlDatabase::removeDatabase(m_connectionName);
     }
 
-    QSqlDatabase::removeDatabase(m_connectionName);
+    // ✅ 統一在這裡更新狀態並發送訊號
+    m_isClosed = true;
     emit connectionStatusChanged(false);
 }
-
 
 void MarineDatabase::setWriteInterval(int t) {
     if (_writeInterval != t) {
@@ -128,6 +121,8 @@ void MarineDatabase::startLogging() {
     if (!m_logTimer->isActive()) {
         m_logTimer->start(_writeInterval * 1000); // 啟動定時器
         qDebug() << "開始紀錄資料，間隔:" << _writeInterval << "秒";
+        m_isLogging = true;
+        emit isLoggingChanged(m_isLogging);
     }
 }
 
@@ -135,6 +130,9 @@ void MarineDatabase::stopLogging() {
     if (m_logTimer->isActive()) {
         m_logTimer->stop();
         qDebug() << "停止紀錄資料";
+
+        m_isLogging = false;
+        emit isLoggingChanged(m_isLogging);
     }
 }
 
@@ -162,7 +160,19 @@ bool MarineDatabase::createTables() {
 // 接收所有感測器的最新數值，更新暫存區
 void MarineDatabase::handleDataUpdate(const QVariantMap& data) {
     for(auto it = data.begin(); it != data.end(); ++it) {
-        m_sensorCache[it.key()] = it.value();
+        if(it.key() == "lat" || it.key() == "lon"){
+            // 💡 'f' 代表固定小數點格式，7 代表小數點後保留 7 位
+            double rawVal = it.value().toDouble();
+            //m_sensorCache[it.key()] = QString::number(rawVal / 10000000.0, 'f', 7);
+            if(it.key() == "lon"){
+                m_sensorCache[it.key()] = 119.601701521 + counter/1000;
+            }else{
+                m_sensorCache[it.key()] = 23.642728 + counter/1000;
+            }
+
+        } else {
+            //m_sensorCache[it.key()] = it.value();
+        }
     }
 }
 
@@ -191,8 +201,16 @@ void MarineDatabase::handleLogTimeout() {
     if (!query.exec()) {
         qDebug() << "定時對齊寫入失敗:" << query.lastError().text();
     } else {
-        emit dataInsertedSuccessfully(); // 寫入成功，可讓 UI 閃爍狀態燈
+        int newId = query.lastInsertId().toInt();
+
+                // 🌟 2. 把暫存區的資料複製一份，並補上 ID
+                QVariantMap pointData = m_sensorCache;
+                pointData["id"] = newId;
+
+                // 🌟 3. 帶有資料的發射信號！(QML 收到後完全不用再查資料庫)
+                emit dataInsertedSuccessfully(pointData);
     }
+    counter+=1;
 }
 
 
@@ -225,9 +243,8 @@ QVariantList MarineDatabase::fetchTrajectoryData(int fieldIndex) {
         return trajectory;
     }
 
-    // 💡 效能關鍵：每 5 筆抽樣 1 筆 (id % 5 = 0)。記得把 id 也撈出來給 QML 防呆用！
     QSqlQuery query(db);
-    query.prepare("SELECT id, data_json FROM sensor_logs WHERE id % 50 = 0");
+    query.prepare("SELECT id, data_json FROM sensor_logs");
 
     if (!query.exec()) {
         qDebug() << "讀取軌跡資料失敗:" << query.lastError().text();
@@ -264,49 +281,4 @@ QVariantList MarineDatabase::fetchTrajectoryData(int fieldIndex) {
     }
 
     return trajectory;
-}
-
-QVariantMap MarineDatabase::fetchLatestPoint(int fieldIndex) {
-    QVariantMap point;
-    point["id"] = -1; // 預設無效值，給 QML 判斷用
-    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
-
-    if (fieldIndex == 0 || !db.isOpen()) {
-        return point;
-    }
-
-    // 💡 利用 ORDER BY id DESC LIMIT 1，瞬間抓出最新的一筆紀錄
-    QSqlQuery query(db);
-    query.prepare("SELECT id, data_json FROM sensor_logs ORDER BY id DESC LIMIT 1");
-
-    if (!query.exec()) {
-        qDebug() << "讀取最新點位失敗:" << query.lastError().text();
-        return point;
-    }
-
-    if (query.next()) {
-        int id = query.value(0).toInt();
-
-        QString jsonStr = query.value(1).toString();
-        QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
-        QJsonObject jsonObj = doc.object();
-
-        double val = 0.0;
-        double lat = jsonObj.value("lat").toDouble();
-        double lon = jsonObj.value("lon").toDouble();
-
-        if (fieldIndex == 1) {
-            val = jsonObj.value("Temperature").toDouble();
-        } else if (fieldIndex == 2) {
-            val = jsonObj.value("Depth").toDouble();
-        } else if (fieldIndex == 3) {
-            val = jsonObj.value("pH").toDouble();
-        }
-        point["lat"] = lat;
-        point["lon"] = lon;
-        point["id"] = id;
-        point["value"] = val;
-    }
-
-    return point;
 }

@@ -10,33 +10,22 @@ import DeNovoViewer 1.0
 import DeNovoViewer.Boat 1.0
 import DeNovoViewer.Display 1.0
 
-
-
-
-
 Window {
     id: dnMainWindow
     width: 1280
     height: 720
     visible: true
-    title: "LightHouse v5.3 (GPlayer main)"
+    title: "LightHouse (GPlayer main)"
     property DNValue dnvalue: DNValue{}
 
     property real lon: parseFloat(DeNovoViewer.sensorManager.mav1Model.get(1).displayValue)/10000000
     property real lat: parseFloat(DeNovoViewer.sensorManager.mav1Model.get(2).displayValue)/10000000
-
     property int currentBoatIndex: 0
 
     Rectangle{
         color: "#111111"
         anchors.fill:parent
     }
-
-
-
-
-
-
 
     HUD{
         id: hud
@@ -47,16 +36,16 @@ Window {
         anchors.right: parent.right
         anchors.leftMargin: 0
         anchors.rightMargin: 0
-        depth:parseInt(DeNovoViewer.sensorManager.mav0Model.get(0).displayValue)
-        volt:Math.round(parseFloat(DeNovoViewer.sensorManager.mav0Model.get(1).displayValue)*100)/100000
-        amp:parseFloat(DeNovoViewer.sensorManager.mav0Model.get(2).displayValue)/100
-        yaw:parseInt(DeNovoViewer.sensorManager.mav1Model.get(4).displayValue)/100
+        depth: parseInt(DeNovoViewer.sensorManager.mav0Model.get(0).displayValue)
+        volt: Math.round(parseFloat(DeNovoViewer.sensorManager.mav0Model.get(1).displayValue)*100)/100000
+        amp: parseFloat(DeNovoViewer.sensorManager.mav0Model.get(2).displayValue)/100
+        yaw: parseInt(DeNovoViewer.sensorManager.mav1Model.get(4).displayValue)/100
         temp: parseFloat(DeNovoViewer.sensorManager.cabinModel.get(0).displayValue)
-        rtk:DeNovoViewer.sensorManager.mav1Model.get(0).displayValue
-        boat_rssi:parseInt(DeNovoViewer.sensorManager.kbestModel.get(0).displayValue)
-        ground_rssi:parseInt(DeNovoViewer.sensorManager.kbestModel.get(1).displayValue)
+        rtk: DeNovoViewer.sensorManager.mav1Model.get(0).displayValue
+        boat_rssi: parseInt(DeNovoViewer.sensorManager.kbestModel.get(0).displayValue)
+        ground_rssi: parseInt(DeNovoViewer.sensorManager.kbestModel.get(1).displayValue)
         gs: Math.round(parseFloat(DeNovoViewer.sensorManager.mav1Model.get(7).displayValue)*100)/100
-        z:2
+        z: 2
         primaryConnected: DeNovoViewer.boatManager.boatListModel.get(currentBoatIndex).primaryConnected
         secondaryConnected: DeNovoViewer.boatManager.boatListModel.get(currentBoatIndex).secondaryConnected
     }
@@ -67,10 +56,8 @@ Window {
         anchors.top: hud.bottom
         anchors.left: parent.left
         width: parent.width - right_drawer.position
-        onSwapped:function(videoItem){
-
+        onSwapped: function(videoItem){
         }
-
     }
 
     RightTool{
@@ -79,11 +66,8 @@ Window {
         anchors.top: hud.bottom
         anchors.margins: 5
 
-
         onOpenControlView:{
-            //_controlView.hide = _controlView.hide?false:true
             right_block.source = "qrc:/qml/DeNovoViewer/Display/ControlView.qml"
-
             right_block.item.totalBatteryPercentage = Qt.binding(function(){ return parseInt(DeNovoViewer.sensorManager.mav0Model.get(3).displayValue)})
             right_block.item.totalBatteryVoltage=  Qt.binding(function(){ return parseInt(DeNovoViewer.sensorManager.mav0Model.get(1).displayValue)})
             right_block.item.totalBatteryCurrent=  Qt.binding(function(){ return parseInt(DeNovoViewer.sensorManager.mav0Model.get(2).displayValue)})
@@ -118,7 +102,6 @@ Window {
             color:"#000000"
         }
 
-
         Loader{
             id: right_block
             anchors.fill: parent
@@ -128,13 +111,8 @@ Window {
                     right_drawer.visible = false
                 }
             }
-
-
         }
-
     }
-
-
 
     Rectangle{
         id: status_bar
@@ -167,9 +145,6 @@ Window {
             }
         }
     }
-
-
-
 
     Component.onCompleted: {
     }

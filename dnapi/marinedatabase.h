@@ -1,4 +1,4 @@
-#ifndef MARINEDATABASE_H
+﻿#ifndef MARINEDATABASE_H
 #define MARINEDATABASE_H
 
 #include <QObject>
@@ -18,7 +18,8 @@ class MarineDatabase : public QObject {
     // 💡 1. 修正 Q_PROPERTY：拔除 CONSTANT，加入 WRITE 和 NOTIFY，讓 QML 可以雙向綁定與監聽
     Q_PROPERTY(QString dbName READ dbName NOTIFY dbNameChanged)
     Q_PROPERTY(int writeInterval READ writeInterval WRITE setWriteInterval NOTIFY writeIntervalChanged)
-    Q_PROPERTY(bool isConnected READ isConnected NOTIFY dbConnected)
+    Q_PROPERTY(bool isConnected READ isConnected NOTIFY connectionStatusChanged)
+    Q_PROPERTY(bool isLogging READ isLogging NOTIFY isLoggingChanged)
 public:
     static MarineDatabase *instance();
     explicit MarineDatabase(QObject *parent = nullptr, const QString& dbName = "marine.db");
@@ -40,15 +41,15 @@ public:
     Q_INVOKABLE QString defaultLogDirectory() const;
     Q_INVOKABLE void setDefaultLogDirectory(const QString& path);
     Q_INVOKABLE QVariantList fetchTrajectoryData(int fieldIndex);
-    Q_INVOKABLE QVariantMap fetchLatestPoint(int fieldIndex);
+    bool isLogging() const { return m_isLogging; } // 假設你用 m_isLogging 記錄狀態
 signals:
     void connectionStatusChanged(bool connected);
-    void dataInsertedSuccessfully();
+    void dataInsertedSuccessfully(QVariantMap newPoint);
 
     // 💡 2. 新增與 Q_PROPERTY 搭配的 Signal
     void dbNameChanged(QString newName);
     void writeIntervalChanged(int newInterval);
-    void dbConnected(bool isConnected);
+    void isLoggingChanged(bool isLogging);
 
 public slots:
     // 接收各個感測器打包來的最新資料 (存入 m_sensorCache)
@@ -65,9 +66,11 @@ private:
     QMap<QString, QVariant> m_sensorCache;
     bool createTables();
     bool m_isClosed = true;
+   bool m_isLogging = false;
 
     int _writeInterval;
     QTimer* m_logTimer; // 💡 4. 新增定時器物件
+    float counter = 0;
 };
 
 #endif // MARINEDATABASE_H

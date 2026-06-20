@@ -196,6 +196,7 @@ Item {
 
 
     }
+
     Rectangle{
         id: _control
         anchors.top: parent.top
@@ -207,8 +208,6 @@ Item {
         color: "#222222"
         border.width: 2
         border.color: "#dddddd"
-
-
 
         Rectangle{
             id: _title
@@ -239,6 +238,7 @@ Item {
             }
 
         }
+
         Column{
             anchors.horizontalCenter:  parent.horizontalCenter
             anchors.top:  _title.bottom
@@ -295,6 +295,7 @@ Item {
 
                 }
             }
+
             Row{
                 Text {
                     verticalAlignment: Text.AlignVCenter
@@ -387,14 +388,12 @@ Item {
         }
 
     }
+
     SystemOverviewPanel{
         id: systemOverviewPanel
         anchors.right: parent.left
         visible: false
     }
-
-
-
 
     Component.onCompleted: {
         setIndex(_index)

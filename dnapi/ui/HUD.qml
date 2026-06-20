@@ -79,8 +79,6 @@ Item {
         }
     }
 
-
-
     Rectangle{
         id: rectangle3
         anchors.fill: parent

@@ -35,8 +35,6 @@ Item {
             _index:2
         }
 
-
-
         PipView{
             id: _pipView
             sizeRatio: 9/16
@@ -99,13 +97,5 @@ Item {
                 //root.swapped(videoItem)
             }
         }
-
     }
-
-
-
-
-
-
-
 }

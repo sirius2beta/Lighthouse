@@ -359,40 +359,41 @@ Item {
 
         }
     }
-    // 🎨 色彩漸層計算機
-        QtObject {
-            id: colorRampEngine
 
-            function getColor(value, min, max, rampType) {
-                // 1. 防呆與範圍限制，計算比例 (0.0 ~ 1.0)
-                if (min >= max) return "#808080" // 避免除以零
-                var ratio = (value - min) / (max - min)
-                if (ratio < 0) ratio = 0
-                if (ratio > 1) ratio = 1
+    // 色彩漸層計算機
+    QtObject {
+        id: colorRampEngine
 
-                // 2. 根據選擇的 Color Ramp 回傳顏色
-                // 0: Rainbow (彩虹：藍 -> 青 -> 綠 -> 黃 -> 紅)
-                if (rampType === 0) {
-                    // Hue 從 240(藍色) 到 0(紅色)
-                    var h = (1.0 - ratio) * 240.0 / 360.0
-                    return Qt.hsla(h, 1.0, 0.5, 0.8) // 0.8 是透明度
-                }
-                // 1: Heatmap (熱力：黑 -> 深紅 -> 橘 -> 黃 -> 白)
-                else if (rampType === 1) {
-                    // 利用 HSL 亮度控制
-                    var l = ratio * 0.8 + 0.1
-                    var h2 = (1.0 - ratio) * 60.0 / 360.0
-                    return Qt.hsla(h2, 1.0, l, 0.8)
-                }
-                // 2: Monochrome (單色：透明深紫 -> 不透明亮紫)
-                else {
-                    return Qt.rgba(0.6, 0.2, 0.8, ratio * 0.8 + 0.2)
-                }
+        function getColor(value, min, max, rampType) {
+            // 1. 防呆與範圍限制，計算比例 (0.0 ~ 1.0)
+            if (min >= max) return "#808080" // 避免除以零
+            var ratio = (value - min) / (max - min)
+            if (ratio < 0) ratio = 0
+            if (ratio > 1) ratio = 1
+
+            // 2. 根據選擇的 Color Ramp 回傳顏色
+            // 0: Rainbow (彩虹：藍 -> 青 -> 綠 -> 黃 -> 紅)
+            if (rampType === 0) {
+                // Hue 從 240(藍色) 到 0(紅色)
+                var h = (1.0 - ratio) * 240.0 / 360.0
+                return Qt.hsla(h, 1.0, 0.5, 0.8) // 0.8 是透明度
+            }
+            // 1: Heatmap (熱力：黑 -> 深紅 -> 橘 -> 黃 -> 白)
+            else if (rampType === 1) {
+                // 利用 HSL 亮度控制
+                var l = ratio * 0.8 + 0.1
+                var h2 = (1.0 - ratio) * 60.0 / 360.0
+                return Qt.hsla(h2, 1.0, l, 0.8)
+            }
+            // 2: Monochrome (單色：透明深紫 -> 不透明亮紫)
+            else {
+                return Qt.rgba(0.6, 0.2, 0.8, ratio * 0.8 + 0.2)
             }
         }
-    // --- 地圖資料可視化設定面板 ---
+    }
 
-        Rectangle {
+    // 地圖資料可視化設定面板
+    Rectangle {
             id: map_setting
             width: 260
             height: 350
@@ -470,9 +471,6 @@ Item {
                 anchors.margins: 15
                 spacing: 10
 
-                // ==========================================
-                // 1. 開啟/關閉軌跡繪圖 (搭配未連線警告)
-                // ==========================================
                 RowLayout {
                     Layout.fillWidth: true
                     Text {
@@ -522,7 +520,7 @@ Item {
                     ComboBox {
                         id: dataFieldCombo
                         Layout.fillWidth: true
-                        model: ["None (無)", "Temperature (溫度)", "Depth (水深)", "DO (%)"]
+                        model: ["None", "Temperature (°C)", "Depth (cm)", "DO (%)"]
 
                         // 💡 當更改來源時，重新抓資料
                         onCurrentIndexChanged: {
@@ -576,7 +574,8 @@ Item {
             }
         }
 
-        Rectangle {
+    // database setting
+    Rectangle {
                 id: database_setting
                 width: 260
                 height: 350
@@ -609,10 +608,9 @@ Item {
                     active: parent.visible
                 }
             }
-        // ==========================================
-            // 🎨 左下角：色彩漸層圖例 (Color Legend) - 專業刻度版
-            // ==========================================
-            Rectangle {
+
+    // Color Legend
+    Rectangle {
                 id: colorLegend
                 width: 85  // 💡 加寬一點，為了塞下右側的數字
                 height: 280 // 💡 加高一點，讓 10 個刻度不會太擁擠
@@ -749,30 +747,31 @@ Item {
                 }
             }
 
-        Connections {
-                target: DeNovoViewer.marineDatabase
-                // ...
+    Connections {
+        target: DeNovoViewer.marineDatabase
 
-                // 🌟 當 C++ 成功寫入一筆資料到 SQLite 時觸發！
-                function onDataInsertedSuccessfully() {
+        function onDataInsertedSuccessfully(newPt) {
+            if (renderSwitch.checked) {
 
-                    // 如果軌跡渲染開關有打開，且有選擇要畫的數值
-                    if (renderSwitch.checked && dataFieldCombo.currentIndex !== 0) {
+                // 1. 根據下拉選單，動態抓取需要的數值
+                var val = 0.0;
+                if (dataFieldCombo.currentIndex === 1) val = Number(newPt["temperature"] || 0);
+                else if (dataFieldCombo.currentIndex === 2) val = Number(newPt["depth"] || 0);
+                else if (dataFieldCombo.currentIndex === 3) val = Number(newPt["dissolved_oxygen_concentration"] || 0);
 
-                        // 向 C++ 請求最新寫入的那一筆點
-                        var newPt = DeNovoViewer.marineDatabase.fetchLatestPoint(dataFieldCombo.currentIndex)
+                // 2. 防呆：確認有拿到 ID 且不是重複畫
+                if (newPt.id !== undefined && newPt.id !== _root.lastRenderedId) {
+                    _root.lastRenderedId = newPt.id
 
-                        // 💡 降頻與防呆邏輯：
-                        // 1. 確保這筆資料的 id 是 5 的倍數 (對應你的 1/5 抽樣率)
-                        // 2. 確保沒有重複畫 (newPt.id !== lastRenderedId)
-                        if (newPt.id !== -1 && newPt.id % 5 === 0 && newPt.id !== _root.lastRenderedId) {
+                    // 3. 直接 Append 進地圖 Model
+                    trajectoryModel.append(newPt)
+                    // 4. 輕量 Nudge 強迫 QML 重繪
+                    var lastIndex = trajectoryModel.count - 1;
+                    trajectoryModel.set(lastIndex, { "value": val });
 
-                            _root.lastRenderedId = newPt.id
-
-                            // 🚀 核心：直接把新點 Append 到地圖上，完全不影響舊的點！
-                            trajectoryModel.append(newPt)
-                        }
-                    }
                 }
+            }
+        }
+
     }
 }

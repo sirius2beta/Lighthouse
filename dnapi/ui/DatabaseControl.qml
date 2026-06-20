@@ -10,27 +10,23 @@ Item {
     width: 200
     height: 350
 
-    // 狀態追蹤
-    property bool isDbConnected: false
-    property bool isRecording: false
 
-    property string currentDbName: "未選擇檔案"
+
+    property string currentDbName: {
+            if (isDbConnected && DeNovoViewer.marineDatabase) {
+                var path = DeNovoViewer.marineDatabase.dbName;
+                return path.substring(path.lastIndexOf("/") + 1);
+            } else {
+                return "未選擇檔案";
+            }
+        }
     property string logRootDir: DeNovoViewer.marineDatabase ? DeNovoViewer.marineDatabase.defaultLogDirectory() : ""
+    property bool isRecording: DeNovoViewer.marineDatabase ? DeNovoViewer.marineDatabase.isLogging : false
+    property bool isDbConnected: DeNovoViewer.marineDatabase ? DeNovoViewer.marineDatabase.isConnected : false
+
 
     Connections {
         target: DeNovoViewer.marineDatabase
-
-        function onConnectionStatusChanged(connected) {
-            root.isDbConnected = connected
-            if (connected) {
-                var path = DeNovoViewer.marineDatabase.dbName
-                root.currentDbName = path.substring(path.lastIndexOf("/") + 1)
-            } else {
-                root.currentDbName = "未選擇檔案"
-                root.isRecording = false // 斷線時，強制停止錄製狀態
-            }
-        }
-
         function onDataInsertedSuccessfully() {
             blinkAnimation.start()
         }
@@ -195,7 +191,6 @@ Item {
                         onClicked: {
                             if (DeNovoViewer.marineDatabase) {
                                 DeNovoViewer.marineDatabase.startLogging()
-                                root.isRecording = true
                             }
                         }
                     }
@@ -208,7 +203,6 @@ Item {
                         onClicked: {
                             if (DeNovoViewer.marineDatabase) {
                                 DeNovoViewer.marineDatabase.stopLogging() // 💡 這裡移除了 closeConnection
-                                root.isRecording = false
                             }
                         }
                     }
@@ -234,14 +228,5 @@ Item {
         PropertyAnimation { target: blinkDot; property: "opacity"; from: 1.0; to: 0.0; duration: 250 }
     }
 
-    Component.onCompleted: {
-        if (DeNovoViewer.marineDatabase) {
-            var path = DeNovoViewer.marineDatabase.dbName
-            if (DeNovoViewer.marineDatabase.isConnected) {
-                root.isDbConnected = true
-                root.currentDbName = path.substring(path.lastIndexOf("/") + 1)
-                root.isRecording = false
-            }
-        }
-    }
+
 }
