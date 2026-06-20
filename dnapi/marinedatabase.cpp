@@ -59,7 +59,6 @@ bool MarineDatabase::openConnection(const QString& path) {
     if (!db.open()) {
         qDebug() << "無法開啟海洋資料庫:" << db.lastError().text();
         closeConnection();
-        // （closeConnection 裡面已經會 emit false，這裡不用重複寫）
         return false;
     }
 
@@ -77,7 +76,6 @@ bool MarineDatabase::openConnection(const QString& path) {
     QSettings settings;
     settings.setValue(settingsRoot() + "/lastRecord", path);
 
-    // ✅ 統一在這裡更新狀態並發送訊號
     m_isClosed = false;
     emit connectionStatusChanged(true);
 
@@ -100,7 +98,6 @@ void MarineDatabase::closeConnection() {
         QSqlDatabase::removeDatabase(m_connectionName);
     }
 
-    // ✅ 統一在這裡更新狀態並發送訊號
     m_isClosed = true;
     emit connectionStatusChanged(false);
 }
@@ -136,11 +133,6 @@ void MarineDatabase::stopLogging() {
     }
 }
 
-// ==========================================
-// 📊 資料暫存與寫入機制 (JSON 擴充架構)
-// ==========================================
-
-// 💡 4. 動態建表：採用 JSON 單一欄位架構，永遠不怕感測器增減
 bool MarineDatabase::createTables() {
     QSqlDatabase db = QSqlDatabase::database(m_connectionName);
     QSqlQuery query(db);
@@ -157,7 +149,6 @@ bool MarineDatabase::createTables() {
     return true;
 }
 
-// 接收所有感測器的最新數值，更新暫存區
 void MarineDatabase::handleDataUpdate(const QVariantMap& data) {
     for(auto it = data.begin(); it != data.end(); ++it) {
         if(it.key() == "lat" || it.key() == "lon"){
@@ -176,7 +167,6 @@ void MarineDatabase::handleDataUpdate(const QVariantMap& data) {
     }
 }
 
-// 💡 5. 定時器觸發：將暫存區的資料打包成 JSON 寫入資料庫
 void MarineDatabase::handleLogTimeout() {
     if (!QSqlDatabase::contains(m_connectionName)) return;
 
@@ -191,10 +181,8 @@ void MarineDatabase::handleLogTimeout() {
     QJsonDocument doc(jsonObj);
     QString jsonString = doc.toJson(QJsonDocument::Compact);
 
-    // 執行寫入
     QSqlQuery query(db);
     query.prepare("INSERT INTO sensor_logs (timestamp, data_json) VALUES (:time, :json)");
-    // 紀錄到毫秒 (ISODateWithMs) 更有利於工業作圖對齊
     query.bindValue(":time", QDateTime::currentDateTime().toString(Qt::ISODateWithMs));
     query.bindValue(":json", jsonString);
 
@@ -202,12 +190,8 @@ void MarineDatabase::handleLogTimeout() {
         qDebug() << "定時對齊寫入失敗:" << query.lastError().text();
     } else {
         int newId = query.lastInsertId().toInt();
-
-                // 🌟 2. 把暫存區的資料複製一份，並補上 ID
                 QVariantMap pointData = m_sensorCache;
                 pointData["id"] = newId;
-
-                // 🌟 3. 帶有資料的發射信號！(QML 收到後完全不用再查資料庫)
                 emit dataInsertedSuccessfully(pointData);
     }
     counter+=1;
