@@ -12,6 +12,9 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QtCore/qapplicationstatic.h>
+#include <QJsonObject>
+#include <QDateTime>
+
 
 Q_APPLICATION_STATIC(MarineDatabase, _marineDatabaseInstance);
 
@@ -33,9 +36,11 @@ MarineDatabase::MarineDatabase(QObject *parent, const QString& dbName)
         QString path = settings.value(settingsRoot() + "/lastRecord").toString();
         openConnection(path);
     }
+    m_logTimer->start(1000*_writeInterval);
 }
 
 MarineDatabase::~MarineDatabase() {
+    m_logTimer->stop();
     stopLogging(); // 確保析構時停止定時器
     closeConnection();
 }
@@ -115,22 +120,21 @@ void MarineDatabase::setWriteInterval(int t) {
 }
 
 void MarineDatabase::startLogging() {
-    if (!m_logTimer->isActive()) {
+
         m_logTimer->start(_writeInterval * 1000); // 啟動定時器
         qDebug() << "開始紀錄資料，間隔:" << _writeInterval << "秒";
         m_isLogging = true;
         emit isLoggingChanged(m_isLogging);
-    }
+
 }
 
 void MarineDatabase::stopLogging() {
-    if (m_logTimer->isActive()) {
-        m_logTimer->stop();
+
         qDebug() << "停止紀錄資料";
 
         m_isLogging = false;
         emit isLoggingChanged(m_isLogging);
-    }
+
 }
 
 bool MarineDatabase::createTables() {
@@ -150,9 +154,9 @@ bool MarineDatabase::createTables() {
 }
 
 void MarineDatabase::handleDataUpdate(const QVariantMap& data) {
+    return;
     for(auto it = data.begin(); it != data.end(); ++it) {
         if(it.key() == "lat" || it.key() == "lon"){
-            // 💡 'f' 代表固定小數點格式，7 代表小數點後保留 7 位
             double rawVal = it.value().toDouble();
             //m_sensorCache[it.key()] = QString::number(rawVal / 10000000.0, 'f', 7);
             if(it.key() == "lon"){
@@ -167,7 +171,47 @@ void MarineDatabase::handleDataUpdate(const QVariantMap& data) {
     }
 }
 
-void MarineDatabase::handleLogTimeout() {
+void MarineDatabase::handleLatestLog(const QJsonObject &logData)
+{
+    _lastReceiveTime = QDateTime::currentMSecsSinceEpoch();
+    if (logData.contains("data") && logData["data"].isObject()) {
+        QJsonObject sensorData = logData["data"].toObject();
+        if(m_isLogging){
+            for (auto it = sensorData.constBegin(); it != sensorData.constEnd(); ++it) {
+                if (it.value().isNull()) {
+                    // assign to 0 if null
+                    if (it.key() == "seagrass_image_name") {
+                            m_sensorCache[it.key()] = ""; // 💡 給空字串，維持 String 型別
+                        } else {
+                            m_sensorCache[it.key()] = 0;  // 其他數值欄位維持給 0
+                        }
+                } else {
+                    m_sensorCache[it.key()] = it.value().toVariant();
+                }
+            }
+            m_sensorCache["lon"] = 119.601701521 + counter/1000;
+            m_sensorCache["lat"] = 23.642728 + counter/1000;
+            qDebug()<<m_sensorCache.value("time_usec", 0);
+            _recordToDatabase();
+        }else{
+            double time_usec = sensorData.value("time_usec").toDouble(0);
+            // check for boat side logging
+            qDebug()<<time_usec;
+            if((time_usec - last_usec) == 0 ){
+                b_isLogging = false;
+                emit isBLoggingChanged(false);
+            }else{
+                b_isLogging = true;
+                emit isBLoggingChanged(true);
+            }
+        }
+
+    }
+
+}
+
+void MarineDatabase::_recordToDatabase()
+{
     if (!QSqlDatabase::contains(m_connectionName)) return;
 
     QSqlDatabase db = QSqlDatabase::database(m_connectionName);
@@ -190,11 +234,27 @@ void MarineDatabase::handleLogTimeout() {
         qDebug() << "定時對齊寫入失敗:" << query.lastError().text();
     } else {
         int newId = query.lastInsertId().toInt();
-                QVariantMap pointData = m_sensorCache;
+                QVariantMap pointData;
+                pointData["lon"] = m_sensorCache.value("lon",0);
+                pointData["lat"] = m_sensorCache.value("lat", 0);
+                pointData["depth"] = m_sensorCache.value("depth", 0);
+                pointData["temperature"] = m_sensorCache.value("temperature", 0);
+                pointData["dissolved_oxygen_concentration"] = m_sensorCache.value("dissolved_oxygen_concentration", 0);
+                pointData["seagrass_image_name"] = m_sensorCache.value("seagrass_image_name", "");
+                pointData["seagrass_coverage_ratio"] = m_sensorCache.value("seagrass_coverage_ratio", 0);
                 pointData["id"] = newId;
                 emit dataInsertedSuccessfully(pointData);
     }
     counter+=1;
+}
+
+void MarineDatabase::handleLogTimeout() {
+    qint64 current = QDateTime::currentMSecsSinceEpoch();
+    if(current - _lastReceiveTime > 10000){
+        b_isLogging = false;
+        emit isBLoggingChanged(false);
+    }
+    emit getLatestLog();
 }
 
 
@@ -216,6 +276,7 @@ QString MarineDatabase::defaultLogDirectory() const {
 void MarineDatabase::setDefaultLogDirectory(const QString& path) {
     QSettings settings;
     settings.setValue("storage/log_root_dir", path);
+
 }
 
 
@@ -245,6 +306,12 @@ QVariantList MarineDatabase::fetchTrajectoryData(int fieldIndex) {
         double val = 0.0;
         double lat = jsonObj.value("lat").toDouble();
         double lon = jsonObj.value("lon").toDouble();
+        double temperature = jsonObj.value("temperature").toDouble();
+        double depth = jsonObj.value("depth").toDouble();
+        double dissolved_oxygen_concentration = jsonObj.value("dissolved_oxygen_concentration").toDouble();
+        QString seagrass_image_name = jsonObj.value("seagrass_image_name").toString();
+        double seagrass_coverage_ratio = jsonObj.value("seagrass_coverage_ratio").toDouble();
+
 
         if (fieldIndex == 1) {
             val = jsonObj.value("temperature").toDouble();
@@ -260,6 +327,12 @@ QVariantList MarineDatabase::fetchTrajectoryData(int fieldIndex) {
         point["lat"] = lat;
         point["lon"] = lon;
         point["value"] = val;
+        point["seagrass_image_name"] = seagrass_image_name;
+        point["seagrass_coverage_ratio"] = seagrass_coverage_ratio;
+        point["dissolved_oxygen_concentration"] = dissolved_oxygen_concentration;
+        point["depth"] = depth;
+        point["temperature"] = temperature;
+
 
         trajectory.append(point);
     }

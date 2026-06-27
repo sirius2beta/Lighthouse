@@ -19,6 +19,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     dncore.h
     ArcGISNetworkManager.h
     ArcGISNetworkManager.cpp
+    loghttpclient.h
+    loghttpclient.cpp
 
     dnmetadata.cpp
     dnmetadata.h

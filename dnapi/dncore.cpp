@@ -15,6 +15,7 @@ DNCore::DNCore(QObject *parent, QString config)
     _controlManager = new ControlManager(this, this);
     _aquaGraph = new AquaGraph(this, this);
     _marineDatabase = MarineDatabase::instance();
+    _logHttpClient = new LogHttpClient(this);
 
     connect(_networkManager, &NetworkManager::setFormat, _videoManager, &DNVideoManager::setVideoFormat);
     connect(_networkManager, &NetworkManager::detectMsg, _videoManager, &DNVideoManager::onDetectMsg);
@@ -27,6 +28,8 @@ DNCore::DNCore(QObject *parent, QString config)
     connect(_videoManager, &DNVideoManager::sendMsgbyID, _networkManager, &NetworkManager::sendMsgbyID);
     connect(_sensorManager, &SensorManager::dataReceived, _marineDatabase, &MarineDatabase::handleDataUpdate);
     connect(qApp, &QCoreApplication::aboutToQuit, _marineDatabase, &MarineDatabase::closeConnection);
+    connect(_marineDatabase, &MarineDatabase::getLatestLog, _logHttpClient, &LogHttpClient::fetchLatestLog);
+    connect(_logHttpClient, &LogHttpClient::latestLogReceived, _marineDatabase, &MarineDatabase::handleLatestLog);
     init();
 }
 

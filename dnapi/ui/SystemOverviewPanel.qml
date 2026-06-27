@@ -1,4 +1,4 @@
-import QtQuick 2.15
+﻿import QtQuick 2.15
 import QtQuick.Layouts
 import QtQuick.Controls
 
@@ -110,6 +110,33 @@ Item {
                  font.family: "roboto"
                  font.pixelSize: 12
                  text:"Aqua"
+                 color:"white"
+             }
+
+        }
+        Rectangle{
+            width:80
+            height:14
+            color: "#00000000"
+            Rectangle{
+                y:3
+                width:5
+                height:5
+                color: {
+                    if(!DeNovoViewer.marineDatabase.isBoatLogging){
+                        return "#aaaaaa"
+
+                    }else{
+                        return "#00ff00"
+                    }
+                }
+            }
+            Text{
+                 topPadding: 0
+                 leftPadding: 10
+                 font.family: "roboto"
+                 font.pixelSize: 12
+                 text:"Logger"
                  color:"white"
              }
 

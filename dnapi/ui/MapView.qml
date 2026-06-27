@@ -5,7 +5,7 @@ import QtQuick.Controls.Material 2.15
 import QtPositioning
 import QtLocation
 import QtQuick.Layouts
-
+import QtQuick.Effects
 import DeNovoViewer 1.0
 import DeNovoViewer.Boat 1.0
 
@@ -81,6 +81,23 @@ Item {
                                parseFloat(minField.text),
                                parseFloat(maxField.text),
                                colorRampCombo.currentIndex)
+                    MouseArea {
+                        anchors.fill: parent
+                        anchors.margins: -10 // 魔法：把點擊判定範圍往外擴張 10px，讓點擊更容易命中
+
+                        onClicked: {
+                            // 呼叫浮動視窗，並把這個點的 Model 資料傳過去
+                            // 使用 typeof 防呆，避免某些點缺少特定感測器資料導致 QML 報錯
+                            pointInfoPanel.showInfo(
+                                typeof lat !== 'undefined' ? lat : 0,
+                                typeof lon !== 'undefined' ? lon : 0,
+                                typeof temperature !== 'undefined' ? temperature : "N/A",
+                                typeof depth !== 'undefined' ? depth : "N/A",
+                                typeof dissolved_oxygen_concentration !== 'undefined' ? dissolved_oxygen_concentration : "N/A",
+                                typeof seagrass_coverage_ratio !== 'undefined' ? seagrass_coverage_ratio : "N/A"
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -170,7 +187,50 @@ Item {
         signal mapPanStart()
         signal mapPanStop()
         signal mapClicked(var position)
+        // 接收 MultiPointTouchArea 傳來的點擊訊號
+                onMapClicked: (position) => {
+                    var closestIndex = -1;
+                    var minPixelDist = 20; // 💡 魔法數字：點擊容錯半徑 (像素)。20px 代表就算沒有點得很準，只要在附近也能選中！
 
+                    // 遍歷模型中所有的點
+                    for (var i = 0; i < trajectoryModel.count; i++) {
+                        var pt = trajectoryModel.get(i);
+                        if (pt.lat !== undefined && pt.lon !== undefined) {
+                            var coord = QtPositioning.coordinate(pt.lat, pt.lon);
+
+                            // 將經緯度轉換為當前螢幕上的 X,Y 像素座標 (false 代表不要過濾畫面外的點)
+                            var screenPos = mmap.fromCoordinate(coord, false);
+
+                            // 畢氏定理：計算滑鼠點擊位置與資料點的直線像素距離
+                            var dx = screenPos.x - position.x;
+                            var dy = screenPos.y - position.y;
+                            var dist = Math.sqrt(dx * dx + dy * dy);
+
+                            // 找出距離最近，且在容錯範圍內的點
+                            if (dist < minPixelDist) {
+                                minPixelDist = dist;
+                                closestIndex = i;
+                            }
+                        }
+                    }
+
+                    // 如果有找到點，就呼叫小視窗
+                    if (closestIndex !== -1) {
+                        var hitPt = trajectoryModel.get(closestIndex);
+                        pointInfoPanel.showInfo(
+                            hitPt.lat !== undefined ? hitPt.lat : 0,
+                            hitPt.lon !== undefined ? hitPt.lon : 0,
+                            hitPt.temperature !== undefined ? hitPt.temperature : "N/A",
+                            hitPt.depth !== undefined ? hitPt.depth : "N/A",
+                            hitPt.dissolved_oxygen_concentration !== undefined ? hitPt.dissolved_oxygen_concentration : "N/A",
+                            hitPt.seagrass_coverage_ratio !== undefined ? hitPt.seagrass_coverage_ratio : "N/A",
+                            hitPt.seagrass_image_name !== undefined ? hitPt.seagrass_image_name : ""
+                        );
+                    } else {
+                        // 💡 體驗升級：如果點擊了地圖的空白處，自動隱藏小視窗
+                        pointInfoPanel.visible = false;
+                    }
+                }
         MultiPointTouchArea {
                 anchors.fill: parent
                 maximumTouchPoints: 1
@@ -417,55 +477,55 @@ Item {
             property bool isDbReady: DeNovoViewer.marineDatabase &&
                                      DeNovoViewer.marineDatabase.isConnected
             function refreshMapData() {
-                        // 清空舊點
-                        trajectoryModel.clear()
-                        _root.lastRenderedId = -1
+                // 清空舊點
+                trajectoryModel.clear()
+                _root.lastRenderedId = -1
 
-                        if (!isDbReady) return
+                if (!isDbReady) return
 
-                        var rawData = DeNovoViewer.marineDatabase.fetchTrajectoryData(dataFieldCombo.currentIndex)
+                var rawData = DeNovoViewer.marineDatabase.fetchTrajectoryData(dataFieldCombo.currentIndex)
 
-                        // 初始化最大最小變數 (以第一筆資料為基準)
-                        if (rawData.length > 0) {
-                            // 🌟 1. 萃取所有數值到一個純 JS 陣列中
-                            var values = [];
-                            for (var i = 0; i < rawData.length; i++) {
-                                values.push(rawData[i].value);
-                            }
-
-                            // 🌟 2. 將數值從小到大排序
-                            // (JS 預設 sort 是轉字串排，所以務必加入 a-b 的比較函式)
-                            values.sort(function(a, b) { return a - b; });
-
-                            // 🌟 3. 採用「百分位數過濾法」，捨棄頭尾各 2% 的極端雜訊
-                            var minIndex = Math.floor(values.length * 0.02);
-                            var maxIndex = Math.floor(values.length * 0.98);
-
-                            // 防呆：避免資料筆數太少時超出陣列範圍
-                            if (minIndex < 0) minIndex = 0;
-                            if (maxIndex >= values.length) maxIndex = values.length - 1;
-
-                            var autoMin = values[minIndex];
-                            var autoMax = values[maxIndex];
-
-                            // 🌟 4. 防呆機制：如果整趟航程數值完全沒變
-                            if (autoMin === autoMax) {
-                                autoMax += 1.0;
-                            }
-
-                            // 🌟 5. 自動把過濾後的合理最大最小值填入 TextField
-                            minField.text = autoMin.toFixed(2);
-                            maxField.text = autoMax.toFixed(2);
-
-                            // 🌟 6. 將資料正式塞入地圖渲染引擎
-                            for (var j = 0; j < rawData.length; j++) {
-                                trajectoryModel.append(rawData[j])
-                            }
-
-                            // 記錄最後一筆的 ID，方便接續即時繪圖
-                            _root.lastRenderedId = rawData[rawData.length - 1].id
-                        }
+                // 初始化最大最小變數 (以第一筆資料為基準)
+                if (rawData.length > 0) {
+                    // 🌟 1. 萃取所有數值到一個純 JS 陣列中
+                    var values = [];
+                    for (var i = 0; i < rawData.length; i++) {
+                        values.push(rawData[i].value);
                     }
+
+                    // 🌟 2. 將數值從小到大排序
+                    // (JS 預設 sort 是轉字串排，所以務必加入 a-b 的比較函式)
+                    values.sort(function(a, b) { return a - b; });
+
+                    // 🌟 3. 採用「百分位數過濾法」，捨棄頭尾各 2% 的極端雜訊
+                    var minIndex = Math.floor(values.length * 0.02);
+                    var maxIndex = Math.floor(values.length * 0.98);
+
+                    // 防呆：避免資料筆數太少時超出陣列範圍
+                    if (minIndex < 0) minIndex = 0;
+                    if (maxIndex >= values.length) maxIndex = values.length - 1;
+
+                    var autoMin = values[minIndex];
+                    var autoMax = values[maxIndex];
+
+                    // 🌟 4. 防呆機制：如果整趟航程數值完全沒變
+                    if (autoMin === autoMax) {
+                        autoMax += 1.0;
+                    }
+
+                    // 🌟 5. 自動把過濾後的合理最大最小值填入 TextField
+                    minField.text = autoMin.toFixed(2);
+                    maxField.text = autoMax.toFixed(2);
+
+                    // 🌟 6. 將資料正式塞入地圖渲染引擎
+                    for (var j = 0; j < rawData.length; j++) {
+                        trajectoryModel.append(rawData[j])
+                    }
+
+                    // 記錄最後一筆的 ID，方便接續即時繪圖
+                    _root.lastRenderedId = rawData[rawData.length - 1].id
+                }
+            }
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: 15
@@ -520,7 +580,7 @@ Item {
                     ComboBox {
                         id: dataFieldCombo
                         Layout.fillWidth: true
-                        model: ["None", "Temperature (°C)", "Depth (cm)", "DO (%)"]
+                        model: ["None", "Temperature (°C)", "Depth (cm)", "DO (%)", "coverage (%)"]
 
                         // 💡 當更改來源時，重新抓資料
                         onCurrentIndexChanged: {
@@ -746,7 +806,215 @@ Item {
                     }
                 }
             }
+    // 💡 新增：資料點詳細資訊浮動視窗
+        Rectangle {
+            id: pointInfoPanel
+            width: 300
+            height: infoColumn.height + 20
 
+            // 停靠在右上角 (你可以依據喜好改到左上或跟隨滑鼠)
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.bottomMargin: 20
+            anchors.leftMargin: 20
+
+            color: "#E6252528" // 與你其他面板相同的半透明深色風格
+            radius: 8
+            border.color: "#3a3a3c"
+            border.width: 1
+            visible: false // 預設隱藏
+
+            ColumnLayout {
+                id: infoColumn
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.margins: 12
+                spacing: 6
+
+                // 標題與關閉按鈕
+                RowLayout {
+                    Layout.fillWidth: true
+                    Text {
+                        text: "📍 資料點詳細資訊"
+                        color: "#FFFFFF"
+                        font.bold: true
+                        font.pointSize: 10
+                        Layout.fillWidth: true
+                    }
+
+                    // 關閉按鈕 (X)
+                    Rectangle {
+                        width: 24
+                        height: 24
+                        radius: 12
+                        color: closeArea.pressed ? "#555555" : "transparent"
+                        Text {
+                            text: "✕"
+                            color: "#B3B3B3"
+                            anchors.centerIn: parent
+                            font.bold: true
+                        }
+                        MouseArea {
+                            id: closeArea
+                            anchors.fill: parent
+                            onClicked: pointInfoPanel.visible = false
+                        }
+                    }
+                }
+
+                Rectangle { Layout.fillWidth: true; height: 1; color: "#3a3a3c" } // 分隔線
+
+                // 數值顯示區塊
+                Text { id: infoLatLon; color: "#B3B3B3"; font.pointSize: 9 }
+                Text { id: infoTemp; color: "#FFFFFF"; font.pointSize: 9 }
+                Text { id: infoDepth; color: "#FFFFFF"; font.pointSize: 9 }
+                Text { id: infoDO; color: "#FFFFFF"; font.pointSize: 9 }
+                Text { id: infoCoverage; color: "#FFFFFF"; font.pointSize: 9 }
+                // ==========================================
+                // 💡 海草照片與 Mask 疊加顯示區
+                // ==========================================
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 5
+                    // 如果沒有圖片名稱，就隱藏整個照片區塊
+                    visible: seagrassPhotoBase.source != ""
+
+                    // 1. 圖片容器 (負責將兩張圖片精準疊在一起)
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 150
+
+                        // 邊框與背景
+                        Rectangle {
+                            anchors.fill: parent
+                            color: "transparent"
+                            border.color: "#3a3a3c"
+                            border.width: 1
+                            radius: 4
+                        }
+
+                        // 底圖：原圖照
+                        Image {
+                            id: seagrassPhotoBase
+                            anchors.fill: parent
+                            anchors.margins: 1 // 避開邊框
+                            fillMode: Image.PreserveAspectFit
+                            source: ""
+                        }
+
+                        Item {
+                            width: seagrassPhotoBase.paintedWidth
+                            height: seagrassPhotoBase.paintedHeight
+                            anchors.centerIn: seagrassPhotoBase // 對齊底圖中心
+                            visible: maskSwitch.checked
+
+                            Image {
+                                id: seagrassPhotoMask
+                                source: ""
+                                anchors.fill: parent
+                                fillMode: Image.Stretch
+                                visible: false // 依然作為來源，不直接顯示
+                            }
+
+                            // 💡 Qt 6 使用 MultiEffect 實現染色
+                            MultiEffect {
+                                anchors.fill: parent
+                                source: seagrassPhotoMask
+
+                                // 將圖片「著色」為紅色
+                                colorization: 1.0       // 啟用著色
+                                colorizationColor: "#FF0000" // 設定為紅色
+
+                                // 調整透明度
+                                opacity: 0.5
+                                maskEnabled: true
+                                maskSource: seagrassPhotoMask
+
+                            }
+                        }
+
+                        // 載入中文字提示 (綁定底圖狀態)
+                        Text {
+                            anchors.centerIn: parent
+                            text: {
+                                if (seagrassPhotoBase.status === Image.Loading) return "圖片載入中..."
+                                if (seagrassPhotoBase.status === Image.Error) return "圖片載入失敗"
+                                return ""
+                            }
+                            color: "#888888"
+                            font.pointSize: 9
+                        }
+                    }
+
+                    // 2. 切換開關 (Toggle)
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignHCenter
+                        spacing: 8
+
+                        Text {
+                            text: "疊加 AI 辨識結果"
+                            color: "#B3B3B3"
+                            font.pointSize: 9
+                        }
+
+                        Switch {
+                            id: maskSwitch
+                            checked: true // 預設開啟疊加
+                            // 縮小一下 Switch 的視覺比例讓它更精緻
+                            scale: 0.8
+                        }
+                    }
+                }
+            }
+
+            // 接收點擊傳來的資料並更新 UI
+                    function showInfo(lat, lon, temp, depth, do_val, coverage, imageName) {
+                        infoLatLon.text = "座標: " + Number(lat).toFixed(6) + ", " + Number(lon).toFixed(6)
+                        infoTemp.text = "溫度: " + (typeof temp === 'number' ? temp.toFixed(2) : temp) + " °C"
+                        infoDepth.text = "深度: " + (typeof depth === 'number' ? depth.toFixed(2) : depth) + " cm"
+                        infoDO.text = "溶氧: " + (typeof do_val === 'number' ? do_val.toFixed(2) : do_val) + " %"
+                        infoCoverage.text = "覆蓋率: " + (typeof coverage === 'number' ? coverage.toFixed(2) : coverage) + " %"
+
+                        // 💡 處理圖片與 Mask 邏輯
+                        if (imageName && imageName !== "") {
+                            // --- 1. 設定原圖 URL ---
+                            // ⚠️ 請記得把 IP 換成你實際 Flask API 的位置
+                            var boatIP = "100.127.136.93"
+                            if(DeNovoViewer.boatManager.activeBoat.primaryConnected){
+                                boatIP = DeNovoViewer.boatManager.activeBoat.PIP
+                            }else{
+                                boatIP = DeNovoViewer.boatManager.activeBoat.SIP
+                            }
+
+                            var apiBaseUrl = "http://"+boatIP+":5000/api/image/";
+                            seagrassPhotoBase.source = apiBaseUrl + imageName;
+
+                            console.log(apiBaseUrl)
+
+                            // --- 2. 智慧解析並生成 Mask 的 URL ---
+                            // 尋找最後一個點 "." 的位置，用來分開檔名與副檔名 (例如 .jpg 或 .png)
+                            var dotIndex = imageName.lastIndexOf(".");
+                            if (dotIndex !== -1) {
+                                var namePart = imageName.substring(0, dotIndex); // 拿到 "001"
+                                var extPart = imageName.substring(dotIndex);     // 拿到 ".jpg"
+                                var maskName = namePart + "_mask" + extPart;     // 組合成 "001_mask.jpg"
+
+                                seagrassPhotoMask.source = apiBaseUrl + maskName;
+                            } else {
+                                // 防呆：萬一只傳了沒有副檔名的檔名
+                                seagrassPhotoMask.source = apiBaseUrl + imageName + "_mask";
+                            }
+                        } else {
+                            // 如果該點沒有照片，清空來源
+                            seagrassPhotoBase.source = "";
+                            seagrassPhotoMask.source = "";
+                        }
+
+                        visible = true
+                    }
+        }
     Connections {
         target: DeNovoViewer.marineDatabase
 
@@ -758,11 +1026,12 @@ Item {
                 if (dataFieldCombo.currentIndex === 1) val = Number(newPt["temperature"] || 0);
                 else if (dataFieldCombo.currentIndex === 2) val = Number(newPt["depth"] || 0);
                 else if (dataFieldCombo.currentIndex === 3) val = Number(newPt["dissolved_oxygen_concentration"] || 0);
+                else if (dataFieldCombo.currentIndex === 4) val = Number(newPt["seagrass_coverage_ratio"] || 0);
 
                 // 2. 防呆：確認有拿到 ID 且不是重複畫
                 if (newPt.id !== undefined && newPt.id !== _root.lastRenderedId) {
                     _root.lastRenderedId = newPt.id
-
+                    newPt.value = val
                     // 3. 直接 Append 進地圖 Model
                     trajectoryModel.append(newPt)
                     // 4. 輕量 Nudge 強迫 QML 重繪

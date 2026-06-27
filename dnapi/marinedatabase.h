@@ -20,6 +20,7 @@ class MarineDatabase : public QObject {
     Q_PROPERTY(int writeInterval READ writeInterval WRITE setWriteInterval NOTIFY writeIntervalChanged)
     Q_PROPERTY(bool isConnected READ isConnected NOTIFY connectionStatusChanged)
     Q_PROPERTY(bool isLogging READ isLogging NOTIFY isLoggingChanged)
+    Q_PROPERTY(bool isBoatLogging READ isBLogging NOTIFY isBLoggingChanged)
 public:
     static MarineDatabase *instance();
     explicit MarineDatabase(QObject *parent = nullptr, const QString& dbName = "marine.db");
@@ -42,18 +43,22 @@ public:
     Q_INVOKABLE void setDefaultLogDirectory(const QString& path);
     Q_INVOKABLE QVariantList fetchTrajectoryData(int fieldIndex);
     bool isLogging() const { return m_isLogging; } // 假設你用 m_isLogging 記錄狀態
+    bool isBLogging() const { return b_isLogging; }
+    void _recordToDatabase();
 signals:
     void connectionStatusChanged(bool connected);
     void dataInsertedSuccessfully(QVariantMap newPoint);
+    void getLatestLog();
 
     // 💡 2. 新增與 Q_PROPERTY 搭配的 Signal
     void dbNameChanged(QString newName);
     void writeIntervalChanged(int newInterval);
     void isLoggingChanged(bool isLogging);
-
+    void isBLoggingChanged(bool isLogging);
 public slots:
     // 接收各個感測器打包來的最新資料 (存入 m_sensorCache)
     void handleDataUpdate(const QVariantMap& aquaData);
+    void handleLatestLog(const QJsonObject &logData);
 
 private slots:
     // 💡 3. 新增一個給 QTimer 時間到時，負責將 m_sensorCache 寫入 SQLite 的專用 Slot
@@ -67,10 +72,13 @@ private:
     bool createTables();
     bool m_isClosed = true;
    bool m_isLogging = false;
+    bool b_isLogging = false;
+    qint64 _lastReceiveTime = 0;
 
     int _writeInterval;
     QTimer* m_logTimer; // 💡 4. 新增定時器物件
     float counter = 0;
+    double last_usec = 0;
 };
 
 #endif // MARINEDATABASE_H

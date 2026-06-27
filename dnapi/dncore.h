@@ -12,6 +12,7 @@
 #include "controlmanager.h"
 #include "aquagraph.h"
 #include "marinedatabase.h"
+#include "loghttpclient.h"
 
 class DNCore : public QObject
 {
@@ -30,6 +31,7 @@ public:
     ControlManager* controlManager() { return _controlManager; }
     AquaGraph* aquaGraph(){ return _aquaGraph; }
     MarineDatabase* marineDatabase() {return _marineDatabase;}
+    LogHttpClient* logHttpClient() { return _logHttpClient; }
     QString config() {return _config;}
 
 
@@ -43,7 +45,7 @@ private:
     ControlManager* _controlManager;
     AquaGraph* _aquaGraph;
     MarineDatabase* _marineDatabase;
-
+    LogHttpClient* _logHttpClient;
 };
 
 #endif // DNCORE_H
